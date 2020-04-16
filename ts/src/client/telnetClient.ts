@@ -34,8 +34,7 @@ export class TelnetClient extends Telnet {
                 arrayFromString(varName),
                 [NewEnv.VALUE],
                 arrayFromString(varVal),
-                [NewEnv.IAC],
-                [NewEnv.SE]));
+                [Cmd.IAC, Cmd.SE]));
     }
 
     private handleNewEnvSeq(seq: number[]): void {
