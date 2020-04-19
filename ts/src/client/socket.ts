@@ -231,6 +231,15 @@ export class Socket {
                 continue;
             }
 
+            /* other CSI sequences recognized but not supported */
+            re = /^\x1b\[[0-9]*[ABCDEFGHJKSTfn]/;
+            match = re.exec(substr);
+            if (match) {
+                console.log("Unsupported CSI sequence:", match[0]);
+                i += match[0].length;
+                continue;
+            }
+
             /* need to account for malformed or unsupported tags or sequences somehow... so treat start of another sequence and new lines as boundaries */
             let esc_ind = substr.slice(1).indexOf("\x1b");
             let nl_ind = substr.indexOf("\n");

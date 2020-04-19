@@ -5,67 +5,27 @@ import {AliasManager} from "./aliasManager";
 export class CommandInput {
     public EvtEmitCmd = new EventHook<string>();
     public EvtEmitAliasCmds = new EventHook<{orig: string, commands: string[]}>();
-    public EvtEmitPw = new EventHook<string>();
 
     private cmd_history: string[] = [];
     private cmd_index: number = -1;
     private cmd_entered: string = "";
 
     private $cmdInput: JQuery;
-    private $cmdInputPw: JQuery;
 
     private chkCmdStack: HTMLInputElement;
 
     constructor(private aliasManager: AliasManager) {
         this.$cmdInput = $("#cmdInput");
-        this.$cmdInputPw = $("#cmdInputPw");
 
         this.chkCmdStack = $("#chkCmdStack")[0] as HTMLInputElement;
 
         this.$cmdInput.keydown((event: KeyboardEvent) => { return this.keydown(event); });
         this.$cmdInput.bind("input propertychange", () => { return this.inputChange(); });
-        this.$cmdInputPw.keydown((event: KeyboardEvent) => { return this.pwKeydown(event); });
 
         $(document).ready(() => {
             this.loadHistory();
             this.inputChange(); // Force a resize
         });
-    }
-
-    private echo: boolean = true;
-    setEcho(value: boolean): void {
-        this.echo = value;
-
-        if (this.echo) {
-            this.$cmdInputPw.hide();
-            this.$cmdInput.show();
-            this.$cmdInput.val("");
-            this.inputChange();
-            this.$cmdInput.focus();
-        } else {
-            this.$cmdInput.hide();
-            this.$cmdInputPw.show();
-            this.$cmdInputPw.focus();
-
-            let current = this.$cmdInput.val();
-            if (this.cmd_history.length > 0
-                && current !== this.cmd_history[this.cmd_history.length - 1]) {
-                /* If they already started typing password before getting echo command*/
-                this.$cmdInputPw.val(current);
-                (<HTMLInputElement>this.$cmdInputPw[0]).setSelectionRange(current.length, current.length);
-            } else {
-                this.$cmdInputPw.val("");
-            }
-        }
-    }
-
-    handleTelnetConnect(): void {
-        this.setEcho(true);
-    }
-
-    private sendPw(): void {
-        let pw = this.$cmdInputPw.val();
-        this.EvtEmitPw.fire(pw);
     }
 
     private sendCmd(): void {
@@ -99,28 +59,11 @@ export class CommandInput {
             return;
         }
 
-        if (this.echo) {
-            this.cmd_history.push(cmd);
-            this.cmd_history = this.cmd_history.slice(-20);
-            this.saveHistory();
-        }
-        else {
-            this.$cmdInput.val("");
-            this.inputChange();
-        }
+        this.cmd_history.push(cmd);
+        this.cmd_history = this.cmd_history.slice(-20);
+        this.saveHistory();
         this.cmd_index = -1;
     };
-
-    private pwKeydown(event: KeyboardEvent): boolean {
-        switch (event.which) {
-            case 13: // enter
-                this.sendPw();
-                this.$cmdInputPw.val("");
-                return false;
-            default:
-                return true;
-        }
-    }
 
     private keydown(event: KeyboardEvent): boolean {
         switch (event.which) {

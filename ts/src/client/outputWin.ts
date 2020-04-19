@@ -22,17 +22,6 @@ export class OutputWin extends OutWinBase {
         this.scrollBottom(true);
     }
 
-    echoStars(count: number) {
-        let stars = Array(count + 1).join("*");
-
-        this.$target.append(
-            "<span style=\"color:yellow\">"
-            + stars
-            + "<br>"
-            + "</span>");
-        this.scrollBottom(true);
-    }
-
     handleSendCommand(cmd: string) {
         this.$target.append(
             "<span style=\"color:yellow\">"

@@ -41,6 +41,8 @@ export class Client {
     private aboutWin: AboutWin;
     private connectWin: ConnectWin;
 
+    private serverEcho = false;
+
     constructor() {
         this.aboutWin = new AboutWin();
         this.jsScript = new JsScript();
@@ -75,11 +77,11 @@ export class Client {
         // Socket events
         this.socket.EvtServerEcho.handle((val: boolean) => {
             // Server echo ON means we should have local echo OFF
-            this.commandInput.setEcho(!val);
+            this.serverEcho = val;
         });
 
         this.socket.EvtTelnetConnect.handle(() => {
-            this.commandInput.handleTelnetConnect();
+            this.serverEcho = false;
             this.menuBar.handleTelnetConnect();
             this.outputWin.handleTelnetConnect();
         });
@@ -112,7 +114,9 @@ export class Client {
 
         // CommandInput events
         this.commandInput.EvtEmitCmd.handle((data: string) => {
-            this.outputWin.handleSendCommand(data);
+            if (true !== this.serverEcho) {
+                this.outputWin.handleSendCommand(data);
+            }
             this.socket.sendCmd(data);
         });
 
@@ -121,11 +125,6 @@ export class Client {
             for (let cmd of data.commands) {
                 this.socket.sendCmd(cmd);
             }
-        });
-
-        this.commandInput.EvtEmitPw.handle((data: string) => {
-            this.outputWin.echoStars(data.length);
-            this.socket.sendCmd(data);
         });
 
         // Mxp events
