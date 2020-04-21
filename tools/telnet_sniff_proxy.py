@@ -154,6 +154,8 @@ class TelnetSniffer(object):
                 if cmd in (DO, DONT, WILL, WONT):
                     self.option_callback(self, cmd, opt)
 
+        self.sbdataq = self.sbdataq + buf[1]
+
 
 def cb_neg(tn, cmd, opt):
     if cmd == TelnetCmds.SE:
