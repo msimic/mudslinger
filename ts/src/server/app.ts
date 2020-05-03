@@ -39,6 +39,7 @@ let telnetNs: SocketIO.Namespace = io.of("/telnet");
 telnetNs.on("connection", (client: SocketIO.Socket) => {
     let telnet: net.Socket;
     let ioEvt = new IoEvent(client);
+    let remoteAddr = client.request.headers['x-real-ip'] || client.request.connection.remoteAddress;
 
     let writeQueue: any[] = [];
     let canWrite: boolean =  true;
@@ -84,7 +85,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
 
         openConns[telnetId] = {
             telnetId: telnetId,
-            userIp: client.request.connection.remoteAddress,
+            userIp: remoteAddr,
             host: host,
             port: port,
         };
@@ -97,7 +98,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
             ioEvt.srvTelnetClosed.fire(had_error);
             telnet = null;
             let elapsed: number = <any>(new Date()) - <any>conStartTime;
-            tlog(telnetId, "::", client.request.connection.remoteAddress, "->", host, port, "::closed after", (elapsed/1000), "seconds");
+            tlog(telnetId, "::", remoteAddr, "->", host, port, "::closed after", (elapsed/1000), "seconds");
         });
         telnet.on("drain", () => {
             canWrite = true;
@@ -109,7 +110,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
         });
 
         try {
-            tlog(telnetId, "::", client.request.connection.remoteAddress, "->", host, port, "::opening");
+            tlog(telnetId, "::", remoteAddr, "->", host, port, "::opening");
             telnet.connect(port, host, () => {
                 ioEvt.srvTelnetOpened.fire(null);
                 conStartTime = new Date();
@@ -133,7 +134,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
         writeData(data);
     });
 
-    ioEvt.srvSetClientIp.fire(client.request.connection.remoteAddress);
+    ioEvt.srvSetClientIp.fire(remoteAddr);
 });
 
 if (serverConfig.useHttpServer) {
@@ -167,12 +168,7 @@ function tlog(...args: any[]) {
 }
 
 if (process.platform !== "win32") {
-    const ADMIN_SOCK_PATH = "admin_if.sock";
-
-    if (fs.existsSync(ADMIN_SOCK_PATH)) {
-        fs.unlinkSync(ADMIN_SOCK_PATH);
-    }
-
+    let adminIdNext: number = 0;
 
     type adminFunc = (sock: net.Socket, args: string[]) => void;
 
@@ -183,6 +179,7 @@ if (process.platform !== "win32") {
         for (let cmd in adminFuncs) {
             sock.write(cmd + "\n");
         }
+        sock.write("\n");
     };
 
     adminFuncs["ls"] = (sock: net.Socket, args: string[]) => {
@@ -197,7 +194,9 @@ if (process.platform !== "win32") {
     };
 
     let adminServer = net.createServer((socket: net.Socket) => {
-        console.log("{{admin connection opened}}");
+        let adminId: number = adminIdNext++;
+
+        tlog("{{", adminId, "}}", "{{admin connection opened}}");
 
         let rl = readline.createInterface({
             input: socket
@@ -207,6 +206,12 @@ if (process.platform !== "win32") {
             let words = line.split(" ");
 
             if (words.length > 0) {
+                let funcName = words[0];
+                if (funcName === "exit") {
+                    socket.end();
+                    return;
+                }
+
                 let afunc = adminFuncs[words[0]];
 
                 if (!afunc) {
@@ -216,7 +221,7 @@ if (process.platform !== "win32") {
                         afunc(socket, words.slice(1));
                     }
                     catch (err) {
-                        console.log("{{admin error '" + line + "':", err, "}}");
+                        tlog("{{", adminId, "}}", "{{admin error '" + line + "':", err, "}}");
                         socket.write("COMMAND ERROR\n");
                     }
                 }
@@ -226,11 +231,17 @@ if (process.platform !== "win32") {
         });
 
         socket.on("close", () => {
-            console.log("{{admin closed}}");
+            tlog("{{", adminId, "}}", "{{admin closed}}");
+        });
+
+        socket.on("error", (err: Error) => {
+            tlog("{{", adminId, "}}", "{{admin error: " + err);
         });
 
         socket.write("admin> ");
     });
 
-    adminServer.listen(ADMIN_SOCK_PATH);
+    adminServer.listen(serverConfig.adminPort, serverConfig.adminHost, () => {
+        tlog("Admin CLI server is running on " + serverConfig.adminHost + ":" + serverConfig.adminPort);
+    });
 }
