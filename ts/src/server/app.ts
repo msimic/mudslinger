@@ -168,12 +168,7 @@ function tlog(...args: any[]) {
 }
 
 if (process.platform !== "win32") {
-    const ADMIN_SOCK_PATH = "admin_if.sock";
-
-    if (fs.existsSync(ADMIN_SOCK_PATH)) {
-        fs.unlinkSync(ADMIN_SOCK_PATH);
-    }
-
+    let adminIdNext: number = 0;
 
     type adminFunc = (sock: net.Socket, args: string[]) => void;
 
@@ -184,6 +179,7 @@ if (process.platform !== "win32") {
         for (let cmd in adminFuncs) {
             sock.write(cmd + "\n");
         }
+        sock.write("\n");
     };
 
     adminFuncs["ls"] = (sock: net.Socket, args: string[]) => {
@@ -198,7 +194,9 @@ if (process.platform !== "win32") {
     };
 
     let adminServer = net.createServer((socket: net.Socket) => {
-        console.log("{{admin connection opened}}");
+        let adminId: number = adminIdNext++;
+
+        tlog("{{", adminId, "}}", "{{admin connection opened}}");
 
         let rl = readline.createInterface({
             input: socket
@@ -208,6 +206,12 @@ if (process.platform !== "win32") {
             let words = line.split(" ");
 
             if (words.length > 0) {
+                let funcName = words[0];
+                if (funcName === "exit") {
+                    socket.end();
+                    return;
+                }
+
                 let afunc = adminFuncs[words[0]];
 
                 if (!afunc) {
@@ -217,7 +221,7 @@ if (process.platform !== "win32") {
                         afunc(socket, words.slice(1));
                     }
                     catch (err) {
-                        console.log("{{admin error '" + line + "':", err, "}}");
+                        tlog("{{", adminId, "}}", "{{admin error '" + line + "':", err, "}}");
                         socket.write("COMMAND ERROR\n");
                     }
                 }
@@ -227,11 +231,17 @@ if (process.platform !== "win32") {
         });
 
         socket.on("close", () => {
-            console.log("{{admin closed}}");
+            tlog("{{", adminId, "}}", "{{admin closed}}");
+        });
+
+        socket.on("error", (err: Error) => {
+            tlog("{{", adminId, "}}", "{{admin error: " + err);
         });
 
         socket.write("admin> ");
     });
 
-    adminServer.listen(ADMIN_SOCK_PATH);
+    adminServer.listen(serverConfig.adminPort, serverConfig.adminHost, () => {
+        tlog("Admin CLI server is running on " + serverConfig.adminHost + ":" + serverConfig.adminPort);
+    });
 }

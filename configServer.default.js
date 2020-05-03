@@ -8,6 +8,10 @@ config.useHttpServer = true;
 config.serverPort = 80;
 
 
+config.adminHost = "localhost";
+config.adminPort = 8001;
+
+
 /* targetHost and targetPort set as null means client can connect to any host/port.
 Set these values to hardcode the connection to a specific host and port 
 
