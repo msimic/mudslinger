@@ -3,7 +3,7 @@ let fs = require("fs-extra");
 let flnameConfigClient = "configClient.js"
 let flnameConfigClientDefault = "configClient.default.js"
 
-let flnameConfigServer = "configServer.js"
+let flnameConfigServer = "static/public/configServer.js"
 let flnameConfigServerDefault = "configServer.default.js"
 
 // To be run from package root, paths accordingly

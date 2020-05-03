@@ -1,7 +1,6 @@
 {
   "name": "mudslinger",
   "scripts": {
-    "prestart": "node tools/prestart.js",
     "start": "node dist/server/app.js",
     "postinstall": "node tools/postinstall.js",
     "clean": "rimraf ts/build && rimraf dist && rimraf static/mudslinger.js",
