@@ -12,10 +12,6 @@ console.log(serverConfig);
 
 let cwd = process.cwd();
 
-let app: express.Express;
-let server: http.Server;
-let io: SocketIO.Server;
-
 let telnetIdNext: number = 0;
 
 interface connInfo {
@@ -27,13 +23,8 @@ interface connInfo {
 
 let openConns: {[k: number]: connInfo} = {};
 
-if (serverConfig.useHttpServer === true) {
-    app = express();
-    server = http.createServer(app);
-    io = socketio(server);
-} else {
-    io = socketio(serverConfig.serverPort);
-}
+let server: http.Server = http.createServer();
+let io: SocketIO.Server = socketio();
 
 let telnetNs: SocketIO.Namespace = io.of("/telnet");
 telnetNs.on("connection", (client: SocketIO.Socket) => {
@@ -137,31 +128,36 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
     ioEvt.srvSetClientIp.fire(remoteAddr);
 });
 
-if (serverConfig.useHttpServer) {
-    app.use(express.static("static/public"));
+if (serverConfig.serveStatic) {
+    let express_app = express();
+    server.on("request", express_app);
 
-    if (serverConfig.clientTest) {
-        app.use('/test', express.static("static/test", {
+    express_app.use(express.static("static/public"));
+
+    if (serverConfig.serveStaticTest) {
+        express_app.use('/test', express.static("static/test", {
             index: "test.html"
         }));
     }
 
-    app.use((err: any, req: any, res: any, next: any) => {
-        tlog("App error: " +
+    express_app.use((err: any, req: any, res: any, next: any) => {
+        tlog("Express app error: " +
                     "err: " + err + " | " +
                     "req: " + req + " | " +
                     "res: " + res + " | ");
         next(err);
     });
-
-    server.on("error", (err: Error) => {
-        tlog("Server error:", err);
-    });
-
-    server.listen(serverConfig.serverPort, function() {
-        tlog("Server is running at port", serverConfig.serverPort);
-    });
 }
+
+io.attach(server);
+
+server.on("error", (err: Error) => {
+    tlog("Server error:", err);
+});
+
+server.listen(serverConfig.serverPort, serverConfig.serverHost, () => {
+    tlog("Server is running on " + serverConfig.serverHost + ":" + serverConfig.serverPort);
+});
 
 function tlog(...args: any[]) {
     console.log("[[", new Date().toLocaleString(), "]]", ...args);

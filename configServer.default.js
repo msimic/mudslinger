@@ -1,16 +1,16 @@
 var config = {};
 
 
-/* If false, only serve socket.io and not http */
-config.useHttpServer = true;
+/* If false, only serve as telnet proxy via socket.io and don't serve static files */
+config.serveStatic = true;
+/* whether to serve client test files */
+config.serveStaticTest = false;
 
-/* http server port if useHttpServer is true, else the socket.io port */
+config.serverHost = "0.0.0.0";
 config.serverPort = 80;
-
 
 config.adminHost = "localhost";
 config.adminPort = 8001;
-
 
 /* targetHost and targetPort set as null means client can connect to any host/port.
 Set these values to hardcode the connection to a specific host and port 
@@ -19,9 +19,6 @@ If hardcoding a target, be sure to also set hardcodedTarget to true in configCli
 */
 config.targetHost = null; 
 config.targetPort = null;
-
-/* whether to serve client test files */
-config.clientTest = false;
 
 
 module.exports = config;
