@@ -23,7 +23,7 @@ Host and port can also be passed as URL parameters, e.g. [http://mudslinger.roof
 1. Run ``npm ci`` in the root directory.
   * Ensure ``tools/postinstall.js`` ran after the install finished (it should happen automatically). If not, manually run it with ``node tools/postinstall.js``.
 2. ``npm run build`` to build the server and client.
-3. Edit `configClient.js` and `configServer.js` as needed.
+3. Edit `static/public/configClient.js` and `configServer.js` as needed.
 4. ``npm start`` to start the server.
 
 # License
