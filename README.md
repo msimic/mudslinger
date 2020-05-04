@@ -5,9 +5,9 @@ The Node.js server makes telnet connections to the target host/port and acts as 
 
 It can be configured to connect only to a specific host/port or allow connections to any host/port.
 
-Live version at: [http://mudslinger.rooflez.com](http://mudslinger.rooflez.com)
+Live version at: [https://mudslinger.rooflez.com](https://mudslinger.rooflez.com)
 
-Host and port can also be passed as URL parameters, e.g. [http://mudslinger.rooflez.com/?host=aarchonmud.com&port=7000](http://mudslinger.rooflez.com/?host=aarchonmud.com&port=7000)
+Host and port can also be passed as URL parameters, e.g. [https://mudslinger.rooflez.com/?host=aarchonmud.com&port=7000](https://mudslinger.rooflez.com/?host=aarchonmud.com&port=7000)
 
 # Features #
 * ANSI color
