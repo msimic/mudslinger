@@ -1,0 +1,2 @@
+export API_APP_GUNICORN_HOST=localhost
+export API_APP_GUNICORN_PORT=6001
