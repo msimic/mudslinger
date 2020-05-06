@@ -12,3 +12,5 @@ static/test/qunit/
 static/test/mudslingerTest.js
 dist/
 mudslinger.sublime-workspace
+venv/
+**/*.pyc

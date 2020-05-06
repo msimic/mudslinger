@@ -16,6 +16,7 @@ let telnetIdNext: number = 0;
 
 interface connInfo {
     telnetId: number;
+    uuid: string;
     userIp: string;
     host: string;
     port: number;
@@ -76,6 +77,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
 
         openConns[telnetId] = {
             telnetId: telnetId,
+            uuid: null,
             userIp: remoteAddr,
             host: host,
             port: port,
@@ -85,11 +87,27 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
             ioEvt.srvTelnetData.fire(data.buffer);
         });
         telnet.on("close", (had_error: boolean) => {
+            let conn = openConns[telnetId];
             delete openConns[telnetId];
             ioEvt.srvTelnetClosed.fire(had_error);
             telnet = null;
-            let elapsed: number = <any>(new Date()) - <any>conStartTime;
+            let connEndTime = new Date();
+            let elapsed: number = <any>connEndTime - <any>conStartTime;
             tlog(telnetId, "::", remoteAddr, "->", host, port, "::closed after", (elapsed/1000), "seconds");
+
+            apiPost('/usage/disconnect', {
+                'uuid': conn.uuid,
+                'sid': client.id,
+                'from_addr': remoteAddr,
+                'to_addr': host,
+                'to_port': port,
+                'time_stamp': connEndTime,
+                'elapsed_ms': elapsed
+            }, (statusCode: number, data: any) => {
+                if (statusCode != 200) {
+                    console.error("/usage/disconnect status ", statusCode);
+                }
+            });
         });
         telnet.on("drain", () => {
             canWrite = true;
@@ -105,6 +123,23 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
             telnet.connect(port, host, () => {
                 ioEvt.srvTelnetOpened.fire(null);
                 conStartTime = new Date();
+
+                apiPost('/usage/connect', {
+                    'sid': client.id,
+                    'from_addr': remoteAddr,
+                    'to_addr': host,
+                    'to_port': port,
+                    'time_stamp': conStartTime
+                }, (statusCode: number, data: any) => {
+                    if (statusCode != 200) {
+                        console.error("/usage/connect status ", statusCode);
+                    } else {
+                        let conn = openConns[telnetId];
+                        if (conn) {
+                            conn.uuid = data.uuid;
+                        }
+                    }
+                });
             });
         }
         catch (err) {
@@ -161,6 +196,63 @@ server.listen(serverConfig.serverPort, serverConfig.serverHost, () => {
 
 function tlog(...args: any[]) {
     console.log("[[", new Date().toLocaleString(), "]]", ...args);
+}
+
+function apiPost(path: string, data: any, cb?: (statusCode: number, data: any) => void): void {
+    if (!serverConfig.apiHost) {
+        return;
+    }
+
+    if (!serverConfig.apiPort || !serverConfig.apiKey) {
+        console.error("Missing api config values");
+        return;
+    }
+
+    let post_data = JSON.stringify(data);
+
+    let post_options = {
+        host: serverConfig.apiHost,
+        port: serverConfig.apiPort,
+        path: path,
+        method: 'POST',
+        auth: serverConfig.apiKey + ':none',
+        headers: {
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(post_data)
+        }
+    };
+
+    let req = http.request(post_options, (res: http.IncomingMessage) => {
+        // https://davidwalsh.name/nodejs-http-request
+        let body = '';
+        res.on("data", (chunk) => { body += chunk; });
+        res.on("end", () => {
+            if (res.statusCode !== 200) {
+                if (cb) {
+                    cb(res.statusCode, body);
+                }
+                return;
+            }
+
+            let res_data: any;
+            try {
+                res_data = JSON.parse(body);
+            } catch (err) {
+                console.error('Unable to parse response as JSON. body:', body, ", err:", err);
+                return;
+            }
+
+            if (cb) {
+                cb(res.statusCode, res_data);
+            }
+        });
+    });
+
+    req.on("error", (err: Error) => {
+        console.error("Error in apiPost: ", err);
+    });
+    req.write(post_data);
+    req.end();
 }
 
 if (process.platform !== "win32") {
