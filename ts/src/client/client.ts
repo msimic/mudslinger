@@ -222,7 +222,7 @@ export class Client {
             location.protocol + "//" +
             configClient.apiHost +
             ":" +
-            configClient.apiPort +
+            (configClient.apiPort || location.port) +
             path);
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         xhr.send(jsonData);
