@@ -119,3 +119,27 @@ def tn_proxy_disconnect():
         d['elapsed_ms']))
     db.commit()
     return {}, 200
+
+
+@bp.route('/mxp_send', methods=('POST',))
+def mxp_send():
+    d = request.json
+    if not d:
+        abort(400)
+
+    if 'time_stamp' not in d:
+        abort(400)
+
+    db = get_db()
+    db.execute("""
+        INSERT INTO usage_mxp_send (
+            sid, from_addr, to_addr, to_port, time_stamp
+        ) VALUES (?,?,?,?,?)
+    """, (
+        d.get('sid'),
+        d.get('from_addr'),
+        d.get('to_addr'),
+        d.get('to_port'),
+        d.get('time_stamp')))
+    db.commit()
+    return {}, 200

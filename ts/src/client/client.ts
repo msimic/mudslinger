@@ -133,6 +133,17 @@ export class Client {
                 this.outputWin.handleSendCommand(data.value);
             }
             this.socket.sendCmd(data.value);
+
+            // noPrint is used only for MXP <version>, which we don't want to track
+            if (data.noPrint !== true) {
+                this.apiPost('/usage/mxp_send',  {
+                    sid: this.socket.getSid(),
+                    from_addr: this.socket.getClientIp(),
+                    to_addr: this.socket.getTelnetHost(),
+                    to_port: this.socket.getTelnetPort(),
+                    time_stamp: new Date()
+                });
+            }
         });
 
         // JsScript events
@@ -179,6 +190,42 @@ export class Client {
                 this.connectWin.show();
             }
         }
+    }
+
+    private apiPost(path: string, data: any, cb?: (data: any) => void): void {
+        if (!configClient.apiHost) {
+            return;
+        }
+
+        let xhr = new XMLHttpRequest();
+
+        let jsonData = JSON.stringify(data);
+
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4) {
+                if (xhr.status !== 200) {
+                    console.error("apiPost status ", xhr.status);
+                } else {
+                    let val = JSON.parse(xhr.responseText);
+                    if (cb) {
+                        cb(val);
+                    }
+                }
+            }
+        };
+
+        xhr.addEventListener('error', (event) => {
+            console.error('apiPost error:', event);
+        });
+
+        xhr.open('POST',
+            location.protocol + "//" +
+            configClient.apiHost +
+            ":" +
+            configClient.apiPort +
+            path);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(jsonData);
     }
 
     public readonly UserConfig = UserConfig;

@@ -23,21 +23,38 @@ def close_db(e=None):
         db.close()
 
 
-def init_db():
+def migrate_db():
     db = get_db()
 
-    with current_app.open_resource('schema.sql') as f:
-        db.executescript(f.read().decode('utf8'))
+    old = None
+
+    for i in range(10):
+        curr_ver = db.execute("PRAGMA user_version").fetchone()[0]
+        if old is None:
+            old = curr_ver
+
+        current_app.logger.info("Schema version is {}".format(curr_ver))
+
+        target_ver = curr_ver + 1
+        target_path = "migrations/{}.sql".format(target_ver)
+
+        try:
+            with current_app.open_resource(target_path) as f:
+                db.executescript(f.read().decode('utf8'))
+                db.executescript("PRAGMA user_version = {}".format(target_ver))
+        except FileNotFoundError:
+            break
+
+    return old, curr_ver
 
 
 def init_app(app):
     app.teardown_appcontext(close_db)
-    app.cli.add_command(init_db_command)
+    app.cli.add_command(migrate_db_command)
 
 
-@click.command('init-db')
+@click.command('migrate-db')
 @with_appcontext
-def init_db_command():
-    """Clear the existing data and create new tables."""
-    init_db()
-    click.echo('Initialized the database.')
+def migrate_db_command():
+    old, new = migrate_db()
+    click.echo('Migrated DB from {} to {}'.format(old, new))

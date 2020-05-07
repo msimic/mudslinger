@@ -121,7 +121,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
         try {
             tlog(telnetId, "::", remoteAddr, "->", host, port, "::opening");
             telnet.connect(port, host, () => {
-                ioEvt.srvTelnetOpened.fire(null);
+                ioEvt.srvTelnetOpened.fire([host, port]);
                 conStartTime = new Date();
 
                 apiPost('/usage/connect', {

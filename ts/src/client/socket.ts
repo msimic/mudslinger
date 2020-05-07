@@ -26,6 +26,13 @@ export class Socket {
     private ioEvt: IoEvent;
     private telnetClient: TelnetClient;
     private clientIp: string;
+    private telnetHost: string = null;
+    private telnetPort: number = null;
+
+    public getClientIp(): string | null { return this.clientIp; }
+    public getTelnetHost(): string | null { return this.telnetHost; }
+    public getTelnetPort(): number | null { return this.telnetPort; }
+    public getSid() { return this.ioConn?.id; }
 
     constructor(private outputManager: OutputManager, private mxp: Mxp) {
     }
@@ -52,7 +59,7 @@ export class Socket {
 
         this.ioEvt = new IoEvent(this.ioConn);
 
-        this.ioEvt.srvTelnetOpened.handle(() => {
+        this.ioEvt.srvTelnetOpened.handle((val: [string, number]) => {
             this.telnetClient = new TelnetClient((data) => {
                 this.ioEvt.clReqTelnetWrite.fire(data);
             });
@@ -67,11 +74,15 @@ export class Socket {
             });
 
             this.EvtTelnetConnect.fire(null);
+            this.telnetHost = val[0];
+            this.telnetPort = val[1];
         });
 
         this.ioEvt.srvTelnetClosed.handle(() => {
             this.telnetClient = null;
             this.EvtTelnetDisconnect.fire(null);
+            this.telnetHost = null;
+            this.telnetPort = null;
         });
 
         this.ioEvt.srvTelnetError.handle((data) => {

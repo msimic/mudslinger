@@ -18,7 +18,7 @@ export class IoEvent {
 
     public srvTelnetData = new IoEventHook<ArrayBuffer>(this.ioOobj, "srvTelnetData");
     public srvTelnetClosed = new IoEventHook<boolean>(this.ioOobj, "srvTelnetClosed");
-    public srvTelnetOpened = new IoEventHook<void>(this.ioOobj, "srvTelnetOpened");
+    public srvTelnetOpened = new IoEventHook<[string, number]>(this.ioOobj, "srvTelnetOpened");
     public srvTelnetError = new IoEventHook<string>(this.ioOobj, "srvTelnetError");
     public srvSetClientIp = new IoEventHook<string>(this.ioOobj, "srvSetClientIp");
 
