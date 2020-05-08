@@ -16,6 +16,7 @@ declare let configClient: any;
 export class MenuBar {
     public EvtChangeDefaultColor = new EventHook<[string, string]>();
     public EvtChangeDefaultBgColor = new EventHook<[string, string]>();
+    public EvtContactClicked = new EventHook<void>();
 
     private $menuBar: JQuery;
     private $chkEnableColor: JQuery;
@@ -139,6 +140,10 @@ export class MenuBar {
 
         this.clickFuncs["About"] = () => {
             this.aboutWin.show();
+        };
+
+        this.clickFuncs["Contact"] = () => {
+            this.EvtContactClicked.fire(null);
         };
     }
 

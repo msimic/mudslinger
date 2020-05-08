@@ -14,25 +14,19 @@ declare let configClient: any;
 
 export class Socket {
     public EvtServerEcho = new EventHook<boolean>();
-    public EvtTelnetConnect = new EventHook<void>();
+    public EvtTelnetConnect = new EventHook<[string, number]>();
     public EvtTelnetDisconnect = new EventHook<void>();
     public EvtTelnetError = new EventHook<string>();
     public EvtMxpTag = new EventHook<string>();
     public EvtWsError = new EventHook<any>();
-    public EvtWsConnect = new EventHook<void>();
+    public EvtWsConnect = new EventHook<{sid: string}>();
     public EvtWsDisconnect = new EventHook<void>();
+    public EvtSetClientIp = new EventHook<string>();
 
     private ioConn: SocketIOClient.Socket;
     private ioEvt: IoEvent;
     private telnetClient: TelnetClient;
     private clientIp: string;
-    private telnetHost: string = null;
-    private telnetPort: number = null;
-
-    public getClientIp(): string | null { return this.clientIp; }
-    public getTelnetHost(): string | null { return this.telnetHost; }
-    public getTelnetPort(): number | null { return this.telnetPort; }
-    public getSid() { return this.ioConn?.id; }
 
     constructor(private outputManager: OutputManager, private mxp: Mxp) {
     }
@@ -46,7 +40,7 @@ export class Socket {
             "/telnet");
 
         this.ioConn.on("connect", () => {
-            this.EvtWsConnect.fire(null);
+            this.EvtWsConnect.fire({sid: this.ioConn.id});
         });
 
         this.ioConn.on("disconnect", () => {
@@ -73,16 +67,12 @@ export class Socket {
                 this.EvtServerEcho.fire(data);
             });
 
-            this.EvtTelnetConnect.fire(null);
-            this.telnetHost = val[0];
-            this.telnetPort = val[1];
+            this.EvtTelnetConnect.fire(val);
         });
 
         this.ioEvt.srvTelnetClosed.handle(() => {
             this.telnetClient = null;
             this.EvtTelnetDisconnect.fire(null);
-            this.telnetHost = null;
-            this.telnetPort = null;
         });
 
         this.ioEvt.srvTelnetError.handle((data) => {
@@ -106,6 +96,7 @@ export class Socket {
             if (this.telnetClient) {
                 this.telnetClient.clientIp = ipAddr;
             }
+            this.EvtSetClientIp.fire(this.clientIp);
         });
     }
 

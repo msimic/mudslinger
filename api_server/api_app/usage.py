@@ -1,5 +1,6 @@
 import uuid
 import click
+import smtplib
 from itsdangerous import JSONWebSignatureSerializer, BadSignature
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, abort
@@ -143,3 +144,41 @@ def mxp_send():
         d.get('time_stamp')))
     db.commit()
     return {}, 200
+
+
+# TODO: move this to a more appropriate blueprint
+@bp.route('/contact', methods=('POST',))
+def contact():
+    d = request.json
+    if not d:
+        abort(400)
+
+    if 'message' not in d:
+        abort(400)
+
+    if 'email' not in d:
+        abort(400)
+
+    if 'client_info' not in d:
+        abort(400)
+
+    sender = current_app.config['CONTACT_SMTP_SENDER']
+    receivers = current_app.config['CONTACT_SMTP_RECEIVERS']
+    email_msg = "From: {}\n".format(sender) + \
+                "Subject: Mudslinger contact\n" + \
+                "To: {}\n".format(",".join(receivers)) + \
+                "\n" + str(d['message']) + \
+                "\n\n" + \
+                "\nemail = " + str(d['email']) + \
+                "\nclient_info = " + str(d['client_info'])
+
+    sent = False
+    try:
+        # assume localhost. Make it configurable later if needed
+        o = smtplib.SMTP('localhost')
+        o.sendmail(sender, receivers, email_msg)
+        sent = True
+    except Exception as ex:
+        current_app.logger.error("Error sending email: " + str(ex))
+
+    return {"sent": sent}, 200

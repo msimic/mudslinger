@@ -20,6 +20,8 @@ import { TriggerEditor } from "./triggerEditor";
 import { TriggerManager } from "./triggerManager";
 import { AboutWin } from "./aboutWin";
 import { ConnectWin } from "./connectWin";
+import { ContactWin } from "./contactWin";
+import { apiPostMxpSend, clientInfo } from "./apiUtil";
 
 
 declare let configClient: any;
@@ -40,12 +42,14 @@ export class Client {
     private triggerManager: TriggerManager;
     private aboutWin: AboutWin;
     private connectWin: ConnectWin;
+    private contactWin: ContactWin;
 
     private serverEcho = false;
 
     constructor() {
         this.aboutWin = new AboutWin();
         this.jsScript = new JsScript();
+        this.contactWin = new ContactWin();
 
         this.jsScriptWin = new JsScriptWin(this.jsScript);
         this.triggerManager = new TriggerManager(this.jsScript);
@@ -74,21 +78,29 @@ export class Client {
             this.outputManager.handleChangeDefaultBgColor(data[0], data[1]);
         });
 
+        this.menuBar.EvtContactClicked.handle(() => {
+            this.contactWin.show();
+        });
+
         // Socket events
         this.socket.EvtServerEcho.handle((val: boolean) => {
             // Server echo ON means we should have local echo OFF
             this.serverEcho = val;
         });
 
-        this.socket.EvtTelnetConnect.handle(() => {
+        this.socket.EvtTelnetConnect.handle((val: [string, number]) => {
             this.serverEcho = false;
             this.menuBar.handleTelnetConnect();
             this.outputWin.handleTelnetConnect();
+            clientInfo.telnetHost = val[0];
+            clientInfo.telnetPort = val[1];
         });
 
         this.socket.EvtTelnetDisconnect.handle(() => {
             this.menuBar.handleTelnetDisconnect();
             this.outputWin.handleTelnetDisconnect();
+            clientInfo.telnetHost = null;
+            clientInfo.telnetPort = null;
         });
 
         this.socket.EvtTelnetError.handle((data: string) => {
@@ -103,14 +115,20 @@ export class Client {
             this.outputWin.handleWsError();
         });
 
-        this.socket.EvtWsConnect.handle(() => {
+        this.socket.EvtWsConnect.handle((val: {sid: string}) => {
+            clientInfo.sid = val.sid;
             this.outputWin.handleWsConnect();
         });
 
         this.socket.EvtWsDisconnect.handle(() => {
+            clientInfo.sid = null;
             this.menuBar.handleTelnetDisconnect();
             this.outputWin.handleWsDisconnect();
-        })
+        });
+
+        this.socket.EvtSetClientIp.handle((ip: string) => {
+            clientInfo.clientIp = ip;
+        });
 
         // CommandInput events
         this.commandInput.EvtEmitCmd.handle((data: string) => {
@@ -136,13 +154,7 @@ export class Client {
 
             // noPrint is used only for MXP <version>, which we don't want to track
             if (data.noPrint !== true) {
-                this.apiPost('/usage/mxp_send',  {
-                    sid: this.socket.getSid(),
-                    from_addr: this.socket.getClientIp(),
-                    to_addr: this.socket.getTelnetHost(),
-                    to_port: this.socket.getTelnetPort(),
-                    time_stamp: new Date()
-                });
+                apiPostMxpSend();
             }
         });
 
@@ -192,43 +204,6 @@ export class Client {
         }
     }
 
-    private apiPost(path: string, data: any, cb?: (data: any) => void): void {
-        if (!configClient.apiHost) {
-            return;
-        }
-
-        let xhr = new XMLHttpRequest();
-
-        let jsonData = JSON.stringify(data);
-
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4) {
-                if (xhr.status !== 200) {
-                    console.error("apiPost status ", xhr.status);
-                } else {
-                    let val = JSON.parse(xhr.responseText);
-                    if (cb) {
-                        cb(val);
-                    }
-                }
-            }
-        };
-
-        xhr.addEventListener('error', (event) => {
-            console.error('apiPost error:', event);
-        });
-
-        xhr.open('POST',
-            location.protocol + "//" +
-            configClient.apiHost +
-            ":" +
-            (configClient.apiPort || location.port) +
-            path);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xhr.send(jsonData);
-    }
-
     public readonly UserConfig = UserConfig;
     public readonly AppInfo = AppInfo;
 }
-
