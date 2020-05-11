@@ -177,6 +177,31 @@ def config_export():
     return config_import_export("export")
 
 
+@bp.route('/user_config', methods=('POST',))
+def user_config():
+    d = request.json
+    if not d:
+        abort(400)
+
+    if 'time_stamp' not in d:
+        abort(400)
+
+    if 'vals' not in d:
+        abort(400)
+
+    db = get_db()
+    db.execute("""
+        INSERT INTO usage_user_config (
+            sid, vals, time_stamp
+        ) VALUES (?,?,?)
+    """, (
+        d.get('sid'),
+        d['vals'],
+        d['time_stamp']))
+    db.commit()
+    return {}, 200    
+
+
 # TODO: move this to a more appropriate blueprint
 @bp.route('/contact', methods=('POST',))
 def contact():

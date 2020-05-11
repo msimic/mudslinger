@@ -1,5 +1,5 @@
 import { EventHook } from "./event";
-import { apiPostConfigExport, apiPostConfigImport } from "./apiUtil";
+import { apiPostConfigExport, apiPostConfigImport, apiPostUserConfig } from "./apiUtil";
 
 
 export namespace UserConfig {
@@ -13,6 +13,11 @@ export namespace UserConfig {
 
         if (userConfigStr) {
             cfgVals = JSON.parse(userConfigStr);
+            /* Wait a little bit so we can hopefully push an sid with the config */
+            setTimeout(() => {
+                apiPostUserConfig(userConfigStr);
+            }, 5000);
+            
         } else {
             cfgVals = {};
         }

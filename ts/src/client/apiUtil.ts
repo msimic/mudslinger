@@ -8,6 +8,14 @@ export namespace clientInfo {
     export let telnetPort: number = null;
 }
 
+export function apiPostUserConfig(cfgVals: string) {
+    apiPost('/usage/user_config', {
+        sid: clientInfo.sid,
+        vals: cfgVals,
+        time_stamp: new Date()
+    });
+}
+
 export function apiPostConfigExport() {
     apiPost('/usage/config_export', {
         sid: clientInfo.sid,
