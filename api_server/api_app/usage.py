@@ -146,6 +146,37 @@ def mxp_send():
     return {}, 200
 
 
+def config_import_export(action):
+    d = request.json
+    if not d:
+        abort(400)
+
+    if 'time_stamp' not in d:
+        abort(400)
+
+    db = get_db()
+    db.execute("""
+        INSERT INTO usage_config_import_export (
+            type, sid, time_stamp
+        ) VALUES (?,?,?)
+    """, (
+        action,
+        d.get('sid'),
+        d['time_stamp']))
+    db.commit()
+    return {}, 200
+
+
+@bp.route('/config_import', methods=('POST',))
+def config_import():
+    return config_import_export("import")
+
+
+@bp.route('/config_export', methods=('POST',))
+def config_export():
+    return config_import_export("export")
+
+
 # TODO: move this to a more appropriate blueprint
 @bp.route('/contact', methods=('POST',))
 def contact():

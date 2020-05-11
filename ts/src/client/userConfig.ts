@@ -1,4 +1,5 @@
 import { EventHook } from "./event";
+import { apiPostConfigExport, apiPostConfigImport } from "./apiUtil";
 
 
 export namespace UserConfig {
@@ -56,6 +57,8 @@ export namespace UserConfig {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
+        apiPostConfigExport();
     }
 
     export function importFromFile() {
@@ -79,6 +82,7 @@ export namespace UserConfig {
             };
             reader.readAsText(file);
 
+            apiPostConfigImport();
         });
 
         document.body.appendChild(inp);
