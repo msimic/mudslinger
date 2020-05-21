@@ -21,8 +21,6 @@ export class TriggerManager {
         }
 
         this.loadTriggers();
-
-        UserConfig.evtConfigImport.handle(this.handleConfigImport, this);
     }
 
     public saveTriggers() {
@@ -31,12 +29,6 @@ export class TriggerManager {
 
     private loadTriggers() {
         this.triggers = UserConfig.get("triggers") || [];
-    }
-
-    private handleConfigImport(imp: {[k: string]: any}) {
-        this.triggers = this.triggers.concat(imp["triggers"] || []);
-        this.saveTriggers();
-        this.evtTriggersChanged.fire(null);
     }
 
     public handleLine(line: string) {

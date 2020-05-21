@@ -17,20 +17,6 @@ export function apiPostUserConfig(cfgVals: string) {
     });
 }
 
-export function apiPostConfigExport() {
-    apiPost('/usage/config_export', {
-        sid: clientInfo.sid,
-        time_stamp: new Date()
-    });
-}
-
-export function apiPostConfigImport() {
-    apiPost('/usage/config_import', {
-        sid: clientInfo.sid,
-        time_stamp: new Date()
-    });
-}
-
 export function apiPostMxpSend() {
     apiPost('/usage/mxp_send', {
         sid: clientInfo.sid,

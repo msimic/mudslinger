@@ -20,8 +20,6 @@ export class AliasManager {
         }
 
         this.loadAliases();
-
-        UserConfig.evtConfigImport.handle(this.handleConfigImport, this);
     }
 
     public saveAliases() {
@@ -30,12 +28,6 @@ export class AliasManager {
 
     private loadAliases() {
         this.aliases = UserConfig.get("aliases") || [];
-    }
-
-    private handleConfigImport(imp: {[k: string]: any}) {
-        this.aliases = this.aliases.concat(imp["aliases"] || []);
-        this.saveAliases();
-        this.evtAliasesChanged.fire(null);
     }
 
     // return the result of the alias if any (string with embedded lines)

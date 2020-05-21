@@ -30,8 +30,6 @@ export class OutputManager {
         this.target = this.outputWin;
 
         this.loadConfig();
-
-        UserConfig.evtConfigImport.handle(this.handleConfigImport, this);
     }
 
     private loadConfig() {
@@ -47,14 +45,6 @@ export class OutputManager {
         } else {
             this.setDefaultAnsiBg("black", "low");
         }
-    }
-
-    private handleConfigImport(imp: {[k: string]: any}) {
-        let defaultAnsiFg = imp["defaultAnsiFg"];
-        if (defaultAnsiFg) {
-            this.setDefaultAnsiFg(defaultAnsiFg[0], defaultAnsiFg[1]);
-        }
-        this.saveColorCfg();
     }
 
     public outputDone () {

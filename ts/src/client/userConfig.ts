@@ -1,10 +1,8 @@
 import { EventHook } from "./event";
-import { apiPostConfigExport, apiPostConfigImport, apiPostUserConfig } from "./apiUtil";
+import { apiPostUserConfig } from "./apiUtil";
 
 
 export namespace UserConfig {
-    export const evtConfigImport = new EventHook<{[k: string]: any}>();
-
     let cfgVals: {[k: string]: any};
     let setHandlers: {[k: string]: EventHook<any>} = {};
 
@@ -49,49 +47,5 @@ export namespace UserConfig {
 
     function saveConfig() {
         localStorage.setItem("userConfig", JSON.stringify(cfgVals));
-    }
-
-    export function exportToFile() {
-        let data = "data:text/json;charset=utf-8," + JSON.stringify(cfgVals);
-        let uri = encodeURI(data);
-        let link = document.createElement("a");
-        link.setAttribute("href", uri);
-        link.setAttribute("download", "userConfig.json");
-        link.style.visibility = "hidden";
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        apiPostConfigExport();
-    }
-
-    export function importFromFile() {
-        let inp: HTMLInputElement = document.createElement("input");
-        inp.type = "file";
-        inp.style.visibility = "hidden";
-
-        inp.addEventListener("change", (e: any) => {
-            let file = e.target.files[0];
-            if (!file) {
-                return;
-            }
-
-            let reader = new FileReader();
-            reader.onload = (e1: any) => {
-                let text = e1.target.result;
-                let vals = JSON.parse(text);
-                // cfgVals = vals;
-                evtConfigImport.fire(vals);
-                // saveConfig();
-            };
-            reader.readAsText(file);
-
-            apiPostConfigImport();
-        });
-
-        document.body.appendChild(inp);
-        inp.click();
-        document.body.removeChild(inp);
     }
 }

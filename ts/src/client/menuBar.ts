@@ -126,14 +126,6 @@ export class MenuBar {
             this.jsScriptWin.show();
         };
 
-        this.clickFuncs["Export"] = () => {
-            UserConfig.exportToFile();
-        };
-
-        this.clickFuncs["Import"] = () => {
-            UserConfig.importFromFile();
-        };
-
         this.clickFuncs["About"] = () => {
             this.aboutWin.show();
         };
