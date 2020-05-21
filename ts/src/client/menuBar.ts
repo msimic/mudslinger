@@ -77,20 +77,16 @@ export class MenuBar {
     private clickFuncs: {[k: string]: () => void} = {};
     private makeClickFuncs() {
         this.clickFuncs["Connect"] = () => {
-            if (configClient.hardcodedTarget === true) {
-                this.socket.openTelnet(null, null);
+            let hostParam = getUrlParameter("host");
+            let portParam = getUrlParameter("port");
+
+            if (hostParam !== undefined && portParam !== undefined) {
+                let host = hostParam.trim();
+                let port = Number(portParam.trim());
+
+                this.socket.openTelnet(host, port);
             } else {
-                let hostParam = getUrlParameter("host");
-                let portParam = getUrlParameter("port");
-
-                if (hostParam !== undefined && portParam !== undefined) {
-                    let host = hostParam.trim();
-                    let port = Number(portParam.trim());
-
-                    this.socket.openTelnet(host, port);
-                } else {
-                    this.connectWin.show();
-                }
+                this.connectWin.show();
             }
         };
 

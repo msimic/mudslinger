@@ -6,7 +6,3 @@ configClient.socketIoPort = null;
 
 configClient.apiHost = null;
 configClient.apiPort = null;
-
-/* This should be set to true if target host and port are hardcoded in configServer.js */
-configClient.hardcodedTarget = false;
-

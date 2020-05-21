@@ -186,21 +186,18 @@ export class Client {
         };
 
         this.socket.open();
-        if (configClient.hardcodedTarget === true) {
-            this.socket.openTelnet(null, null);
+    
+        let hostParam: string = getUrlParameter("host");
+        let portParam: string = getUrlParameter("port");
+
+        if (hostParam !== undefined && portParam !== undefined)
+        {
+            let host = hostParam.trim();
+            let port = Number(portParam);
+            this.socket.openTelnet(host, port);
+
         } else {
-            let hostParam: string = getUrlParameter("host");
-            let portParam: string = getUrlParameter("port");
-
-            if (hostParam !== undefined && portParam !== undefined)
-            {
-                let host = hostParam.trim();
-                let port = Number(portParam);
-                this.socket.openTelnet(host, port);
-
-            } else {
-                this.connectWin.show();
-            }
+            this.connectWin.show();
         }
     }
 

@@ -67,13 +67,8 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
 
         let conStartTime: Date;
 
-        if (serverConfig.targetHost != null) {
-            host = serverConfig.targetHost;
-            port = serverConfig.targetPort;
-        } else {
-            host = args[0];
-            port = args[1];
-        }
+        host = args[0];
+        port = args[1];
 
         openConns[telnetId] = {
             telnetId: telnetId,
