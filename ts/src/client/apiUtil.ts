@@ -1,5 +1,6 @@
 declare let configClient: any;
 
+export type apiCallback = (status: number, data: any) => void;
 
 export namespace clientInfo {
     export let sid: string = null;
@@ -40,7 +41,7 @@ export function apiPostMxpSend() {
     });
 }
 
-export function apiPostContact(message: string, email: string, cb?: (data: any) => void) {
+export function apiPostContact(message: string, email: string, cb?: apiCallback) {
     apiPost('/usage/contact', {
         "message": message,
         "email": email,
@@ -53,8 +54,7 @@ export function apiPostContact(message: string, email: string, cb?: (data: any) 
     }, cb);
 }
 
-
-export function apiPost(path: string, data: any, cb?: (data: any) => void): void {
+export function apiPost(path: string, data: any, cb?: apiCallback): void {
     if (!configClient.apiHost) {
         return;
     }
@@ -67,10 +67,13 @@ export function apiPost(path: string, data: any, cb?: (data: any) => void): void
         if (xhr.readyState === 4) {
             if (xhr.status !== 200) {
                 console.error("apiPost status ", xhr.status);
+                if (cb) {
+                    cb(xhr.status, null);
+                }
             } else {
                 let val = JSON.parse(xhr.responseText);
                 if (cb) {
-                    cb(val);
+                    cb(xhr.status, val);
                 }
             }
         }
@@ -78,6 +81,9 @@ export function apiPost(path: string, data: any, cb?: (data: any) => void): void
 
     xhr.addEventListener('error', (event) => {
         console.error('apiPost error:', event);
+        if (cb) {
+            cb(xhr.status, null);
+        }
     });
 
     xhr.open('POST',

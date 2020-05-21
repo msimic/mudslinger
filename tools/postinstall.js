@@ -21,6 +21,7 @@ fs.copySync("node_modules/codemirror/theme", "static/public/codemirror/theme");
 fs.copySync("node_modules/codemirror/LICENSE", 'static/public/codemirror/LICENSE');
 
 fs.copySync("node_modules/qunit/qunit", 'static/test/qunit');
+fs.copySync("node_modules/sinon/pkg/sinon.js", 'static/test/sinon.js');
 
 
 // Don't want to overwrite existing config file if any

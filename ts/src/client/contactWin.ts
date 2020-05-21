@@ -67,14 +67,14 @@ export class ContactWin {
         this.infoDiv.textContent = "Sending message...";
         this.infoDiv.style.color = "";
 
-        apiPostContact(msg, email, (data: any) => {
-            if (data.sent) {
+        apiPostContact(msg, email, (status: number, data: any) => {
+            if (status !== 200 || !data || !data.sent) {
+                this.infoDiv.textContent = "Message could not be sent...Please try again later.";
+                this.infoDiv.style.color = "red";
+            } else {
                 this.infoDiv.textContent = "Message was sent! Thanks for the feedback.";
                 this.infoDiv.style.color = "";
                 this.textArea.value = "";
-            } else {
-                this.infoDiv.textContent = "Message could not be sent...Please try again later.";
-                this.infoDiv.style.color = "red";
             }
             this.emailInput.disabled = false;
             this.textArea.disabled = false;
@@ -85,6 +85,10 @@ export class ContactWin {
     public show() {
         (<any>this.$win).jqxWindow("open");
         (<any>this.$win).jqxWindow('bringToFront');
+    }
+
+    public destroy() {
+        (<any>this.$win).jqxWindow("destroy");
     }
 
     private hide() {
