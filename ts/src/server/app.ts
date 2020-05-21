@@ -163,27 +163,6 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
     ioEvt.srvSetClientIp.fire(remoteAddr);
 });
 
-if (serverConfig.serveStatic) {
-    let express_app = express();
-    server.on("request", express_app);
-
-    express_app.use(express.static("static/public"));
-
-    if (serverConfig.serveStaticTest) {
-        express_app.use('/test', express.static("static/test", {
-            index: "test.html"
-        }));
-    }
-
-    express_app.use((err: any, req: any, res: any, next: any) => {
-        tlog("Express app error: " +
-                    "err: " + err + " | " +
-                    "req: " + req + " | " +
-                    "res: " + res + " | ");
-        next(err);
-    });
-}
-
 io.attach(server);
 
 server.on("error", (err: Error) => {

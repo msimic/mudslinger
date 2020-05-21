@@ -1,11 +1,6 @@
 var config = {};
 
 
-/* If false, only serve as telnet proxy via socket.io and don't serve static files */
-config.serveStatic = true;
-/* whether to serve client test files */
-config.serveStaticTest = false;
-
 config.serverHost = "0.0.0.0";
 config.serverPort = 80;
 
