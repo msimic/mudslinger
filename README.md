@@ -1,9 +1,10 @@
-Mudslinger is a web based MUD client written in Typescript. 
-It consists of a Node.js / Express web server and a HTML/CSS/Javascript frontend.
+Mudslinger is a web based MUD client.
 
-The Node.js server makes telnet connections to the target host/port and acts as a telnet proxy for the frontend application.
+Core technologies used: Node.js, Socket.IO, Flask
 
-It can be configured to connect only to a specific host/port or allow connections to any host/port.
+Languages used: Typescript, HTML, CSS, Python
+
+The Node.js Socket.IO server makes telnet connections to the target host/port and acts as a telnet proxy to the browser.
 
 Live version at: [https://mudslinger.rooflez.com](https://mudslinger.rooflez.com)
 
@@ -17,14 +18,6 @@ Host and port can also be passed as URL parameters, e.g. [https://mudslinger.roo
 * Triggers (basic and regex)
 * Aliases (basic and regex)
 * [Scripting support (Javascript)](scripting.md)
-
-
-# Getting started #
-1. Run ``npm ci`` in the root directory.
-  * Ensure ``tools/postinstall.js`` ran after the install finished (it should happen automatically). If not, manually run it with ``node tools/postinstall.js``.
-2. ``npm run build`` to build the server and client.
-3. Edit `static/public/configClient.js` and `configServer.js` as needed.
-4. ``npm start`` to start the server.
 
 # License
 [MIT](LICENSE)
