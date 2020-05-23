@@ -40,19 +40,22 @@ export function apiPostContact(message: string, email: string, cb?: apiCallback)
     }, cb);
 }
 
+
+export function apiGet(path: string, cb?: apiCallback): void {
+    apiRequest("GET", path, null, cb);
+}
+
 export function apiPost(path: string, data: any, cb?: apiCallback): void {
-    if (!configClient.apiHost) {
-        return;
-    }
+    apiRequest("POST", path, data, cb);
+}
 
+function apiRequest(method: "GET" | "POST", path: string, data?: any, cb?: apiCallback): void {
     let xhr = new XMLHttpRequest();
-
-    let jsonData = JSON.stringify(data);
 
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
             if (xhr.status !== 200) {
-                console.error("apiPost status ", xhr.status);
+                console.error("apiRequest status ", xhr.status);
                 if (cb) {
                     cb(xhr.status, null);
                 }
@@ -66,18 +69,24 @@ export function apiPost(path: string, data: any, cb?: apiCallback): void {
     };
 
     xhr.addEventListener('error', (event) => {
-        console.error('apiPost error:', event);
+        console.error('apiRequest error:', event);
         if (cb) {
             cb(xhr.status, null);
         }
     });
 
-    xhr.open('POST',
+    xhr.open(method,
         location.protocol + "//" +
         configClient.apiHost +
         ":" +
         (configClient.apiPort || location.port) +
         path);
-    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    xhr.send(jsonData);
+
+    if (data) {
+        let jsonData = JSON.stringify(data);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(jsonData);
+    } else {
+        xhr.send();
+    }
 }
