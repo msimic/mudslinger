@@ -27,6 +27,16 @@ export function apiPostMxpSend() {
     });
 }
 
+export function apiPostClientConn() {
+    apiPost('/usage/client_conn', {
+        sid: clientInfo.sid,
+        from_addr: clientInfo.clientIp,
+        to_addr: clientInfo.telnetHost,
+        to_port: clientInfo.telnetPort,
+        time_stamp: new Date()
+    });
+}
+
 export function apiPostContact(message: string, email: string, cb?: apiCallback) {
     apiPost('/usage/contact', {
         "message": message,

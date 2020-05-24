@@ -202,6 +202,36 @@ def user_config():
     return {}, 200    
 
 
+@bp.route('/client_conn', methods=('POST',))
+def client_conn():
+    d = request.json
+    if not d:
+        abort(400)
+
+    if 'time_stamp' not in d:
+        abort(400)
+
+    db = get_db()
+    db.execute("""
+        INSERT INTO usage_client_conn (
+            platform, browser, version, language, string,
+            sid, from_addr, to_addr, to_port, time_stamp
+        ) VALUES (?,?,?,?,?,?,?,?,?,?)
+    """, (
+        request.user_agent.platform,
+        request.user_agent.browser,
+        request.user_agent.version,
+        request.user_agent.language,
+        request.user_agent.string,
+        d.get('sid'),
+        d.get('from_addr'),
+        d.get('to_addr'),
+        d.get('to_port'),
+        d['time_stamp']))
+    db.commit()
+    return {}, 200
+
+
 # TODO: move this to a more appropriate blueprint
 @bp.route('/contact', methods=('POST',))
 def contact():

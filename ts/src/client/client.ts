@@ -21,7 +21,7 @@ import { TriggerManager } from "./triggerManager";
 import { AboutWin } from "./aboutWin";
 import { ConnectWin } from "./connectWin";
 import { ContactWin } from "./contactWin";
-import { apiPostMxpSend, clientInfo } from "./apiUtil";
+import * as apiUtil from "./apiUtil";
 
 
 declare let configClient: any;
@@ -92,15 +92,17 @@ export class Client {
             this.serverEcho = false;
             this.menuBar.handleTelnetConnect();
             this.outputWin.handleTelnetConnect();
-            clientInfo.telnetHost = val[0];
-            clientInfo.telnetPort = val[1];
+            apiUtil.clientInfo.telnetHost = val[0];
+            apiUtil.clientInfo.telnetPort = val[1];
+
+            apiUtil.apiPostClientConn();
         });
 
         this.socket.EvtTelnetDisconnect.handle(() => {
             this.menuBar.handleTelnetDisconnect();
             this.outputWin.handleTelnetDisconnect();
-            clientInfo.telnetHost = null;
-            clientInfo.telnetPort = null;
+            apiUtil.clientInfo.telnetHost = null;
+            apiUtil.clientInfo.telnetPort = null;
         });
 
         this.socket.EvtTelnetError.handle((data: string) => {
@@ -116,18 +118,18 @@ export class Client {
         });
 
         this.socket.EvtWsConnect.handle((val: {sid: string}) => {
-            clientInfo.sid = val.sid;
+            apiUtil.clientInfo.sid = val.sid;
             this.outputWin.handleWsConnect();
         });
 
         this.socket.EvtWsDisconnect.handle(() => {
-            clientInfo.sid = null;
+            apiUtil.clientInfo.sid = null;
             this.menuBar.handleTelnetDisconnect();
             this.outputWin.handleWsDisconnect();
         });
 
         this.socket.EvtSetClientIp.handle((ip: string) => {
-            clientInfo.clientIp = ip;
+            apiUtil.clientInfo.clientIp = ip;
         });
 
         // CommandInput events
@@ -154,7 +156,7 @@ export class Client {
 
             // noPrint is used only for MXP <version>, which we don't want to track
             if (data.noPrint !== true) {
-                apiPostMxpSend();
+                apiUtil.apiPostMxpSend();
             }
         });
 
