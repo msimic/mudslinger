@@ -1,5 +1,3 @@
-/// <reference path="../../definitions/polyfill.d.ts" />
-
 import { getUrlParameter } from "./util";
 
 import { UserConfig } from "./userConfig";
