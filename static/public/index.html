@@ -15,7 +15,6 @@
   <script src="jqwidgets/jqxsplitter.js"></script>
   <script src="jqwidgets/jqxprogressbar.js"></script>
   <script src="jqwidgets/jqxribbon.js"></script>
-  <script src="socket.io.min.js"></script>
 
   <link rel="stylesheet" href="codemirror/lib/codemirror.css">
   <link rel="stylesheet" href="codemirror/theme/neat.css">
@@ -27,13 +26,11 @@
 
   <script src="configClient.js"></script>
   <script src="mudslinger.js"></script>
-
   <script>
-    var myClient;
     $(document).ready(function() {
-      myClient = new Mudslinger.Client();
-      document.title = myClient.AppInfo.AppTitle;
-    }); 
+      Mudslinger.init();
+      document.title = Mudslinger.client.AppInfo.AppTitle;
+    });
   </script>
 </head>
 <body>

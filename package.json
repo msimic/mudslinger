@@ -5,8 +5,8 @@
     "postinstall": "node tools/postinstall.js",
     "clean": "rimraf ts/build && rimraf dist && rimraf static/mudslinger.js",
     "build": "npm run build-client && npm run build-server",
-    "build-client": "tsc -p ts/tsconfig.client.json && rollup -c ts/rollup.config.js",
-    "build-client-test": "tsc -p ts/tsconfig.client.test.json && rollup -c ts/rollup.test.config.js",
+    "build-client": "tsc -p ts/tsconfig.client.json && webpack",
+    "build-client-test": "tsc -p ts/tsconfig.client.test.json && webpack --config webpack.config.test.js",
     "build-server": "tsc -p ts/tsconfig.server.json",
     "lint": "tslint -c ts/tslint.json ts/src/client/*.ts && tslint -c ts/tslint.json ts/src/server/*.ts"
   },
@@ -25,14 +25,15 @@
     "jqwidgets-framework": "^4.6.0",
     "qunit": "^2.6.0",
     "rimraf": "^2.5.4",
-    "rollup": "^1.1.2",
     "sinon": "^9.0.2",
     "socket.io": "^1.7.2",
     "socket.io-client": "^1.7.2",
     "tslint": "^4.4.2",
-    "typescript": "^3.2.4"
+    "typescript": "^3.2.4",
+    "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "express": "^4.14.0"
+    "express": "^4.14.0",
+    "webpack": "^4.43.0"
   }
 }

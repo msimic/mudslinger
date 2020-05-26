@@ -1,5 +1,3 @@
-/// <reference path="../../definitions/polyfill.d.ts" />
-
 import * as testUtf8 from "./testUtf8";
 import * as testTelnetClient from "./testTelnetClient";
 import * as testApiUtil from "./testApiUtil";

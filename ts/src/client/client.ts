@@ -22,9 +22,6 @@ import { ContactWin } from "./contactWin";
 import * as apiUtil from "./apiUtil";
 
 
-declare let configClient: any;
-
-
 export class Client {
     private aliasEditor: AliasEditor;
     private aliasManager: AliasManager;
@@ -204,3 +201,12 @@ export class Client {
     public readonly UserConfig = UserConfig;
     public readonly AppInfo = AppInfo;
 }
+
+export namespace Mudslinger {
+    export let client: Client;
+    export function init() {
+        client = new Client();
+    }
+}
+
+(<any>window).Mudslinger = Mudslinger;
