@@ -7,8 +7,7 @@
     "build": "npm run build-client && npm run build-server",
     "build-client": "tsc -p ts/tsconfig.client.json && webpack",
     "build-client-test": "tsc -p ts/tsconfig.client.test.json && webpack --config webpack.config.test.js",
-    "build-server": "tsc -p ts/tsconfig.server.json",
-    "lint": "tslint -c ts/tslint.json ts/src/client/*.ts && tslint -c ts/tslint.json ts/src/server/*.ts"
+    "build-server": "tsc -p ts/tsconfig.server.json"
   },
   "devDependencies": {
     "@types/express": "^4.0.35",
@@ -28,7 +27,6 @@
     "sinon": "^9.0.2",
     "socket.io": "^1.7.2",
     "socket.io-client": "^1.7.2",
-    "tslint": "^4.4.2",
     "typescript": "^3.2.4",
     "webpack-cli": "^3.3.11"
   },
