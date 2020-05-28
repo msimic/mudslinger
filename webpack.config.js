@@ -6,5 +6,5 @@ module.exports = {
     path: path.resolve(__dirname + "/static/public/"),
     filename: 'mudslinger.js'
   },
-  mode: "development"
+  mode: 'production'
 };

@@ -6,6 +6,7 @@
     "clean": "rimraf ts/build && rimraf dist && rimraf static/mudslinger.js",
     "build": "npm run build-client && npm run build-server",
     "build-client": "tsc -p ts/tsconfig.client.json && webpack",
+    "build-client-dev": "tsc -p ts/tsconfig.client.json && webpack --mode=development",
     "build-client-test": "tsc -p ts/tsconfig.client.test.json && webpack --config webpack.config.test.js",
     "build-server": "tsc -p ts/tsconfig.server.json"
   },
