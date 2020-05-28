@@ -1,4 +1,3 @@
-import * as express from "express";
 import * as http from "http";
 import * as socketio from "socket.io";
 import * as net from "net";
