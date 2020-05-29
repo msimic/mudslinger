@@ -51,7 +51,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
 
     client.on("disconnect", () => {
         if (telnet) {
-            telnet.end();
+            telnet.destroy();
             telnet = null;
         }
     });
@@ -145,7 +145,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
 
     ioEvt.clReqTelnetClose.handle(() => {
         if (telnet == null) { return; }
-        telnet.end();
+        telnet.destroy();
         telnet = null;
     });
 
