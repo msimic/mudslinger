@@ -6,7 +6,7 @@ export namespace UserConfig {
     let cfgVals: {[k: string]: any};
     let setHandlers: {[k: string]: EventHook<any>} = {};
 
-    {
+    export function init() {
         let userConfigStr = localStorage.getItem("userConfig");
 
         if (userConfigStr) {

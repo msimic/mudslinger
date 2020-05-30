@@ -205,6 +205,7 @@ export class Client {
 export namespace Mudslinger {
     export let client: Client;
     export function init() {
+        UserConfig.init();
         client = new Client();
     }
 }
