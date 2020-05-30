@@ -1,8 +1,8 @@
 import * as http from "http";
 import * as socketio from "socket.io";
 import * as net from "net";
-import * as fs from "fs";
 import * as readline from "readline";
+import axios from "axios";
 
 import { IoEvent } from "../shared/ioevent";
 
@@ -89,7 +89,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
             let elapsed: number = <any>connEndTime - <any>conStartTime;
             tlog(telnetId, "::", remoteAddr, "->", host, port, "::closed after", (elapsed/1000), "seconds");
 
-            apiPost('/usage/disconnect', {
+            axinst.post('/usage/disconnect', {
                 'uuid': conn.uuid,
                 'sid': client.id,
                 'from_addr': remoteAddr,
@@ -97,10 +97,8 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
                 'to_port': port,
                 'time_stamp': connEndTime,
                 'elapsed_ms': elapsed
-            }, (statusCode: number, data: any) => {
-                if (statusCode != 200) {
-                    console.error("/usage/disconnect status ", statusCode);
-                }
+            }).catch((o) => {
+                console.error("/usage/disconnect error:", o);
             });
         });
         telnet.on("drain", () => {
@@ -118,21 +116,19 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
                 ioEvt.srvTelnetOpened.fire([host, port]);
                 conStartTime = new Date();
 
-                apiPost('/usage/connect', {
+                axinst.post('/usage/connect', {
                     'sid': client.id,
                     'from_addr': remoteAddr,
                     'to_addr': host,
                     'to_port': port,
                     'time_stamp': conStartTime
-                }, (statusCode: number, data: any) => {
-                    if (statusCode != 200) {
-                        console.error("/usage/connect status ", statusCode);
-                    } else {
-                        let conn = openConns[telnetId];
-                        if (conn) {
-                            conn.uuid = data.uuid;
-                        }
+                }).then((resp) => {
+                    let conn = openConns[telnetId];
+                    if (conn) {
+                        conn.uuid = resp.data.uuid;
                     }
+                }).catch((o) => {
+                    console.error("/usage/connect error:", o);
                 });
             });
         }
@@ -171,138 +167,88 @@ function tlog(...args: any[]) {
     console.log("[[", new Date().toLocaleString(), "]]", ...args);
 }
 
-function apiPost(path: string, data: any, cb?: (statusCode: number, data: any) => void): void {
-    if (!serverConfig.apiHost) {
-        return;
+let axinst = axios.create({
+    baseURL: serverConfig.apiBaseUrl,
+    auth: {
+        username: serverConfig.apiKey,
+        password: ':none'
     }
+});
 
-    if (!serverConfig.apiPort || !serverConfig.apiKey) {
-        console.error("Missing api config values");
-        return;
+let adminIdNext: number = 0;
+
+type adminFunc = (sock: net.Socket, args: string[]) => void;
+
+
+let adminFuncs: {[k: string]: adminFunc} =  {};
+adminFuncs["help"] = (sock: net.Socket, args: string[]) => {
+    sock.write("Available commands:\n\n");
+    for (let cmd in adminFuncs) {
+        sock.write(cmd + "\n");
     }
+    sock.write("\n");
+};
 
-    let post_data = JSON.stringify(data);
+adminFuncs["ls"] = (sock: net.Socket, args: string[]) => {
+    sock.write("Open connections:\n\n");
+    for (let tnId in openConns) {
+        let o = openConns[tnId];
+        sock.write( o.telnetId.toString() + 
+                    ": " + o.userIp  +
+                    " => " + o.host + "," + o.port.toString() +
+                    "\n");
+    }
+};
 
-    let post_options = {
-        host: serverConfig.apiHost,
-        port: serverConfig.apiPort,
-        path: path,
-        method: 'POST',
-        auth: serverConfig.apiKey + ':none',
-        headers: {
-            "Content-Type": "application/json",
-            "Content-Length": Buffer.byteLength(post_data)
-        }
-    };
+let adminServer = net.createServer((socket: net.Socket) => {
+    let adminId: number = adminIdNext++;
 
-    let req = http.request(post_options, (res: http.IncomingMessage) => {
-        // https://davidwalsh.name/nodejs-http-request
-        let body = '';
-        res.on("data", (chunk) => { body += chunk; });
-        res.on("end", () => {
-            if (res.statusCode !== 200) {
-                if (cb) {
-                    cb(res.statusCode, body);
-                }
+    tlog("{{", adminId, "}}", "{{admin connection opened}}");
+
+    let rl = readline.createInterface({
+        input: socket
+    });
+
+    rl.on("line", (line: string) => {
+        let words = line.split(" ");
+
+        if (words.length > 0) {
+            let funcName = words[0];
+            if (funcName === "exit") {
+                socket.end();
                 return;
             }
 
-            let res_data: any;
-            try {
-                res_data = JSON.parse(body);
-            } catch (err) {
-                console.error('Unable to parse response as JSON. body:', body, ", err:", err);
-                return;
-            }
+            let afunc = adminFuncs[words[0]];
 
-            if (cb) {
-                cb(res.statusCode, res_data);
-            }
-        });
-    });
-
-    req.on("error", (err: Error) => {
-        console.error("Error in apiPost: ", err);
-    });
-    req.write(post_data);
-    req.end();
-}
-
-if (process.platform !== "win32") {
-    let adminIdNext: number = 0;
-
-    type adminFunc = (sock: net.Socket, args: string[]) => void;
-
-
-    let adminFuncs: {[k: string]: adminFunc} =  {};
-    adminFuncs["help"] = (sock: net.Socket, args: string[]) => {
-        sock.write("Available commands:\n\n");
-        for (let cmd in adminFuncs) {
-            sock.write(cmd + "\n");
-        }
-        sock.write("\n");
-    };
-
-    adminFuncs["ls"] = (sock: net.Socket, args: string[]) => {
-        sock.write("Open connections:\n\n");
-        for (let tnId in openConns) {
-            let o = openConns[tnId];
-            sock.write( o.telnetId.toString() + 
-                        ": " + o.userIp  +
-                        " => " + o.host + "," + o.port.toString() +
-                        "\n");
-        }
-    };
-
-    let adminServer = net.createServer((socket: net.Socket) => {
-        let adminId: number = adminIdNext++;
-
-        tlog("{{", adminId, "}}", "{{admin connection opened}}");
-
-        let rl = readline.createInterface({
-            input: socket
-        });
-
-        rl.on("line", (line: string) => {
-            let words = line.split(" ");
-
-            if (words.length > 0) {
-                let funcName = words[0];
-                if (funcName === "exit") {
-                    socket.end();
-                    return;
+            if (!afunc) {
+                socket.write("No such command. Try 'help'.\n");
+            } else {
+                try {
+                    afunc(socket, words.slice(1));
                 }
-
-                let afunc = adminFuncs[words[0]];
-
-                if (!afunc) {
-                    socket.write("No such command. Try 'help'.\n");
-                } else {
-                    try {
-                        afunc(socket, words.slice(1));
-                    }
-                    catch (err) {
-                        tlog("{{", adminId, "}}", "{{admin error '" + line + "':", err, "}}");
-                        socket.write("COMMAND ERROR\n");
-                    }
+                catch (err) {
+                    tlog("{{", adminId, "}}", "{{admin error '" + line + "':", err, "}}");
+                    socket.write("COMMAND ERROR\n");
                 }
             }
-
-            socket.write("admin> ");
-        });
-
-        socket.on("close", () => {
-            tlog("{{", adminId, "}}", "{{admin closed}}");
-        });
-
-        socket.on("error", (err: Error) => {
-            tlog("{{", adminId, "}}", "{{admin error: " + err);
-        });
+        }
 
         socket.write("admin> ");
     });
 
-    adminServer.listen(serverConfig.adminPort, serverConfig.adminHost, () => {
-        tlog("Admin CLI server is running on " + serverConfig.adminHost + ":" + serverConfig.adminPort);
+    socket.on("close", () => {
+        tlog("{{", adminId, "}}", "{{admin closed}}");
     });
-}
+
+    socket.on("error", (err: Error) => {
+        tlog("{{", adminId, "}}", "{{admin error: " + err);
+    });
+
+    socket.write("admin> ");
+});
+
+adminServer.listen(serverConfig.adminPort, serverConfig.adminHost, () => {
+    tlog("Admin CLI server is running on " + serverConfig.adminHost + ":" + serverConfig.adminPort);
+});
+
