@@ -4,6 +4,8 @@ import click
 from flask import current_app, g
 from flask.cli import with_appcontext
 
+from werkzeug.security import check_password_hash, generate_password_hash
+
 
 def get_db():
     if 'db' not in g:
@@ -51,6 +53,7 @@ def migrate_db():
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(migrate_db_command)
+    app.cli.add_command(register_admin_user_command)
 
 
 @click.command('migrate-db')
@@ -58,3 +61,32 @@ def init_app(app):
 def migrate_db_command():
     old, new = migrate_db()
     click.echo('Migrated DB from {} to {}'.format(old, new))
+
+
+@click.command('register-admin-user')
+@click.argument('username')
+@click.password_option()
+@with_appcontext
+def register_admin_user_command(username, password):
+    db = get_db()
+    error = None
+
+    if not username:
+        error = 'Username is required.'
+    elif not password:
+        error = 'Password is required.'
+    elif db.execute(
+        'SELECT id FROM admin_user WHERE username = ?', (username,)
+    ).fetchone() is not None:
+        error = 'User {} is already registered.'.format(username)
+
+    if error is None:
+        db.execute(
+            'INSERT INTO admin_user (username, password) VALUES (?, ?)',
+            (username, generate_password_hash(password))
+        )
+        db.commit()
+        click.echo('User \'{}\' has been registered.'.format(username))
+        return
+    else:
+        click.echo(error)

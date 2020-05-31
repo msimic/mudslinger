@@ -1,0 +1,67 @@
+{% extends 'admin/base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Proxy Connection Monitor{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <table border='1'>
+      <tr><th>Connections</th></tr>
+
+      {% if conns is not none and conns | length > 0 %}
+      <table border='1'>
+        <tr>
+            {% for k in ('proxyUrl', 'telnetId', 'uuid', 'userIp', 'host', 'port', 'elapsed') %}
+            <th>{{k}}</th>
+            {% endfor %}
+        </tr>
+        {% for row in conns %}
+        <tr>
+            {% for k in ('proxyUrl', 'telnetId', 'uuid', 'userIp', 'host', 'port', 'elapsed') %}
+            <td>{{row[k]}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+  </table>
+  </br>
+  </br>
+  <table border='1'>
+    <tr><th>Telnet Proxy Web Admin URLs</th></tr>
+
+    {% if proxies is not none and proxies | length > 0 %}
+    <table border='1'>
+      <tr>
+          {% for col in proxies[0].keys() %}
+          <th>{{col}}</th>
+          {% endfor %}
+      </tr>
+      {% for row in proxies %}
+      <tr>
+          {% for val in row %}
+          <td>{{val}}</td>
+          {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  </table>
+  </br>
+  </br>
+  <form method="post" action="{{url_for('admin.add_del_telnet_proxy_admin')}}">
+    <table>
+      <tr><td colspan=2>Telnet Proxy Web Admin URL</td></tr>
+      <tr>
+        <td colspan=2><input name="proxy-url"></td>
+      </tr>
+      <tr>
+        <td><button type="submit" name="oper" value="add">Add</button></td>
+        <td><button type="submit" name="oper" value="del">Delete</button></td>
+      </tr>
+    </table>
+  </form>
+  <script>
+
+  </script>
+{% endblock %}

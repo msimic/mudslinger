@@ -3,13 +3,12 @@ import * as socketio from "socket.io";
 import * as net from "net";
 import * as readline from "readline";
 import axios from "axios";
+import * as express from "express";
 
 import { IoEvent } from "../shared/ioevent";
 
 let serverConfig = require("../../configServer.js");
 console.log(serverConfig);
-
-let cwd = process.cwd();
 
 let telnetIdNext: number = 0;
 
@@ -19,6 +18,7 @@ interface connInfo {
     userIp: string;
     host: string;
     port: number;
+    startTime: Date;
 };
 
 let openConns: {[k: number]: connInfo} = {};
@@ -75,6 +75,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
             userIp: remoteAddr,
             host: host,
             port: port,
+            startTime: null
         };
 
         telnet.on("data", (data: Buffer) => {
@@ -115,6 +116,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
             telnet.connect(port, host, () => {
                 ioEvt.srvTelnetOpened.fire([host, port]);
                 conStartTime = new Date();
+                openConns[telnetId].startTime = conStartTime;
 
                 axinst.post('/usage/connect', {
                     'sid': client.id,
@@ -175,10 +177,10 @@ let axinst = axios.create({
     }
 });
 
+// Admin CLI
 let adminIdNext: number = 0;
 
 type adminFunc = (sock: net.Socket, args: string[]) => void;
-
 
 let adminFuncs: {[k: string]: adminFunc} =  {};
 adminFuncs["help"] = (sock: net.Socket, args: string[]) => {
@@ -248,7 +250,33 @@ let adminServer = net.createServer((socket: net.Socket) => {
     socket.write("admin> ");
 });
 
+if (serverConfig.adminHost !== "localhost") {
+    throw "Auth for Admin CLI is not implemented. Must use localhost.";
+}
+
 adminServer.listen(serverConfig.adminPort, serverConfig.adminHost, () => {
     tlog("Admin CLI server is running on " + serverConfig.adminHost + ":" + serverConfig.adminPort);
 });
 
+// Admin Web API
+let adminApp = express();
+
+adminApp.get('/conns', (req, res) => {
+    let conns = [];
+    for (let id in openConns) {
+        let c = openConns[id];
+        conns.push({
+            ...c,
+            startUTC: c.startTime.getTime()
+        })
+    }
+    res.send(conns);
+});
+
+if (serverConfig.adminWebHost !== "localhost") {
+    throw "Auth for Admin Web API is not implemented. Must use localhost.";
+}
+
+adminApp.listen(serverConfig.adminWebPort, serverConfig.adminWebHost, () => {
+    tlog("Admin API server is running on " + serverConfig.adminWebHost + ":" + serverConfig.adminWebPort);
+});
