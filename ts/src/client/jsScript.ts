@@ -17,7 +17,7 @@ function makeScript(text: string, argsSig: string) {
     /* end Scripting API section */
 
     try {
-        eval("_scriptFunc_ = function(" + argsSig + ") {\"use strict\";" + text + "}");
+        eval("_scriptFunc_ = function(" + argsSig + ") {\"use strict\";\n" + text + "\n}");
     }
     catch (err) {
         EvtScriptEmitEvalError.fire(err);
@@ -28,7 +28,9 @@ function makeScript(text: string, argsSig: string) {
 }
 
 export class JsScript {
-    private scriptThis = {}; /* the 'this' used for all scripts */
+    private scriptThis: any = {}; /* the 'this' used for all scripts */
+
+    getScriptThis() { return this.scriptThis; }
 
     public makeScript(text: string, argsSig: string) {
         return makeScript.call(this.scriptThis, text, argsSig);
