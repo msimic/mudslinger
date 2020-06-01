@@ -32,9 +32,9 @@ export abstract class TrigAlEditBase {
     protected abstract saveItem(ind: number, pattern: string, value: string, checked: boolean, is_script: boolean): void;
     protected abstract deleteItem(ind: number): void;
 
-    protected abstract get defaultPattern(): string;
-    protected abstract get defaultValue(): string;
-    protected abstract get defaultScript(): string;
+    protected abstract defaultPattern: string;
+    protected abstract defaultValue: string;
+    protected abstract defaultScript: string;
 
     constructor(title: string) {
         let myDiv = document.createElement("div");

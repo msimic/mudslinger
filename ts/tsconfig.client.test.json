@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "target": "es5",
         "outDir": "./build/build_client_test",
         "noImplicitAny": true,
         "noImplicitReturns": true

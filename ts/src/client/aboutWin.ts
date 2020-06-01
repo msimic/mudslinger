@@ -18,7 +18,9 @@ export class AboutWin {
             <br>
             <a href="${AppInfo.RepoUrl}" target="_blank">${AppInfo.RepoUrl}</a>
             <br>
-            Version: ${AppInfo.Version.Major}.${AppInfo.Version.Minor}.${AppInfo.Version.Revision}
+            Version: ${AppInfo.Version}
+            <br>
+            Build: ${AppInfo.Build}
         </div>
         `;
 

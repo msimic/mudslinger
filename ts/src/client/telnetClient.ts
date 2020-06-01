@@ -44,7 +44,7 @@ export class TelnetClient extends Telnet {
             'IPADDRESS': () => { return this.clientIp; },
             'CLIENT_NAME': () => { return TTYPES[0]; },
             'CLIENT_VERSION': () => {
-                return `${AppInfo.Version.Major}.${AppInfo.Version.Minor}.${AppInfo.Version.Revision}`;
+                return `${AppInfo.Version}`;
             }
         };
 

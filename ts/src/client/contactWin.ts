@@ -67,22 +67,24 @@ export class ContactWin {
         this.infoDiv.textContent = "Sending message...";
         this.infoDiv.style.color = "";
 
-        apiPostContact(msg, email).then((resp) => {
-            if (resp.data.sent) {
-                this.infoDiv.textContent = "Message was sent! Thanks for the feedback.";
-                this.infoDiv.style.color = "";
-                this.textArea.value = "";
-            } else {
-                throw "";
+        (async() => {
+            try {
+                let resp = await apiPostContact(msg, email);
+                if (resp.data.sent) {
+                    this.infoDiv.textContent = "Message was sent! Thanks for the feedback.";
+                    this.infoDiv.style.color = "";
+                    this.textArea.value = "";
+                } else {
+                    throw "";
+                }
+            } catch(err) {
+                this.infoDiv.textContent = "Message could not be sent...Please try again later.";
+                this.infoDiv.style.color = "red";
             }
-        }).catch(() => {
-            this.infoDiv.textContent = "Message could not be sent...Please try again later.";
-            this.infoDiv.style.color = "red";
-        }).then(() => {
             this.emailInput.disabled = false;
             this.textArea.disabled = false;
             this.sendButton.disabled = false;
-        });
+        })();
     }
 
     public show() {
