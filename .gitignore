@@ -6,8 +6,6 @@ configServer.js
 # generated source files
 /ts/src/client/appInfo.ts
 
-/api_server/instance/
-
 /static/public/codemirror/
 /static/public/jqwidgets/
 /static/public/jquery.min.js

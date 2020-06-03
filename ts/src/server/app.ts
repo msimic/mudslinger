@@ -87,8 +87,8 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
             ioEvt.srvTelnetClosed.fire(had_error);
             telnet = null;
             let connEndTime = new Date();
-            let elapsed: number = <any>connEndTime - <any>conStartTime;
-            tlog(telnetId, "::", remoteAddr, "->", host, port, "::closed after", (elapsed/1000), "seconds");
+            let elapsed: number = conStartTime && (<any>connEndTime - <any>conStartTime);
+            tlog(telnetId, "::", remoteAddr, "->", host, port, "::closed after", elapsed && (elapsed/1000), "seconds");
 
             axinst.post('/usage/disconnect', {
                 'uuid': conn.uuid,

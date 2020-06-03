@@ -29,8 +29,8 @@ def tn_proxy_verify_password(token, _):
     return True
 
 
-def gen_tn_proxy_token(client_id):
-    s = JSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+def gen_tn_proxy_token(app, client_id):
+    s = JSONWebSignatureSerializer(app.config['SECRET_KEY'])
     token = s.dumps({ 'client_id': client_id })
     return token
 
@@ -49,7 +49,7 @@ def verify_tn_proxy_token(token):
 @click.argument('client_id')
 @with_appcontext
 def gen_tn_proxy_token_command(client_id):
-    token = gen_tn_proxy_token(client_id)
+    token = gen_tn_proxy_token(current_app, client_id)
     click.echo('client_id: ' + str(client_id))
     click.echo('token: ' + str(token))
 
@@ -61,15 +61,14 @@ def init_app(app):
 @bp.route('/connect', methods=('POST',))
 @tn_proxy_auth.login_required
 def tn_proxy_connect():
-    print("Got connect from " + str(g.tn_proxy_client_id))
     d = request.json
 
     if not d:
-        abort(400)
+        return {'error': 'no json'}, 400
 
     for field in ('sid', 'from_addr', 'to_addr', 'to_port', 'time_stamp'):
         if field not in d:
-            abort(400)
+            return {'error': 'missing field'}, 400
 
     new_uuid = str(uuid.uuid4())
 
@@ -93,15 +92,13 @@ def tn_proxy_connect():
 @bp.route('/disconnect', methods=('POST',))
 @tn_proxy_auth.login_required
 def tn_proxy_disconnect():
-    print("Got disconnect from " + str(g.tn_proxy_client_id))
     d = request.json
     if not d:
-        abort(400)
+        return {'error': 'no json'}, 400
 
-    for field in ('sid', 'from_addr', 'to_addr', 'to_port', 'time_stamp', 'elapsed_ms'):
+    for field in ('sid', 'from_addr', 'to_addr', 'to_port', 'time_stamp'):
         if field not in d:
-            print("No " + str(field))
-            abort(400)
+            return {'error': 'missing field'}, 400
 
     db = get_db()
     db.execute("""
@@ -110,14 +107,14 @@ def tn_proxy_disconnect():
             time_stamp, elapsed_ms
         ) VALUES (?,?,?,?,?,?,?,?)
     """, (
-        d['uuid'],
+        d.get('uuid'),
         g.tn_proxy_client_id,
         d['sid'],
         d['from_addr'],
         d['to_addr'],
         d['to_port'],
         d['time_stamp'],
-        d['elapsed_ms']))
+        d.get('elapsed_ms')))
     db.commit()
     return {}, 200
 
