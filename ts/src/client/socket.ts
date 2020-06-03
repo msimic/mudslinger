@@ -14,6 +14,7 @@ declare let configClient: any;
 
 export class Socket {
     public EvtServerEcho = new EventHook<boolean>();
+    public EvtTelnetTryConnect = new EventHook<[string, number]>();
     public EvtTelnetConnect = new EventHook<[string, number]>();
     public EvtTelnetDisconnect = new EventHook<void>();
     public EvtTelnetError = new EventHook<string>();
@@ -101,6 +102,7 @@ export class Socket {
     }
 
     public openTelnet(host: string, port: number) {
+        this.EvtTelnetTryConnect.fire([host, port]);
         this.ioEvt.clReqTelnetOpen.fire([host, port]);
     }
 

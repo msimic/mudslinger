@@ -83,6 +83,10 @@ export class Client {
             this.serverEcho = val;
         });
 
+        this.socket.EvtTelnetTryConnect.handle((val: [string, number]) => {
+           this.outputWin.handleTelnetTryConnect(val[0], val[1]); 
+        });
+
         this.socket.EvtTelnetConnect.handle((val: [string, number]) => {
             this.serverEcho = false;
             this.menuBar.handleTelnetConnect();

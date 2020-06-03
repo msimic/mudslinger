@@ -73,7 +73,33 @@ export class OutputWin extends OutWinBase {
         this.scrollBottom(true);
     }
 
+    private connIntervalId: number = null;
+
+    handleTelnetTryConnect(host: string, port: number): void {
+        if (this.connIntervalId) {
+            clearInterval(this.connIntervalId);
+            this.connIntervalId = null;
+        }
+
+        let elem = document.createElement("span");
+        elem.innerHTML = "<span style='color:cyan'>"
+            + "[[Telnet connecting to " + host + ":" + port.toString()
+            + "<span class='conn-dots'></span>"
+            + "]]<br>";
+
+        let dots = elem.getElementsByClassName('conn-dots')[0] as HTMLSpanElement;
+
+        this.connIntervalId = setInterval(() => dots.textContent += '.', 1000);
+
+        this.$target.append(elem);
+        this.scrollBottom(true);
+    }
+
     handleTelnetConnect(): void {
+        if (this.connIntervalId) {
+            clearInterval(this.connIntervalId);
+            this.connIntervalId = null;
+        }
         this.$target.append(
             "<span style=\"color:cyan\">"
             + "[[Telnet connected]]"
@@ -83,6 +109,10 @@ export class OutputWin extends OutWinBase {
     }
 
     handleTelnetDisconnect() {
+        if (this.connIntervalId) {
+            clearInterval(this.connIntervalId);
+            this.connIntervalId = null;
+        }
         this.$target.append(
             "<span style=\"color:cyan\">"
             + "[[Telnet disconnected]]"
@@ -101,6 +131,10 @@ export class OutputWin extends OutWinBase {
     }
 
     handleWsDisconnect() {
+        if (this.connIntervalId) {
+            clearInterval(this.connIntervalId);
+            this.connIntervalId = null;
+        }
         this.$target.append(
             "<span style=\"color:cyan\">"
             + "[[Websocket disconnected]]"
