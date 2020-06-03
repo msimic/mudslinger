@@ -1,4 +1,3 @@
--e git+https://github.com/Odoth/mudslinger.git@6090e315570dee6ff945f226d63db3529d003be6#egg=api_app&subdirectory=api_server
 attrs==19.3.0
 certifi==2020.4.5.1
 chardet==3.0.4

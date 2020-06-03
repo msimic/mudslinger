@@ -11,12 +11,14 @@
       {% if conns is not none and conns | length > 0 %}
       <table border='1'>
         <tr>
+            <th>#</th>
             {% for k in ('proxyUrl', 'telnetId', 'uuid', 'userIp', 'host', 'port', 'elapsed') %}
             <th>{{k}}</th>
             {% endfor %}
         </tr>
         {% for row in conns %}
         <tr>
+            <td>{{loop.index}}</td>
             {% for k in ('proxyUrl', 'telnetId', 'uuid', 'userIp', 'host', 'port', 'elapsed') %}
             <td>{{row[k]}}</td>
             {% endfor %}

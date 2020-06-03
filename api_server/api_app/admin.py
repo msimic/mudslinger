@@ -35,7 +35,11 @@ def proxy_conn_monitor():
     for row in proxies:
         url = row['url']
         
-        resp = requests.get(url + '/conns')
+        try:
+            resp = requests.get(url + '/conns')
+        except Exception as ex:
+            flash("Couldn't connect to " + url)
+            continue
         if resp.status_code != 200:
             flash("Couldn't get /conns from " + url)
             continue
@@ -48,7 +52,6 @@ def proxy_conn_monitor():
             conns.append(entry)
         
 
-    print('conns:' + str(conns))
     return render_template(
         'admin/proxy_conn_monitor.html',
         conns=conns,
@@ -101,7 +104,7 @@ def add_del_telnet_proxy_admin():
         
         if error is None:
             db.execute(
-                'DELETE FROM telnet_proxies_web_amin '
+                'DELETE FROM telnet_proxies_web_admin '
                 'WHERE url = ?', (url,)
             )
             db.commit()
