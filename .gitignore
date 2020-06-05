@@ -1,4 +1,3 @@
-configClient.js
 configServer.js
 /node_modules/
 /ts/build/
@@ -11,7 +10,6 @@ configServer.js
 /static/public/jquery.min.js
 /static/public/socket.io.min.js
 /static/public/mudslinger.js
-/static/public/configClient.js
 /static/test/qunit/
 /static/test/sinon.js
 /static/test/mudslingerTest.js
