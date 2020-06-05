@@ -7,9 +7,7 @@ import { IoEvent } from "../shared/ioevent";
 import { TelnetClient } from "./telnetClient";
 import { utf8decode, utf8encode } from "./util";
 import { UserConfig } from "./userConfig";
-
-
-declare let configClient: any;
+import * as apiUtil from "./apiUtil";
 
 
 export class Socket {
@@ -32,13 +30,22 @@ export class Socket {
     constructor(private outputManager: OutputManager, private mxp: Mxp) {
     }
 
-    public open() {
-        this.ioConn = io.connect(
-            location.protocol + "//" +
-            (configClient.socketIoHost || document.domain) +
+    public async open() {
+        let res;
+        try {
+            res = await apiUtil.apiGetClientConfig();
+        } catch (err) {
+            this.EvtWsError.fire(err);
+            return false;
+        }
+
+        let ioUrl = location.protocol + "//" +
+            (res.data.socket_io_host) +
             ":" +
-            (configClient.socketIoPort || location.port) +
-            "/telnet");
+            (res.data.socket_io_port || location.port) +
+            "/telnet";
+        console.log("Connecting to telnet proxy server at", ioUrl);
+        this.ioConn = io.connect(ioUrl);
 
         this.ioConn.on("connect", () => {
             this.EvtWsConnect.fire({sid: this.ioConn.id});
@@ -49,6 +56,10 @@ export class Socket {
         });
 
         this.ioConn.on("error", (msg: any) => {
+            this.EvtWsError.fire(msg);
+        });
+
+        this.ioConn.on("connect_error", (msg: any) => {
             this.EvtWsError.fire(msg);
         });
 
@@ -99,6 +110,8 @@ export class Socket {
             }
             this.EvtSetClientIp.fire(this.clientIp);
         });
+
+        return true;
     }
 
     public openTelnet(host: string, port: number) {

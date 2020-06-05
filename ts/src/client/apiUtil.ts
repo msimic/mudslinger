@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-declare let configClient: any;
-
 export namespace clientInfo {
     export let sid: string = null;
     export let clientIp: string = null;
@@ -11,13 +9,16 @@ export namespace clientInfo {
 
 let axinst = axios.create({
     baseURL: location.protocol + "//" +
-        configClient.apiHost +
-        ":" +
-        (configClient.apiPort || location.port),
+        'api.' + document.domain +
+        ":" + location.port,
     validateStatus: (status) => {
         return status === 200;
     }
 });
+
+export async function apiGetClientConfig() {
+    return axinst.get('/usage/client_config');
+}
 
 export async function apiPostUserConfig(cfgVals: string) {
     return axinst.post('/usage/user_config', {

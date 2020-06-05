@@ -11,8 +11,6 @@ import { JsScriptWin } from "./jsScriptWin";
 import { AboutWin } from "./aboutWin";
 import { ConnectWin } from "./connectWin";
 
-declare let configClient: any;
-
 export class MenuBar {
     public EvtChangeDefaultColor = new EventHook<[string, string]>();
     public EvtChangeDefaultBgColor = new EventHook<[string, string]>();

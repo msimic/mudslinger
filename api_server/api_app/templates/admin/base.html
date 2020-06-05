@@ -5,6 +5,9 @@
   <h1>Mudslinger API Server Admin</h1>
   <ul>
     {% if g.user %}
+      <li><a href="{{ url_for('admin.client_config') }}">
+            Client Config</a>
+      </li>
       <li><a href="{{ url_for('admin.proxy_conn_monitor') }}">
             Proxy Connection Monitor</a>
       </li>

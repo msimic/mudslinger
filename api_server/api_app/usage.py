@@ -230,6 +230,15 @@ def client_conn():
 
 
 # TODO: move this to a more appropriate blueprint
+@bp.route('/client_config', methods=('GET',))
+def client_config():
+    db = get_db()
+    cfg = db.execute("SELECT * FROM client_config;").fetchone()
+    cfg = dict(cfg)
+    return cfg, 200
+
+
+# TODO: move this to a more appropriate blueprint
 @bp.route('/contact', methods=('POST',))
 def contact():
     d = request.json

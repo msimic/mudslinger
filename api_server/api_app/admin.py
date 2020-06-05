@@ -24,6 +24,18 @@ def index():
     return render_template('admin/index.html')
 
 
+@bp.route('/client_config', methods=('GET',))
+def client_config():
+    db = get_db()
+    cfg = db.execute("SELECT * FROM client_config").fetchone()
+    cfg = dict(cfg)
+    del cfg['id']
+
+    return render_template(
+        'admin/client_config.html',
+        config=cfg)
+
+
 @bp.route('/proxy_conn_monitor', methods=('GET',))
 def proxy_conn_monitor():
     db = get_db()

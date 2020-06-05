@@ -186,20 +186,21 @@ export class Client {
             return "";
         };
 
-        this.socket.open();
-    
-        let hostParam: string = getUrlParameter("host");
-        let portParam: string = getUrlParameter("port");
+        this.socket.open().then((success) => {
+            if (!success) { return; }
+            let hostParam: string = getUrlParameter("host");
+            let portParam: string = getUrlParameter("port");
 
-        if (hostParam !== undefined && portParam !== undefined)
-        {
-            let host = hostParam.trim();
-            let port = Number(portParam);
-            this.socket.openTelnet(host, port);
+            if (hostParam !== undefined && portParam !== undefined)
+            {
+                let host = hostParam.trim();
+                let port = Number(portParam);
+                this.socket.openTelnet(host, port);
 
-        } else {
-            this.connectWin.show();
-        }
+            } else {
+                this.connectWin.show();
+            }
+        });
     }
 
     public readonly UserConfig = UserConfig;

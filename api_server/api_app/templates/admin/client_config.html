@@ -1,0 +1,31 @@
+{% extends 'admin/base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Client Config{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <table border='1'>
+      <tr><th>Config</th></tr>
+
+      {% if config is not none and config | length > 0 %}
+      <table border='1'>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Value</th>
+        </tr>
+        {% for k in config.keys() | sort %}
+        <tr>
+            <td>{{loop.index}}</td>
+            <td>{{k}}</td>
+            <td>{{config[k]}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+  </table>
+  </br>
+  </br>
+
+{% endblock %}
