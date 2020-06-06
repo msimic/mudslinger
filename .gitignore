@@ -9,7 +9,8 @@ configServer.js
 /static/public/jqwidgets/
 /static/public/jquery.min.js
 /static/public/socket.io.min.js
-/static/public/mudslinger.js
+/static/public/mudslinger-*.js
+/static/public/index.html
 /static/test/qunit/
 /static/test/sinon.js
 /static/test/mudslingerTest.js
