@@ -1,8 +1,5 @@
 let fs = require("fs-extra");
 
-let flnameConfigClient = "static/public/configClient.js"
-let flnameConfigClientDefault = "configClient.default.js"
-
 let flnameConfigServer = "configServer.js"
 let flnameConfigServerDefault = "configServer.default.js"
 
@@ -22,11 +19,6 @@ fs.copySync("node_modules/codemirror/LICENSE", 'static/public/codemirror/LICENSE
 fs.copySync("node_modules/qunit/qunit", 'static/test/qunit');
 
 // Don't want to overwrite existing config file if any
-if (!fs.existsSync(flnameConfigClient)) {
-    fs.createReadStream(flnameConfigClientDefault).pipe(fs.createWriteStream(flnameConfigClient));
-    console.log("Copying " + flnameConfigClientDefault + " to " + flnameConfigClient);
-}
-
 if (!fs.existsSync(flnameConfigServer)) {
     fs.createReadStream(flnameConfigServerDefault).pipe(fs.createWriteStream(flnameConfigServer));
     console.log("Copying " + flnameConfigServerDefault + " to " + flnameConfigServer);
