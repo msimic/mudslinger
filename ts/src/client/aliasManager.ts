@@ -1,40 +1,36 @@
-import { EventHook } from "./event";
-
-import { UserConfig } from "./userConfig";
-
-import { JsScript } from "./jsScript";
 import { TrigAlItem } from "./trigAlEditBase";
 
 
-export class AliasManager {
-    public evtAliasesChanged = new EventHook<void>();
+export interface ConfigIf {
+    set(key: "aliases", val: TrigAlItem[]): void;
+    getDef(key: "aliasesEnabled", def: boolean): boolean;
+    get(key: "aliases"): TrigAlItem[];
+};
 
+export interface ScriptIf {
+    makeScript(text: string, argsSig: string): any;
+}
+
+export class AliasManager {
     public aliases: Array<TrigAlItem> = null;
 
-    constructor(private jsScript: JsScript) {
-        /* backward compatibility */
-        let savedAliases: string = localStorage.getItem("aliases");
-        if (savedAliases) {
-            UserConfig.set("aliases", JSON.parse(savedAliases));
-            localStorage.removeItem("aliases");
-        }
-
+    constructor(private jsScript: ScriptIf, private config: ConfigIf) {
         this.loadAliases();
     }
 
     public saveAliases() {
-        UserConfig.set("aliases", this.aliases);
+        this.config.set("aliases", this.aliases);
     }
 
     private loadAliases() {
-        this.aliases = UserConfig.get("aliases") || [];
+        this.aliases = this.config.get("aliases") || [];
     }
 
     // return the result of the alias if any (string with embedded lines)
     // return true if matched and script ran
     // return null if no match
     public checkAlias(cmd: string): boolean | string {
-        if (UserConfig.getDef("aliasesEnabled", true) !== true) return null;
+        if (this.config.getDef("aliasesEnabled", true) !== true) return null;
 
         for (let i = 0; i < this.aliases.length; i++) {
             let alias = this.aliases[i];

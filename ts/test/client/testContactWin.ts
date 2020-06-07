@@ -2,21 +2,12 @@ import * as apiUtil from "../../src/client/apiUtil";
 import * as moxios from "moxios";
 import * as contactWin from "../../src/client/contactWin";
 
-declare let configClient: any;
 
 export function test() {
-
-let configClientOrig: any;
 
 let win: contactWin.ContactWin;
 
 QUnit.module("contactWin", {
-    before: (assert: Assert) => {
-        configClientOrig = configClient;
-        configClient = {
-            apiHost: "fakeHost"
-        };
-    },
     beforeEach: (assert: Assert) => {
         moxios.install(apiUtil.TestFixture.GetAxios());
         win = new contactWin.ContactWin();
@@ -25,9 +16,6 @@ QUnit.module("contactWin", {
         moxios.uninstall(apiUtil.TestFixture.GetAxios());
         win.destroy();
     },
-    after: (assert: Assert) => {
-       configClient = configClientOrig; 
-    }
 });
 
 QUnit.test("no message", (assert: Assert) => {

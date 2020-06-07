@@ -32,7 +32,7 @@ export class JsScript {
 
     getScriptThis() { return this.scriptThis; }
 
-    public makeScript(text: string, argsSig: string) {
+    public makeScript(text: string, argsSig: string): any {
         return makeScript.call(this.scriptThis, text, argsSig);
     }
 }

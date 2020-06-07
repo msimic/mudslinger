@@ -8,7 +8,6 @@ import { TrigAlItem } from "./trigAlEditBase";
 
 export class TriggerManager {
     public EvtEmitTriggerCmds = new EventHook<string[]>();
-    public evtTriggersChanged = new EventHook<void>();
 
     public triggers: Array<TrigAlItem> = null;
 

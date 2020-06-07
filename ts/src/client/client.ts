@@ -48,7 +48,8 @@ export class Client {
 
         this.jsScriptWin = new JsScriptWin(this.jsScript);
         this.triggerManager = new TriggerManager(this.jsScript);
-        this.aliasManager = new AliasManager(this.jsScript);
+        this.aliasManager = new AliasManager(
+            this.jsScript, UserConfig);
 
         this.commandInput = new CommandInput(this.aliasManager);
 
