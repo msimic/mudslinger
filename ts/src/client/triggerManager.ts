@@ -1,21 +1,27 @@
 import { EventHook } from "./event";
-
-import { UserConfig } from "./userConfig";
-
-import { JsScript } from "./jsScript";
 import { TrigAlItem } from "./trigAlEditBase";
 
+
+export interface ConfigIf {
+    set(key: "triggers", val: TrigAlItem[]): void;
+    getDef(key: "triggersEnabled", def: boolean): boolean;
+    get(key: "triggers"): TrigAlItem[];
+}
+
+export interface ScriptIf {
+    makeScript(text: string, argsSig: string): any;
+}
 
 export class TriggerManager {
     public EvtEmitTriggerCmds = new EventHook<string[]>();
 
     public triggers: Array<TrigAlItem> = null;
 
-    constructor(private jsScript: JsScript) {
+    constructor(private jsScript: ScriptIf, private config: ConfigIf) {
         /* backward compatibility */
         let savedTriggers = localStorage.getItem("triggers");
         if (savedTriggers) {
-            UserConfig.set("triggers", JSON.parse(savedTriggers));
+            this.config.set("triggers", JSON.parse(savedTriggers));
             localStorage.removeItem("triggers");
         }
 
@@ -23,15 +29,15 @@ export class TriggerManager {
     }
 
     public saveTriggers() {
-        UserConfig.set("triggers", this.triggers);
+        this.config.set("triggers", this.triggers);
     }
 
     private loadTriggers() {
-        this.triggers = UserConfig.get("triggers") || [];
+        this.triggers = this.config.get("triggers") || [];
     }
 
-    public handleLine(line: string) {
-        if (UserConfig.getDef("triggersEnabled", true) !== true) return;
+    public handleLine(line: string): void {
+        if (this.config.getDef("triggersEnabled", true) !== true) return;
 //        console.log("TRIGGER: " + line);
         for (let i = 0; i < this.triggers.length; i++) {
             let trig = this.triggers[i];

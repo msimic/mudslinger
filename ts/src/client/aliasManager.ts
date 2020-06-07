@@ -5,7 +5,7 @@ export interface ConfigIf {
     set(key: "aliases", val: TrigAlItem[]): void;
     getDef(key: "aliasesEnabled", def: boolean): boolean;
     get(key: "aliases"): TrigAlItem[];
-};
+}
 
 export interface ScriptIf {
     makeScript(text: string, argsSig: string): any;

@@ -50,16 +50,13 @@ QUnit.test("basic noscript", (assert: Assert) => {
         pattern: "test2", value: "do a thing $1", regex: false, is_script: false
     }];
     let cfg = testConfig(aliases);
-    let scr = new TestBasicScript();
-    let mgr = new aliasManager.AliasManager(scr, cfg);
+    let mgr = new aliasManager.AliasManager(null, cfg);
 
     let result = mgr.checkAlias("test1 123 456 more");
     assert.equal(result, "do a thing");
 
     result = mgr.checkAlias("test2 123 456 more");
     assert.equal(result, "do a thing 123 456 more");
-
-    assert.equal(scr.calls.length, 0);
 });
 
 QUnit.test("basic script", (assert: Assert) => {

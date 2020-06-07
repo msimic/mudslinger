@@ -47,7 +47,8 @@ export class Client {
         this.contactWin = new ContactWin();
 
         this.jsScriptWin = new JsScriptWin(this.jsScript);
-        this.triggerManager = new TriggerManager(this.jsScript);
+        this.triggerManager = new TriggerManager(
+            this.jsScript, UserConfig);
         this.aliasManager = new AliasManager(
             this.jsScript, UserConfig);
 
