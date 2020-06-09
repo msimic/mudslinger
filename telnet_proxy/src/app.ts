@@ -5,7 +5,7 @@ import * as readline from "readline";
 import axios from "axios";
 import * as express from "express";
 
-import { IoEvent } from "../../ts/src/shared/ioevent";
+import { IoEvent } from "../../common/src/ts/ioevent";
 
 let serverConfig = require("../../../configServer.js");
 console.log(serverConfig);
