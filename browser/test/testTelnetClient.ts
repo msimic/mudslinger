@@ -1,4 +1,4 @@
-import { parseNewEnvSeq, NewEnv } from "../../src/client/telnetClient";
+import { parseNewEnvSeq, NewEnv } from "../src/ts/telnetClient";
 
 export function test() {
 

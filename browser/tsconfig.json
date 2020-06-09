@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "./build/build_client",
+        "outDir": "./build",
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "lib": [
@@ -11,12 +11,12 @@
         ],
         "types": [
             "jquery"
-        ],
+        ]
     },
     "exclude": [
         "node_modules"
     ],
     "include": [
-        "./src/client/*"
+        "./src/ts/*"
     ]
 }

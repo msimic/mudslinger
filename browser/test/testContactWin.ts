@@ -1,6 +1,6 @@
-import * as apiUtil from "../../src/client/apiUtil";
+import * as apiUtil from "../src/ts/apiUtil";
 import * as moxios from "moxios";
-import * as contactWin from "../../src/client/contactWin";
+import * as contactWin from "../src/ts/contactWin";
 
 
 export function test() {

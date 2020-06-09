@@ -1,4 +1,4 @@
-import { utf8decode, utf8encode } from "../../src/client/util";
+import { utf8decode, utf8encode } from "../src/ts/util";
 
 export function test() {
 

@@ -12,4 +12,4 @@ let txt = `export namespace AppInfo {
     export let Build: string = "${build}";
 }`;
 
-fs.writeFileSync('ts/src/client/appInfo.ts', txt);
+fs.writeFileSync('src/ts/appInfo.ts', txt);

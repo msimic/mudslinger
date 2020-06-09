@@ -1,5 +1,5 @@
-import * as triggerManager from "../../src/client/triggerManager";
-import { TrigAlItem } from "../../src/client/trigAlEditBase";
+import * as triggerManager from "../src/ts/triggerManager";
+import { TrigAlItem } from "../src/ts/trigAlEditBase";
 
 export function test() {
 

@@ -4,9 +4,9 @@
   "scripts": {
     "start": "node dist/server/app.js",
     "postinstall": "node tools/postinstall.js",
-    "build-client": "node tools/genAppInfo.js `git rev-parse HEAD` && tsc -p ts/tsconfig.client.json && webpack",
-    "build-client-dev": "node tools/genAppInfo.js `git rev-parse HEAD` && tsc -p ts/tsconfig.client.json && webpack --mode=development",
-    "build-client-test": "tsc -p ts/tsconfig.client.test.json && webpack --config webpack.config.test.js",
+    "build-client": "node tools/genAppInfo.js `git rev-parse HEAD` && tsc -p tsconfig.json && webpack",
+    "build-client-dev": "node tools/genAppInfo.js `git rev-parse HEAD` && tsc -p tsconfig.json && webpack --mode=development",
+    "build-client-test": "tsc -p tsconfig.test.json && webpack --config webpack.config.test.js",
     "build-server": "tsc -p ts/tsconfig.server.json"
   },
   "devDependencies": {

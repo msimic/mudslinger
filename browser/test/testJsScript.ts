@@ -1,4 +1,4 @@
-import * as jsScript from "../../src/client/jsScript";
+import * as jsScript from "../src/ts/jsScript";
 
 export function test() {
 

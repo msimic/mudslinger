@@ -1,5 +1,5 @@
-import * as aliasManager from "../../src/client/aliasManager";
-import { TrigAlItem } from "../../src/client/trigAlEditBase";
+import * as aliasManager from "../src/ts/aliasManager";
+import { TrigAlItem } from "../src/ts/trigAlEditBase";
 
 export function test() {
 

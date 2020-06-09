@@ -3,7 +3,7 @@ import { EventHook } from "./event";
 import * as io from "socket.io-client";
 import { Mxp } from "./mxp";
 import { OutputManager } from "./outputManager";
-import { IoEvent } from "../shared/ioevent";
+import { IoEvent } from "../../../ts/src/shared/ioevent";
 import { TelnetClient } from "./telnetClient";
 import { utf8decode, utf8encode } from "./util";
 import { UserConfig } from "./userConfig";

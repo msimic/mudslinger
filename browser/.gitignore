@@ -1,0 +1,12 @@
+/node_modules/
+/build/
+
+/src/ts/appInfo.ts
+
+/static/public/codemirror/
+/static/public/index.html
+/static/public/jquery.min.js
+/static/public/jqwidgets/
+/static/public/mudslinger-*.js
+/static/test/mudslingerTest.js
+/static/test/qunit/
