@@ -1,8 +1,5 @@
 let fs = require("fs-extra");
 
-let flnameConfigServer = "configServer.js"
-let flnameConfigServerDefault = "configServer.default.js"
-
 // To be run from package root, paths accordingly
 fs.createReadStream("node_modules/jquery/dist/jquery.min.js").pipe(fs.createWriteStream('static/public/jquery.min.js'));
 
@@ -17,9 +14,3 @@ fs.copySync("node_modules/codemirror/theme", "static/public/codemirror/theme");
 fs.copySync("node_modules/codemirror/LICENSE", 'static/public/codemirror/LICENSE');
 
 fs.copySync("node_modules/qunit/qunit", 'static/test/qunit');
-
-// Don't want to overwrite existing config file if any
-if (!fs.existsSync(flnameConfigServer)) {
-    fs.createReadStream(flnameConfigServerDefault).pipe(fs.createWriteStream(flnameConfigServer));
-    console.log("Copying " + flnameConfigServerDefault + " to " + flnameConfigServer);
-}

@@ -7,7 +7,7 @@ import * as express from "express";
 
 import { IoEvent } from "../../ts/src/shared/ioevent";
 
-let serverConfig = require("../../configServer.js");
+let serverConfig = require("../../../configServer.js");
 console.log(serverConfig);
 
 let telnetIdNext: number = 0;
