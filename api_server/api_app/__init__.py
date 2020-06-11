@@ -38,9 +38,11 @@ def create_app(test_config=None):
     from . import auth
     from . import usage
     from . import admin
+    from . import client
     app.register_blueprint(auth.bp)
     app.register_blueprint(admin.bp)
     app.register_blueprint(usage.bp)
+    app.register_blueprint(client.bp)
     usage.init_app(app)
 
     CORS(app)

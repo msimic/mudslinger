@@ -17,7 +17,7 @@ let axinst = axios.create({
 });
 
 export async function apiGetClientConfig() {
-    return axinst.get('/usage/client_config');
+    return axinst.get('/client/client_config');
 }
 
 export async function apiPostUserConfig(cfgVals: string) {
@@ -49,7 +49,7 @@ export async function apiPostClientConn() {
 }
 
 export async function apiPostContact(message: string, email: string) {
-    return axinst.post('/usage/contact', {
+    return axinst.post('/client/contact', {
         "message": message,
         "email": email,
         "client_info": {
@@ -58,21 +58,6 @@ export async function apiPostContact(message: string, email: string) {
             to_addr: clientInfo.telnetHost,
             to_port: clientInfo.telnetPort
         }
-    });
-}
-
-export async function apiGetProfileConfig(profileId: string) {
-    return axinst.get('/profile/config', {
-        params: {
-            id: profileId
-        }
-    });
-}
-
-export async function apiPostProfileConfig(profileId: string | null, config: any) {
-    return axinst.post('/profile/config', {
-        profile_id: profileId,
-        config: config
     });
 }
 
