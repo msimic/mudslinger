@@ -57,6 +57,7 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
     });
 
     ioEvt.clReqTelnetOpen.handle((args: [string, number]) => {
+        if (telnet) { return; }
         telnet = new net.Socket();
 
         let telnetId: number = telnetIdNext++;
