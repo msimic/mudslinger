@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "outDir": "./build",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "lib": [
+            "DOM",
+            "ES6",
+            "DOM.Iterable",
+            "ScriptHost"
+        ]
+    },
+    "include": [
+        "./src/ts/migrate.ts"
+    ]
+}

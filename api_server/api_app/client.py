@@ -1,4 +1,5 @@
 import smtplib
+import uuid
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, abort
@@ -8,6 +9,51 @@ from api_app.db import get_db
 
 
 bp = Blueprint('client', __name__, url_prefix='/client')
+
+
+@bp.route('/migrate', methods=('GET', 'POST'))
+def migrate():
+    if request.method == 'GET':
+        migr_id = request.args.get('migr_id')
+        db = get_db();
+        row = db.execute("""
+            SELECT config FROM client_migrate
+            WHERE id = ?
+        """, (migr_id,)).fetchone()
+
+        return {'config': row['config']}, 200
+
+    elif request.method == 'POST':
+        d = request.json
+        if not d:
+            return {'error': 'no json'}, 400
+
+        if 'complete' in d:
+            migr_id = d['migr_id']
+            db = get_db()
+            db.execute("""
+                UPDATE client_migrate SET complete = 1
+                WHERE id = ?
+                """, (migr_id,))
+            db.commit()
+            return {}, 200
+
+        else:
+            if 'config' not in d:
+                return {'error': 'missing config'}, 400
+
+            new_uuid = str(uuid.uuid4())
+
+            db = get_db()
+            db.execute("""
+                INSERT INTO client_migrate (id, config)
+                VALUES (?,?)
+            """, (
+                new_uuid,
+                d['config']))
+            db.commit()
+
+            return {'migr_id': new_uuid}, 200
 
 
 @bp.route('/client_config', methods=('GET',))

@@ -5,7 +5,8 @@
     "postinstall": "node tools/postinstall.js",
     "build": "node tools/genAppInfo.js `git rev-parse HEAD` && tsc -p tsconfig.json && webpack",
     "build-dev": "node tools/genAppInfo.js `git rev-parse HEAD` && tsc -p tsconfig.json && webpack --mode=development",
-    "build-test": "tsc -p tsconfig.test.json && webpack --config webpack.config.test.js"
+    "build-test": "tsc -p tsconfig.test.json && webpack --config webpack.config.test.js",
+    "build-migrate": "tsc -p migrate/tsconfig.json && webpack --config migrate/webpack.config.migrateFrom.js && webpack --config migrate/webpack.config.migrateTo.js"
   },
   "dependencies": {
     "@types/jquery": "^2.0.54",
