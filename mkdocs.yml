@@ -3,7 +3,7 @@ markdown_extensions:
     - codehilite
 theme: readthedocs
 # site_url: https://mudslinger.net
-
+repo_url: https://github.com/odoth/mudslinger
 site_dir: browser/static/docs
 
 nav:
