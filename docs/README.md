@@ -20,4 +20,4 @@ Host and port can also be passed as URL parameters, e.g. [https://mudslinger.net
 * [Scripting support (Javascript)](scripting.md)
 
 # License
-[MIT](LICENSE)
+[MIT](LICENSE.md)
