@@ -1,0 +1,12 @@
+site_name: Mudslinger Docs
+markdown_extensions:
+    - codehilite
+theme: readthedocs
+# site_url: https://mudslinger.net
+
+site_dir: browser/static/docs
+
+nav:
+    - Play: '../'
+    - 'Docs Home': 'README.md'
+    - 'Scripting API': 'scripting.md'
