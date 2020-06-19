@@ -2,6 +2,10 @@ import os
 
 from flask import Flask
 from flask_cors import CORS
+from flask_mail import Mail
+
+
+mail = Mail()
 
 
 def create_app(test_config=None):
@@ -10,7 +14,6 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'api_app.sqlite'),
-        CONTACT_SMTP_SENDER="mudslinger",
         CONTACT_SMTP_RECEIVERS=["dr.vodur@gmail.com"]
     )
 
@@ -46,5 +49,6 @@ def create_app(test_config=None):
     usage.init_app(app)
 
     CORS(app)
+    mail.init_app(app)
 
     return app

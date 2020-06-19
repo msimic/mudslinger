@@ -4,7 +4,9 @@ import uuid
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app, abort
 )
+from flask_mail import Message
 
+from api_app import mail
 from api_app.db import get_db
 
 
@@ -79,23 +81,13 @@ def contact():
     if 'client_info' not in d:
         abort(400)
 
-    sender = current_app.config['CONTACT_SMTP_SENDER']
-    receivers = current_app.config['CONTACT_SMTP_RECEIVERS']
-    email_msg = "From: {}\n".format(sender) + \
-                "Subject: Mudslinger contact\n" + \
-                "To: {}\n".format(",".join(receivers)) + \
-                "\n" + str(d['message']) + \
-                "\n\n" + \
-                "\nemail = " + str(d['email']) + \
-                "\nclient_info = " + str(d['client_info'])
+    msg = Message('Mudslinger contact', 
+        sender=('Mudslinger Client', 'mudslinger.client@gmail.com'),
+        recipients=current_app.config['CONTACT_SMTP_RECEIVERS'])
+    msg.body = "\n" + str(d['message']) + \
+               "\n\n" + \
+               "\nemail = " + str(d['email']) + \
+               "\nclient_info = " + str(d['client_info'])
+    mail.send(msg)
 
-    sent = False
-    try:
-        # assume localhost. Make it configurable later if needed
-        o = smtplib.SMTP('localhost')
-        o.sendmail(sender, receivers, email_msg)
-        sent = True
-    except Exception as ex:
-        current_app.logger.error("Error sending email: " + str(ex))
-
-    return {"sent": sent}, 200
+    return {"sent": True}, 200
