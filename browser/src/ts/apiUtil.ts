@@ -8,9 +8,6 @@ export namespace clientInfo {
 }
 
 let axinst = axios.create({
-    baseURL: location.protocol + "//" +
-        'api.' + document.domain +
-        ":" + location.port,
     validateStatus: (status) => {
         return status === 200;
     }
