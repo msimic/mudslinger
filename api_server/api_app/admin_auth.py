@@ -7,14 +7,14 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from api_app.db import get_db
 
-bp = Blueprint('auth', __name__, url_prefix='/auth')
+bp = Blueprint('admin_auth', __name__, url_prefix='/admin_auth')
 
 
 def admin_login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
-            return redirect(url_for('auth.admin_login'))
+            return redirect(url_for('admin_auth.admin_login'))
 
         return view(**kwargs)
 

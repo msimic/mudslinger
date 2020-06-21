@@ -7,7 +7,7 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from api_app.auth import admin_login_required
+from api_app.admin_auth import admin_login_required
 from api_app.db import get_db
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -74,20 +74,12 @@ def proxy_conn_monitor():
 def add_del_telnet_proxy_admin():
     url = request.form['proxy-url']
     oper = request.form['oper']
+
+    if oper not in ('add', 'del'):
+        return '', 400
     
     db = get_db()
     error = None
-
-    if not oper:
-        error = 'oper is required'
-    elif oper not in ('add', 'del'):
-        error = 'invalid oper: ' + str(oper)
-    elif not url:
-        error = 'Url is required.'
-
-    if error:
-        flash(error)
-        return redirect(url_for('admin.proxy_conn_monitor'))
 
     if oper == 'add':
         if db.execute(
@@ -103,6 +95,7 @@ def add_del_telnet_proxy_admin():
                 (url,)
             )
             db.commit()
+            flash('Entry added.')
         else:
             flash(error)
         
@@ -120,6 +113,7 @@ def add_del_telnet_proxy_admin():
                 'WHERE url = ?', (url,)
             )
             db.commit()
+            flash('Entry deleted.')
         else:
             flash(error)
 

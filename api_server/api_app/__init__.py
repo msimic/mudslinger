@@ -38,11 +38,11 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
 
-    from . import auth
+    from . import admin_auth
     from . import usage
     from . import admin
     from . import client
-    app.register_blueprint(auth.bp)
+    app.register_blueprint(admin_auth.bp)
     app.register_blueprint(admin.bp)
     app.register_blueprint(usage.bp)
     app.register_blueprint(client.bp)
