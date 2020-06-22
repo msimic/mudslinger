@@ -7,6 +7,6 @@ repo_url: https://github.com/odoth/mudslinger
 site_dir: browser/static/docs
 
 nav:
-    - Play: '../'
+    - 'Mudslinger Home': '/'
     - 'Docs Home': 'README.md'
     - 'Scripting API': 'scripting.md'

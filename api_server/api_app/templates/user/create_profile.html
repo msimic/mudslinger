@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}New Profile{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="name">Profile Name</label>
+    <input name="name" id="name" value="{{ request.form['name'] }}" required>
+
+    <label for="host">Host</label>
+    <input name="host" id="host" value="{{ request.form['host'] }}" required>
+
+    <label for="host">Port</label>
+    <input name="port" id="port" value="{{ request.form['port'] }}" required>
+
+    <input type="submit" value="Save">
+  </form>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Profiles{% endblock %}</h1>
+  {% if g.user %}
+    <a class="action" href="{{ url_for('user.create_profile') }}">New</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% for profile in profiles %}
+    <div>{{ profile['name'] }}</div>
+    <div>{{ profile['host'] }}:{{ profile['port'] }}</div>
+    <div>
+      <a href="/play/?profile={{profile['id']}}">Connect</a>
+      <a href="{{ url_for('user.edit_profile', pr_id=profile['id']) }}">Edit</a>
+    </div>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

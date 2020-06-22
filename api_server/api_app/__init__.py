@@ -30,22 +30,23 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
-
     from . import db
     db.init_app(app)
 
+    from . import root
     from . import admin_auth
     from . import usage
     from . import admin
     from . import client
+    from . import auth
+    from . import user
+    app.register_blueprint(root.bp)
     app.register_blueprint(admin_auth.bp)
     app.register_blueprint(admin.bp)
     app.register_blueprint(usage.bp)
     app.register_blueprint(client.bp)
+    app.register_blueprint(auth.bp)
+    app.register_blueprint(user.bp)
     usage.init_app(app)
 
     CORS(app)

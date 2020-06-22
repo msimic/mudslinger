@@ -13,7 +13,7 @@ bp = Blueprint('admin_auth', __name__, url_prefix='/admin_auth')
 def admin_login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user is None:
+        if g.admin_user is None:
             return redirect(url_for('admin_auth.admin_login'))
 
         return view(**kwargs)
@@ -58,8 +58,8 @@ def load_logged_in_user():
     user_id = session.get('admin_user_id')
 
     if user_id is None:
-        g.user = None
+        g.admin_user = None
     else:
-        g.user = get_db().execute(
+        g.admin_user = get_db().execute(
             'SELECT * FROM admin_user WHERE id = ?', (user_id,)
         ).fetchone()

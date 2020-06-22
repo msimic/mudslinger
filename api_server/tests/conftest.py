@@ -55,3 +55,22 @@ class AdminAuthActions(object):
 @pytest.fixture
 def admin_auth(client):
     return AdminAuthActions(client)
+
+
+class AuthActions(object):
+    def __init__(self, client):
+        self._client = client
+
+    def login(self, email='test', password='test'):
+        return self._client.post(
+            '/auth/login',
+            data={'email': email, 'password': password}
+        )
+
+    def logout(self):
+        return self._client.get('/auth/logout')
+
+
+@pytest.fixture
+def auth(client):
+    return AuthActions(client)

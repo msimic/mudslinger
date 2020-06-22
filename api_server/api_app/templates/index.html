@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Home{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <h2>Welcome to Mudslinger</h2>
+  <p>There are 2 ways to play:</p>
+
+  <h3>Without account</h3>
+  <p>You can play without registering an account. Your settings will be saved to the browser <b>localStorage</b>, so won't be available when playing from other devices. No support for multiple profiles.</p>
+
+  <a href="/play/">Play without account</a>
+
+  <h3>Registered users</h3>
+  <p>Registered users can create multiple profiles with different settings. Profiles and settings are saved to the server, so can be accessed from any device/location</p>
+
+  <a href="{{ url_for('auth.login') }}">Login</a>
+  <a href="{{ url_for('auth.register') }}">Register</a>
+
+{% endblock %}
