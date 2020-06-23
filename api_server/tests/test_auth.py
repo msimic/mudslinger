@@ -3,37 +3,49 @@ from flask import g
 from flask import session
 
 from api_app.db import get_db
+from api_app import auth
+
+import itsdangerous
+
+
+def test_sigs(client, app):
+    sig = auth.dump_sig(app, 'someval', auth.REGISTER_SALT)
+    with pytest.raises(itsdangerous.exc.BadTimeSignature):
+        auth.load_sig(app, sig, 3600, auth.RESET_SALT)
+    o = auth.load_sig(app, sig, 3600, auth.REGISTER_SALT)
+    assert o == 'someval'
 
 
 def test_register(client, app):
-    # test that viewing the page renders without template errors
     assert client.get("/auth/register").status_code == 200
 
+
+def test_register_confirm(client, app):
+    sig = auth.dump_sig(app, {'email': 'fake@email.com'}, auth.REGISTER_SALT)
+    assert client.get(f"/auth/{sig}/register").status_code == 200
+
     # test that successful registration redirects to the login page
-    response = client.post("/auth/register", data={"email": "a", "password": "a"})
+    response = client.post(f"/auth/{sig}/register", data={"password": "a", "password2": "a"})
     assert "http://localhost/auth/login" == response.headers["Location"]
 
     # test that the user was inserted into the database
     with app.app_context():
         assert (
-            get_db().execute("select * from user where email = 'a'").fetchone()
+            get_db().execute("select * from user where email = 'fake@email.com'").fetchone()
             is not None
         )
 
 
-@pytest.mark.parametrize(
-    ("email", "password", "message"),
-    (
-        ("", "", b"Email is required."),
-        ("a", "", b"Password is required."),
-        ("test", "test", b"already registered"),
-    ),
-)
-def test_register_validate_input(client, email, password, message):
-    response = client.post(
-        "/auth/register", data={"email": email, "password": password}
-    )
-    assert message in response.data
+def test_reset_password(client, app):
+    assert client.get(f"/auth/reset_password").status_code == 200
+
+
+def test_reset_password_confirm(client, app):
+    sig = auth.dump_sig(app, {'email': 'fake@email.com'}, auth.RESET_SALT)
+    assert client.get(f"/auth/{sig}/reset_password").status_code == 200
+
+    response = client.post(f"/auth/{sig}/reset_password", data={"password": "a", "password2": "a"})
+    assert "http://localhost/auth/login" == response.headers["Location"]
 
 
 def test_login(client, auth):
