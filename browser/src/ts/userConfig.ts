@@ -1,21 +1,17 @@
 import { EventHook } from "./event";
-import { apiPostUserConfig } from "./apiUtil";
 
 
 export namespace UserConfig {
     let cfgVals: {[k: string]: any};
     let setHandlers: {[k: string]: EventHook<any>} = {};
 
-    export function init() {
-        let userConfigStr = localStorage.getItem("userConfig");
+    let saveFunc: (v: string) => void;
+
+    export function init(userConfigStr: string, saveFunc_: (v: string) => void) {
+        saveFunc = saveFunc_;
 
         if (userConfigStr) {
             cfgVals = JSON.parse(userConfigStr);
-            /* Wait a little bit so we can hopefully push an sid with the config */
-            setTimeout(() => {
-                apiPostUserConfig(userConfigStr);
-            }, 5000);
-            
         } else {
             cfgVals = {};
         }
@@ -46,6 +42,6 @@ export namespace UserConfig {
     }
 
     function saveConfig() {
-        localStorage.setItem("userConfig", JSON.stringify(cfgVals));
+        saveFunc(JSON.stringify(cfgVals));
     }
 }

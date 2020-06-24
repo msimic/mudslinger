@@ -17,6 +17,21 @@ export async function apiGetClientConfig() {
     return axinst.get('/client/client_config');
 }
 
+export async function apiGetProfile(profileId: string) {
+    return axinst.get('/user/get_profile', {
+        params: {
+            id: profileId
+        }
+    });
+}
+
+export async function apiPostProfileConfig(profileId: string, val: string) {
+    return axinst.post('/user/save_profile_config', {
+        id: profileId,
+        config: val
+    });
+}
+
 export async function apiPostUserConfig(cfgVals: string) {
     return axinst.post('/usage/user_config', {
         sid: clientInfo.sid,

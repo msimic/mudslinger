@@ -2,19 +2,17 @@ import { EventHook } from "./event";
 
 import { UserConfig } from "./userConfig";
 
-import { getUrlParameter } from "./util";
-
-import { Socket } from "./socket";
 import { AliasEditor } from "./aliasEditor";
 import { TriggerEditor } from "./triggerEditor";
 import { JsScriptWin } from "./jsScriptWin";
 import { AboutWin } from "./aboutWin";
-import { ConnectWin } from "./connectWin";
 
 export class MenuBar {
     public EvtChangeDefaultColor = new EventHook<[string, string]>();
     public EvtChangeDefaultBgColor = new EventHook<[string, string]>();
     public EvtContactClicked = new EventHook<void>();
+    public EvtConnectClicked = new EventHook<void>();
+    public EvtDisconnectClicked = new EventHook<void>();
 
     private $menuBar: JQuery;
     private $chkEnableColor: JQuery;
@@ -24,12 +22,10 @@ export class MenuBar {
     private $chkEnableAlias: JQuery;
 
     constructor(
-        private socket: Socket,
         private aliasEditor: AliasEditor,
         private triggerEditor: TriggerEditor,
         private jsScriptWin: JsScriptWin,
         private aboutWin: AboutWin,
-        private connectWin: ConnectWin
         ) {
 
         this.makeClickFuncs();
@@ -75,21 +71,11 @@ export class MenuBar {
     private clickFuncs: {[k: string]: () => void} = {};
     private makeClickFuncs() {
         this.clickFuncs["Connect"] = () => {
-            let hostParam = getUrlParameter("host");
-            let portParam = getUrlParameter("port");
-
-            if (hostParam !== undefined && portParam !== undefined) {
-                let host = hostParam.trim();
-                let port = Number(portParam.trim());
-
-                this.socket.openTelnet(host, port);
-            } else {
-                this.connectWin.show();
-            }
+            this.EvtConnectClicked.fire();
         };
 
         this.clickFuncs["Disconnect"] = () => {
-            this.socket.closeTelnet();
+            this.EvtDisconnectClicked.fire();
         };
 
         this.clickFuncs["Aliases"] = () => {

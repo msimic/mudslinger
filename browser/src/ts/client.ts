@@ -1,5 +1,3 @@
-import { getUrlParameter } from "./util";
-
 import { UserConfig } from "./userConfig";
 import { AppInfo } from "./appInfo";
 
@@ -19,8 +17,14 @@ import { TriggerManager } from "./triggerManager";
 import { AboutWin } from "./aboutWin";
 import { ConnectWin } from "./connectWin";
 import { ContactWin } from "./contactWin";
+import { StatusWin } from "./statusWin";
 import * as apiUtil from "./apiUtil";
 
+
+interface ConnectionTarget {
+    host: string,
+    port: number
+}
 
 export class Client {
     private aliasEditor: AliasEditor;
@@ -41,7 +45,7 @@ export class Client {
 
     private serverEcho = false;
 
-    constructor() {
+    constructor(private connectionTarget: ConnectionTarget) {
         this.aboutWin = new AboutWin();
         this.jsScript = new JsScript();
         this.contactWin = new ContactWin();
@@ -64,7 +68,7 @@ export class Client {
         this.mxp = new Mxp(this.outputManager);
         this.socket = new Socket(this.outputManager, this.mxp);
         this.connectWin = new ConnectWin(this.socket);
-        this.menuBar = new MenuBar(this.socket, this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin, this.connectWin);
+        this.menuBar = new MenuBar(this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin);
 
         // MenuBar events
         this.menuBar.EvtChangeDefaultColor.handle((data: [string, string]) => {
@@ -77,6 +81,21 @@ export class Client {
 
         this.menuBar.EvtContactClicked.handle(() => {
             this.contactWin.show();
+        });
+
+        this.menuBar.EvtConnectClicked.handle(() => {
+            if (this.connectionTarget) {
+                this.socket.openTelnet(
+                    this.connectionTarget.host,
+                    this.connectionTarget.port
+                );
+            } else {
+                this.connectWin.show();
+            }
+        });
+
+        this.menuBar.EvtDisconnectClicked.handle(() => {
+            this.socket.closeTelnet();
         });
 
         // Socket events
@@ -190,14 +209,11 @@ export class Client {
 
         this.socket.open().then((success) => {
             if (!success) { return; }
-            let hostParam: string = getUrlParameter("host");
-            let portParam: string = getUrlParameter("port");
-
-            if (hostParam !== undefined && portParam !== undefined)
-            {
-                let host = hostParam.trim();
-                let port = Number(portParam);
-                this.socket.openTelnet(host, port);
+            
+            if (this.connectionTarget) {
+                this.socket.openTelnet(
+                    this.connectionTarget.host,
+                    this.connectionTarget.port);
 
             } else {
                 this.connectWin.show();
@@ -209,11 +225,79 @@ export class Client {
     public readonly AppInfo = AppInfo;
 }
 
+function profileConfigSave(profileId: string, val:string) {
+    let statusWin = new StatusWin();
+    statusWin.setContent('Saving profile...')
+    statusWin.show();
+    
+    (async () => {
+        try {
+            await apiUtil.apiPostProfileConfig(profileId, val);
+            statusWin.destroy();
+        } catch(err) {
+            // TODO: handle not logged in 
+            statusWin.setContent('Could not save profile.\n\n' + err);
+        }
+    })();
+}
+
+function localConfigSave(val: string) {
+    localStorage.setItem('userConfig', val);
+}
+
 export namespace Mudslinger {
     export let client: Client;
-    export function init() {
-        UserConfig.init();
-        client = new Client();
+    export async function init() {
+        let connectionTarget: ConnectionTarget;
+        let params = new URLSearchParams(location.search);
+        let profileId = params.get('profile');
+        let profile;
+        if (profileId) {
+            let statusWin = new StatusWin();
+            statusWin.setContent('Loading profile...')
+            statusWin.show();
+            try {
+                let resp = await apiUtil.apiGetProfile(profileId);
+                profile = resp.data;
+                statusWin.destroy();
+            } catch(err) {
+                if (err.response.status == 403) {
+                    statusWin.setContent(
+                        'Must log in.' +
+                        '<br>' +
+                        '<br>' +
+                        '<a href="/auth/login">CLICK HERE TO LOG IN</a>');
+                } else {
+                    statusWin.setContent('Could not load profile.\n\n' + err);
+                }
+                return;
+            }
+            connectionTarget = {
+                host: profile.host.trim(),
+                port: profile.port
+            }
+        }
+        
+        if (!profile && params.has('host') && params.has('port')) {
+            connectionTarget = {
+                host: params.get('host').trim(),
+                port: Number(params.get('port').trim())
+            }
+        }
+
+        if (profile) {
+            UserConfig.init(profile.config, (val: string): void => {
+                profileConfigSave(profileId, val)
+            });
+        } else {
+            UserConfig.init(localStorage.getItem("userConfig"), localConfigSave);
+        }
+
+        client = new Client(connectionTarget);
+        document.title = client.AppInfo.AppTitle;
+        if (profile) {
+            document.title += ` - ${profile.name}`;
+        }
     }
 }
 
