@@ -91,17 +91,19 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
             let elapsed: number = conStartTime && (<any>connEndTime - <any>conStartTime);
             tlog(telnetId, "::", remoteAddr, "->", host, port, "::closed after", elapsed && (elapsed/1000), "seconds");
 
-            axinst.post('/usage/disconnect', {
-                'uuid': conn.uuid,
-                'sid': client.id,
-                'from_addr': remoteAddr,
-                'to_addr': host,
-                'to_port': port,
-                'time_stamp': connEndTime,
-                'elapsed_ms': elapsed
-            }).catch((o) => {
-                console.error("/usage/disconnect error:", o);
-            });
+            if (conn) {
+                axinst.post('/usage/disconnect', {
+                    'uuid': conn.uuid,
+                    'sid': client.id,
+                    'from_addr': remoteAddr,
+                    'to_addr': host,
+                    'to_port': port,
+                    'time_stamp': connEndTime,
+                    'elapsed_ms': elapsed
+                }).catch((o) => {
+                    console.error("/usage/disconnect error:", o);
+                });
+            }
         });
         telnet.on("drain", () => {
             canWrite = true;
