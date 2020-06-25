@@ -28,6 +28,24 @@ def profiles():
 
 
 @login_required
+@bp.route('/convert_local', methods=('POST',))
+def convert_local():
+    config = request.form['user_config']
+
+    name = 'Converted Local Profile'
+    host = 'CHANGME'
+    port = 0
+
+    db = get_db()
+    db.execute("""
+        INSERT INTO profile (user_id, name, host, port, config)
+        VALUES (?,?,?,?,?)
+    """, (g.user['id'], name, host, port, config))
+    db.commit()
+    return render_template('user/convert_cleanup.html', redir=url_for('user.profiles'))
+
+
+@login_required
 @bp.route('/create_profile', methods=('GET', 'POST'))
 def create_profile():
     if request.method == 'POST':
@@ -131,6 +149,36 @@ def delete_profile(pr_id):
         abort(403)
 
     db.execute("DELETE FROM profile WHERE id = ?", (pr_id,))
+    db.commit()
+
+    return redirect(url_for('user.profiles'))
+
+
+@login_required
+@bp.route('/<int:pr_id>/copy_profile', methods=('POST',))
+def copy_profile(pr_id):
+    db = get_db()
+    profile = db.execute("""
+        SELECT * FROM profile
+        WHERE id = ?
+    """, (pr_id,)).fetchone()
+
+    if not profile:
+        abort(404)
+
+    if profile['user_id'] != g.user['id']:
+        abort(403)
+
+    db = get_db()
+    db.execute("""
+        INSERT INTO profile (user_id, name, host, port, config)
+        VALUES (?,?,?,?,?)
+    """, (
+        profile['user_id'],
+        'Copy of ' + profile['name'],
+        profile['host'],
+        profile['port'],
+        profile['config']))
     db.commit()
 
     return redirect(url_for('user.profiles'))

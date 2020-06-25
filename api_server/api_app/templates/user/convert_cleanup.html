@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    let backups = localStorage.getItem('userConfigConvertBackup') || [];
+    let userConfig = localStorage.getItem('userConfig');
+    backups.push(userConfig);
+    localStorage.setItem('userConfigConvertBackup', backups);
+    localStorage.removeItem('userConfig');
+
+    location.replace('{{ redir }}');
+});
+  </script>
+</head>
+<body>
+</body>
+</html>
