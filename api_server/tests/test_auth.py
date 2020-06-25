@@ -4,6 +4,7 @@ from flask import session
 
 from api_app.db import get_db
 from api_app import auth
+from api_app import mail
 
 import itsdangerous
 
@@ -16,11 +17,29 @@ def test_sigs(client, app):
     assert o == 'someval'
 
 
-def test_register(client, app):
+def test_register(mocker, client, app):
     assert client.get("/auth/register").status_code == 200
 
+    mocker.patch.object(mail, 'send')
+    resp = client.post("/auth/register",
+        data={
+            'email': 'test@test.test'
+        })
+    assert resp.status_code == 200
+    assert b'Email address already registered.' in resp.data
+    assert not mail.send.called
 
-def test_register_confirm(client, app):
+    resp = client.post("/auth/register",
+        data={
+            'email': 'me@you.com'
+        })
+    assert resp.status_code == 200
+    assert b'check your inbox' in resp.data
+    assert mail.send.called
+
+
+
+def test_register_confirm(mocker, client, app):
     sig = auth.dump_sig(app, {'email': 'fake@email.com'}, auth.REGISTER_SALT)
     assert client.get(f"/auth/{sig}/register").status_code == 200
 
@@ -35,17 +54,55 @@ def test_register_confirm(client, app):
             is not None
         )
 
+    response = client.post(f"/auth/{sig}/register",
+        data={"password": "a", "password2": "a"},
+        follow_redirects=True)
+    assert b'already registered' in response.data
 
-def test_reset_password(client, app):
+    mocker.patch.object(auth, 'load_sig')
+    auth.load_sig.side_effect = itsdangerous.SignatureExpired('some message')
+    response = client.post(
+        f"/auth/{sig}/register",
+        data={"password": "a", "password2": "a"},
+        follow_redirects=True)
+    assert b'expired' in response.data
+
+
+def test_reset_password(mocker, client, app):
     assert client.get(f"/auth/reset_password").status_code == 200
 
+    mocker.patch.object(mail, 'send')
+    resp = client.post("/auth/reset_password",
+        data={
+            'email': 'abc@notregistered.com'
+        })
+    assert resp.status_code == 200
+    assert b'Email address is not registered.' in resp.data
+    assert not mail.send.called
 
-def test_reset_password_confirm(client, app):
+    resp = client.post("/auth/reset_password",
+        data={
+            'email': 'test@test.test'
+        })
+    assert resp.status_code == 200
+    assert b'check your inbox' in resp.data
+    assert mail.send.called
+
+
+def test_reset_password_confirm(mocker, client, app):
     sig = auth.dump_sig(app, {'email': 'fake@email.com'}, auth.RESET_SALT)
     assert client.get(f"/auth/{sig}/reset_password").status_code == 200
 
     response = client.post(f"/auth/{sig}/reset_password", data={"password": "a", "password2": "a"})
     assert "http://localhost/auth/login" == response.headers["Location"]
+
+    mocker.patch.object(auth, 'load_sig')
+    auth.load_sig.side_effect = itsdangerous.SignatureExpired('some message')
+    response = client.post(
+        f"/auth/{sig}/reset_password",
+        data={"password": "a", "password2": "a"},
+        follow_redirects=True)
+    assert b'expired' in response.data
 
 
 def test_login(client, auth):
@@ -61,12 +118,15 @@ def test_login(client, auth):
     with client:
         client.get("/")
         assert session["user_id"] == 1
-        assert g.user["email"] == "test"
+        assert g.user["email"] == "test@test.test"
 
 
 @pytest.mark.parametrize(
     ("email", "password", "message"),
-    (("a", "test", b"Incorrect email."), ("test", "a", b"Incorrect password.")),
+    (
+        ("a", "test", b"Incorrect email."),
+        ("test@test.test", "a", b"Incorrect password.")
+    ),
 )
 def test_login_validate_input(auth, email, password, message):
     response = auth.login(email, password)
