@@ -13,8 +13,8 @@ from api_app.db import get_db
 bp = Blueprint('user', __name__, url_prefix='/user')
 
 
-@login_required
 @bp.route('/profiles', methods=('GET',))
+@login_required
 def profiles():
     db = get_db()
     profiles = db.execute("""
@@ -27,13 +27,17 @@ def profiles():
         profiles=profiles)
 
 
-@login_required
 @bp.route('/convert_local', methods=('POST',))
+@login_required
 def convert_local():
     config = request.form['user_config']
 
+    # Just in case empty config is sent somehow
+    if not config.strip():
+        config = None
+
     name = 'Converted Local Profile'
-    host = 'CHANGME'
+    host = 'CHANGEME'
     port = 0
 
     db = get_db()
@@ -45,8 +49,8 @@ def convert_local():
     return render_template('user/convert_cleanup.html', redir=url_for('user.profiles'))
 
 
-@login_required
 @bp.route('/create_profile', methods=('GET', 'POST'))
+@login_required
 def create_profile():
     if request.method == 'POST':
         name = request.form['name'].strip()
@@ -81,8 +85,8 @@ def create_profile():
     return render_template('user/create_profile.html')
 
 
-@login_required
 @bp.route('/<int:pr_id>/edit_profile', methods=('GET', 'POST'))
+@login_required
 def edit_profile(pr_id):
     db = get_db()
     profile = db.execute("""
@@ -126,15 +130,15 @@ def edit_profile(pr_id):
                     host = ?,
                     port = ?
                 WHERE id = ?
-            """, (name, host, port, g.user['id']))
+            """, (name, host, port, pr_id))
             db.commit()
             return redirect(url_for('user.profiles'))
 
     return render_template('user/edit_profile.html', profile=profile)
 
 
-@login_required
 @bp.route('/<int:pr_id>/delete_profile', methods=('POST',))
+@login_required
 def delete_profile(pr_id):
     db = get_db()
     profile = db.execute("""
@@ -154,8 +158,8 @@ def delete_profile(pr_id):
     return redirect(url_for('user.profiles'))
 
 
-@login_required
 @bp.route('/<int:pr_id>/copy_profile', methods=('POST',))
+@login_required
 def copy_profile(pr_id):
     db = get_db()
     profile = db.execute("""
