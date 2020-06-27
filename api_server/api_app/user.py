@@ -46,7 +46,13 @@ def convert_local():
         VALUES (?,?,?,?,?)
     """, (g.user['id'], name, host, port, config))
     db.commit()
-    return render_template('user/convert_cleanup.html', redir=url_for('user.profiles'))
+
+    res = db.execute("""
+        SELECT id FROM profile WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT 1
+    """, (g.user['id'],)).fetchone()
+    return render_template('user/convert_cleanup.html', redir=url_for('user.edit_profile', pr_id=res['id']))
 
 
 @bp.route('/create_profile', methods=('GET', 'POST'))

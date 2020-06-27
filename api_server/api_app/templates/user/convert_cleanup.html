@@ -5,10 +5,11 @@
 
   <script>
 document.addEventListener('DOMContentLoaded', function() {
-    let backups = localStorage.getItem('userConfigConvertBackup') || [];
+    let backupsStr = localStorage.getItem('userConfigConvertBackup');
+    let backups = backupsStr ? JSON.parse(backupsStr) : [];
     let userConfig = localStorage.getItem('userConfig');
     backups.push(userConfig);
-    localStorage.setItem('userConfigConvertBackup', backups);
+    localStorage.setItem('userConfigConvertBackup', JSON.stringify(backups));
     localStorage.removeItem('userConfig');
 
     location.replace('{{ redir }}');

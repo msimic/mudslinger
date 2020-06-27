@@ -8,27 +8,30 @@
 {% endblock %}
 
 {% block content %}
-  <div style="display:none" class='import-alert'>
+  <div style="display:none" class='profile-local'>
+    <h1>Local Profile</h1>
     <p>
-      Local settings detected.
       These are settings that you saved while playing without a profile.
       These settings are saved to the browser <b>localStorage</b>, so won't be available when playing from other devices.
-      <br>
-      <br>
-      <form action="{{ url_for('user.convert_local') }}" method=POST>
-        <input type="hidden" name="user_config" id="user_config" >
-        <input type="submit" value="Convert to Permanent Profile">
-      </form>
     </p>
+    <div>
+      <a href="/play/">Connect</a>
+    </div>
+    <form action="{{ url_for('user.convert_local') }}" method=POST>
+      <input type="hidden" name="user_config" id="user_config" >
+      <input type="submit" value="Convert to Permanent Profile">
+    </form>
     <hr>
   </div>
   {% for profile in profiles %}
-    <div>{{ profile['name'] }}</div>
+  <div class='profile'>
+    <h1>{{ profile['name'] }}</h1>
     <div>{{ profile['host'] }}:{{ profile['port'] }}</div>
     <div>
       <a href="/play/?profile={{profile['id']}}">Connect</a>
       <a href="{{ url_for('user.edit_profile', pr_id=profile['id']) }}">Edit</a>
     </div>
+  </div>
     {% if not loop.last %}
       <hr>
     {% endif %}
@@ -40,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (userConfig) {
     let inp = document.getElementById('user_config');
     inp.value = userConfig;
-    let div = document.getElementsByClassName('import-alert')[0];
+    let div = document.getElementsByClassName('profile-local')[0];
     div.style.display = 'initial';
   }
 });
