@@ -241,8 +241,38 @@ function profileConfigSave(profileId: string, val:string) {
     })();
 }
 
-function localConfigSave(val: string) {
-    localStorage.setItem('userConfig', val);
+function makeCbLocalConfigSave(): (val: string) => void {
+    let localConfigAck = localStorage.getItem("localConfigAck");
+
+    return (val: string) => {
+        localStorage.setItem('userConfig', val);
+        if (!localConfigAck) {
+            let win = document.createElement('div');
+            win.innerHTML = `
+                <!--header-->
+                <div>INFO</div>
+                <!--content-->
+                <div>
+                <p>
+                    Your settings are being saved to the browser <b>localStorage</b>,
+                    so won't be available when playing from other devices.
+                </p>
+                <p>
+                    You can convert this to a permanent profile from the
+                    <a target="_blank" href="/user/profiles">Profiles</a> page after
+                    registering and logging in.
+                </p>
+
+                </div>
+            `;
+            (<any>$(win)).jqxWindow({
+                closeButtonAction: 'close'
+            });
+
+            localConfigAck = "true";
+            localStorage.setItem('localConfigAck', localConfigAck);
+        }
+    };
 }
 
 export namespace Mudslinger {
@@ -290,7 +320,7 @@ export namespace Mudslinger {
                 profileConfigSave(profileId, val)
             });
         } else {
-            UserConfig.init(localStorage.getItem("userConfig"), localConfigSave);
+            UserConfig.init(localStorage.getItem("userConfig"), makeCbLocalConfigSave());
         }
 
         client = new Client(connectionTarget);
