@@ -1,12 +1,39 @@
 import { EventHook } from "./event";
 
 import { OutputManager } from "./outputManager";
+import { OutWinBase } from "./outWinBase";
+
+
+class DestWin extends OutWinBase {
+    constructor(name: string) {
+        let win = document.createElement("div");
+        win.innerHTML = `
+        <!--header-->
+        <div>${name}</div>
+        <!--content-->
+        <div>
+            <pre class="outputText mxp-dest-output"></pre>
+        </div>
+        `;
+
+        let cont = win.getElementsByClassName('outputText')[0];
+
+        (<any>$(win)).jqxWindow({
+            showCloseButton: false,
+            keyboardCloseKey: '' // to prevent close
+        });
+
+        super($(cont));
+    }
+}
+
 
 export class Mxp {
     public EvtEmitCmd = new EventHook<{value: string, noPrint: boolean}>();
 
     private openTags: Array<string> = [];
     private tagHandlers: Array<(tag: string) => boolean> = [];
+    private destWins: {[k: string]: DestWin} = {};
 
     constructor(private outputManager: OutputManager) {
         this.makeTagHandlers();
@@ -38,6 +65,35 @@ export class Mxp {
             }
 
             return false;
+        });
+
+        this.tagHandlers.push((tag: string): boolean => {
+            /* handle dest tags */
+            let re = /^<dest (\w+)>$/i;
+            let match = re.exec(tag);
+            if (match) {
+                let destName = match[1];
+                this.openTags.push("dest");
+                if (!this.destWins[destName]) {
+                    this.destWins[destName] = new DestWin(destName);
+                }
+                this.outputManager.pushTarget(this.destWins[destName]);
+                return true;
+            }
+
+            re = /^<\/dest>$/i;
+            match = re.exec(tag);
+            if (match) {
+                if (this.openTags[this.openTags.length - 1] !== "dest") {
+                    /* This may happen often for servers sending newline before closing dest tag */
+                } else {
+                    this.openTags.pop();
+                    this.outputManager.popTarget();
+                }
+                return true;
+            }
+
+            return false;            
         });
 
         this.tagHandlers.push((tag) => {
@@ -175,7 +231,11 @@ export class Mxp {
         }
 
         for (let i = this.openTags.length - 1; i >= 0; i--) {
+            if (this.openTags[i] === "dest") {
+                this.outputManager.popTarget();
+            } else {
                 this.outputManager.popMxpElem();
+            }
         }
         this.openTags = [];
     };

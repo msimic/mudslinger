@@ -32,7 +32,7 @@ a:link, a:visited {
     flex-direction: row;
 }
 
-#winOutput {
+#winOutput, .mxp-dest-output {
     height:calc(100% - 21px);
     margin:0;
     padding:0;
