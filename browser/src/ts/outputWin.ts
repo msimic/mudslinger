@@ -178,12 +178,32 @@ export class OutputWin extends OutWinBase {
         this.scrollBottom(true);
     }
 
-    handleScriptEvalError(data: {stack: any}) {
-        let stack = Util.rawToHtml(data.stack);
+    handleScriptEvalError(err: any) {
+        let msg = Util.rawToHtml(err.toString());
+        let stack = Util.rawToHtml(err.stack);
 
         this.$target.append(
             "<span style=\"color:red\">"
             + "[[Script eval error<br>"
+            + err.toString() + "<br>"
+            + "<br>"
+            + stack + "<br>"
+            + "]]"
+            + "<br>"
+            + "</span>"
+        );
+        this.scrollBottom(true);
+    }
+
+    handleScriptError(err: any) {
+        let msg = Util.rawToHtml(err.toString());
+        let stack = Util.rawToHtml(err.stack);
+
+        this.$target.append(
+            "<span style=\"color:red\">"
+            + "[[Script error<br>"
+            + err.toString() + "<br>"
+            + "<br>"
             + stack + "<br>"
             + "]]"
             + "<br>"

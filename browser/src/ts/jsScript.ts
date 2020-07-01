@@ -2,7 +2,8 @@ import { EventHook } from "./event";
 
 export let EvtScriptEmitCmd = new EventHook<string>();
 export let EvtScriptEmitPrint = new EventHook<string>();
-export let EvtScriptEmitEvalError = new EventHook<{}>();
+export let EvtScriptEmitError = new EventHook<any>();
+export let EvtScriptEmitEvalError = new EventHook<any>();
 
 function makeScript(text: string, argsSig: string) {
     let _scriptFunc_: any;
@@ -33,6 +34,14 @@ export class JsScript {
     getScriptThis() { return this.scriptThis; }
 
     public makeScript(text: string, argsSig: string): any {
-        return makeScript.call(this.scriptThis, text, argsSig);
+        let scr = makeScript.call(this.scriptThis, text, argsSig);
+        if (!scr) { return null; }
+        return (...args: any[]) => {
+            try {
+                scr(...args);
+            } catch (err) {
+                EvtScriptEmitError.fire(err);
+            }
+        };
     }
 }

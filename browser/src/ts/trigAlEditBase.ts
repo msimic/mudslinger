@@ -139,6 +139,7 @@ export abstract class TrigAlEditBase {
     private clearEditor(): void {
         this.$pattern.val("");
         this.$textArea.val("");
+        this.codeMirror.setValue("");
         this.$regexCheckbox.prop("checked", false);
         this.$scriptCheckbox.prop("checked", false);
     }

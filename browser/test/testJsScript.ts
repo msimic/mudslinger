@@ -5,10 +5,12 @@ export function test() {
 let sends: string[];
 let prints: string[];
 let evalErrors: {}[];
+let scriptErrors: {}[];
 
 jsScript.EvtScriptEmitCmd.handle((data) => { sends.push(data); });
 jsScript.EvtScriptEmitPrint.handle((data) => { prints.push(data); });
 jsScript.EvtScriptEmitEvalError.handle((data) => { evalErrors.push(data); });
+jsScript.EvtScriptEmitError.handle((data) => { scriptErrors.push(data); });
 
 let clss: jsScript.JsScript;
 
@@ -17,6 +19,7 @@ QUnit.module("jsScript", {
         sends = [];
         prints = [];
         evalErrors = [];
+        scriptErrors = [];
         clss = new jsScript.JsScript();
     }
 });
@@ -53,6 +56,16 @@ QUnit.test("eval error", (assert: Assert) => {
     `, "");
     assert.equal(null, scr);
     assert.equal(evalErrors.length, 1);
+});
+
+QUnit.test("script error", (assert: Assert) => {
+    let scr = clss.makeScript(`
+        fakefunc('hello world');
+    `, "");
+    assert.equal(evalErrors.length, 0);
+    assert.equal(scriptErrors.length, 0);
+    scr();
+    assert.equal(scriptErrors.length, 1);
 });
 
 QUnit.test("comment regression 1", (assert: Assert) => {
