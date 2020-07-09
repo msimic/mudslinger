@@ -9,5 +9,6 @@
 /static/public/jqwidgets/
 /static/public/mudslinger-*.js
 /static/test/mudslingerTest.js
+/static/test/mudslingerTestOutput.js
 /static/test/qunit/
 /static/docs/

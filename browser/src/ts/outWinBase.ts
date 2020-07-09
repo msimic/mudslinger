@@ -1,14 +1,21 @@
 import * as Util from "./util";
 import { colorIdToHtml } from "./color";
-import { UserConfig } from "./userConfig";
+import { EventHook } from "./event";
+
+export interface ConfigIf {
+    onSet(key: "colorsEnabled", cb: (val: any) => void): void;
+    getDef(key: "colorsEnabled", def: any): any;
+}
 
 export class OutWinBase {
+    public EvtLine = new EventHook<string>();
+
     private colorsEnabled: boolean;
 
     private lineCount: number = 0;
     private maxLines: number = 5000;
 
-    constructor(rootElem: JQuery) {
+    constructor(rootElem: JQuery, private config: ConfigIf) {
         this.$rootElem = rootElem;
         this.$targetElems = [rootElem];
         this.$target = rootElem;
@@ -18,8 +25,8 @@ export class OutWinBase {
 
         this.$rootElem.bind("scroll", (e: any) => { this.handleScroll(e); });
 
-        this.colorsEnabled = UserConfig.getDef("colorsEnabled", true);
-        UserConfig.onSet("colorsEnabled", (val: any) => { this.setColorsEnabled(val); });
+        this.colorsEnabled = this.config.getDef("colorsEnabled", true);
+        this.config.onSet("colorsEnabled", (val: any) => { this.setColorsEnabled(val); });
     }
 
 
@@ -96,10 +103,6 @@ export class OutWinBase {
         return popped;
     }
 
-    protected handleLine(line: string) {
-        // default to nothing, main output window will send it to trigger manager
-    }
-
     private appendBuffer = "";
     private lineText = ""; // track full text of the line with no escape sequences or tags
     public addText(txt: string) {
@@ -162,7 +165,7 @@ export class OutWinBase {
         this.popElem(); // pop the old line
         this.pushElem($("<span>").appendTo(this.$target));
 
-        this.handleLine(this.lineText);
+        this.EvtLine.fire(this.lineText);
         this.lineText = "";
 
         this.lineCount += 1;

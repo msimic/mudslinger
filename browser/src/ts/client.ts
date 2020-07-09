@@ -58,12 +58,12 @@ export class Client {
 
         this.commandInput = new CommandInput(this.aliasManager);
 
-        this.outputWin = new OutputWin(this.triggerManager);
+        this.outputWin = new OutputWin(UserConfig);
 
         this.aliasEditor = new AliasEditor(this.aliasManager);
         this.triggerEditor = new TriggerEditor(this.triggerManager);
 
-        this.outputManager = new OutputManager(this.outputWin);
+        this.outputManager = new OutputManager(this.outputWin, UserConfig);
 
         this.mxp = new Mxp(this.outputManager);
         this.socket = new Socket(this.outputManager, this.mxp);
@@ -127,10 +127,6 @@ export class Client {
 
         this.socket.EvtTelnetError.handle((data: string) => {
             this.outputWin.handleTelnetError(data);
-        });
-
-        this.socket.EvtMxpTag.handle((data: string) => {
-            this.mxp.handleMxpTag(data);
         });
 
         this.socket.EvtWsError.handle((data) => {
@@ -204,6 +200,20 @@ export class Client {
             for (let cmd of data) {
                 this.socket.sendCmd(cmd);
             }
+        });
+
+        // OutputWin events
+        this.outputWin.EvtLine.handle((line: string) => {
+            this.triggerManager.handleLine(line);
+        });
+
+        // OutputManager events
+        this.outputManager.EvtNewLine.handle(() => {
+            this.mxp.handleNewline();
+        });
+
+        this.outputManager.EvtMxpTag.handle((data: string) => {
+            this.mxp.handleMxpTag(data);
         });
 
         // Prevent navigating away accidentally

@@ -1,10 +1,9 @@
-import { OutWinBase } from "./outWinBase";
-import { TriggerManager } from "./triggerManager";
+import { OutWinBase, ConfigIf } from "./outWinBase";
 import * as Util from "./util";
 
 export class OutputWin extends OutWinBase {
-    constructor(private triggerManager: TriggerManager) {
-        super($("#winOutput"));
+    constructor(config: ConfigIf) {
+        super($("#winOutput"), config);
 
         $(document).ready(() => {
             window.onerror = this.handleWindowError.bind(this);
@@ -210,9 +209,5 @@ export class OutputWin extends OutWinBase {
             + "</span>"
         );
         this.scrollBottom(true);
-    }
-
-    protected handleLine(line: string) {
-        this.triggerManager.handleLine(line);
     }
 }
