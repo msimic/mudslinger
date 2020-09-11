@@ -1,10 +1,29 @@
 import axios from 'axios';
 
+export let enabled = true;
+export let apiBaseUrl: string = null;
+
 export namespace clientInfo {
     export let sid: string = null;
     export let clientIp: string = null;
     export let telnetHost: string = null;
     export let telnetPort: number = null;
+}
+
+export function setEnabled(val : boolean) {
+    enabled = val;
+}
+
+export function getApiBaseUrl() {
+    return apiBaseUrl || "./";
+}
+
+export function setApiBaseUrl(val: string) {
+    apiBaseUrl = val;
+}
+
+export function createApiUrl(val: string) {
+    return getApiBaseUrl() + val;
 }
 
 let axinst = axios.create({
@@ -14,11 +33,16 @@ let axinst = axios.create({
 });
 
 export async function apiGetClientConfig() {
-    return axinst.get('/client/client_config');
+    if (!enabled)
+        return axinst.get('./client.config.json');
+    else
+        return axinst.get(createApiUrl('client/client_config'));
 }
 
 export async function apiGetProfile(profileId: string) {
-    return axinst.get('/user/get_profile', {
+    if (!enabled) return null
+    else
+    return axinst.get(createApiUrl('user/get_profile'), {
         params: {
             id: profileId
         }
@@ -26,14 +50,18 @@ export async function apiGetProfile(profileId: string) {
 }
 
 export async function apiPostProfileConfig(profileId: string, val: string) {
-    return axinst.post('/user/save_profile_config', {
+    if (!enabled) return null
+    else
+    return axinst.post(createApiUrl('user/save_profile_config'), {
         id: profileId,
         config: val
     });
 }
 
 export async function apiPostUserConfig(cfgVals: string) {
-    return axinst.post('/usage/user_config', {
+    if (!enabled) return null
+    else
+    return axinst.post(createApiUrl('usage/user_config'), {
         sid: clientInfo.sid,
         vals: cfgVals,
         time_stamp: new Date()
@@ -41,7 +69,9 @@ export async function apiPostUserConfig(cfgVals: string) {
 }
 
 export async function apiPostMxpSend() {
-    return axinst.post('/usage/mxp_send', {
+    if (!enabled) return null
+    else
+    return axinst.post(createApiUrl('usage/mxp_send'), {
         sid: clientInfo.sid,
         from_addr: clientInfo.clientIp,
         to_addr: clientInfo.telnetHost,
@@ -51,7 +81,9 @@ export async function apiPostMxpSend() {
 }
 
 export async function apiPostClientConn() {
-    return axinst.post('/usage/client_conn', {
+    if (!enabled) return null
+    else
+    return axinst.post(createApiUrl('usage/client_conn'), {
         sid: clientInfo.sid,
         from_addr: clientInfo.clientIp,
         to_addr: clientInfo.telnetHost,
@@ -61,7 +93,9 @@ export async function apiPostClientConn() {
 }
 
 export async function apiPostContact(message: string, email: string) {
-    return axinst.post('/client/contact', {
+    if (!enabled) return null
+    else
+    return axinst.post(createApiUrl('client/contact'), {
         "message": message,
         "email": email,
         "client_info": {

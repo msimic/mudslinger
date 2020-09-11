@@ -42,6 +42,14 @@ export class ConnectWin {
 
         (<any>this.$win).jqxWindow({width: 450, height: 150});
         this.$connectButton.click(this.handleConnectButtonClick.bind(this));
+        this.$hostInput.keyup(this.handleKeyUp.bind(this));
+        this.$portInput.keyup(this.handleKeyUp.bind(this));
+    }
+
+    private handleKeyUp(event:KeyboardEvent) {
+        if (event.keyCode == 13) {
+            this.handleConnectButtonClick();
+        }
     }
 
     private handleConnectButtonClick() {

@@ -11,9 +11,12 @@ a:link, a:visited {
 }
 
 #mudslinger {
-    width: 100vw;
+    width: 100%;
     max-width: 100%;
-    height: 92vh;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
 }
 
 #mainWin {
@@ -23,53 +26,124 @@ a:link, a:visited {
     flex-direction: column;
     height:100%;
     width:100%;
+    flex: 1;
+    min-height: 0;
 }
 
 #cmdCont {
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-direction: row;
-    flex-direction: row;
+    min-height: 30px;
+    background-color: #666666;
+    display: block;
+    width: 100%;
+    flex:none;
 }
 
-#winOutput, .mxp-dest-output {
-    height:calc(100% - 21px);
+#winOutput {
+    height:100%;
     margin:0;
     padding:0;
+    padding-left: 15px;
+    margin-bottom: 5px;
+    flex: 1;
+    width: 100%;
 }
-
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    background-color: black;
+}
 .outputText {
     font-size: small;
     background-color:black;
-    font-family:"Courier", monospace;
     color:rgb(0,187,0); /* low green */
     white-space: pre-wrap;
     overflow-y:scroll;
-    overflow-x:scroll;
+    overflow-x:auto;
     width:100%;
 }
+/* Hide scrollbar for Chrome, Safari and Opera */
+.outputText::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.outputText {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.small-text {
+	font-size: small !important;
+}
+
+.normal-text {
+	font-size: medium !important;
+}
+
+.large-text {
+	font-size: large !important;
+}
 
 #cmdInput {
-    margin: 0;
+	margin: 0;
     padding: 0;
-    flex: 1;
-}
-
-#cmdInput {
+    background-color: #C7C7C7;
+    border-color: #111111;
+    border-radius: 3px;
+    border-width: 1px;
+    font-weight: bold;
+    margin-left: 5px;
+	display: block;
+	min-height: 20px;
+    width: 70%;
+    margin-left: 10px;
+    margin-top: 3px;
+    margin-bottom: 3px;
     resize: none;
-    font-family:"Courier", monospace;
-    font-size: small;
-    display: inline;
+    font-size: medium;
+    font-family: "Consolas", monospace;
+    float: left;
 }
 
+.courier {
+    font-family: "Courier", monospace !important;
+}
+
+.consolas {
+    font-family: "Consolas", monospace !important;
+}
+
+.chkCmdInputCmdStackCont {
+    display: block;
+    float: left;
+    margin-top: 4px;
+}
 .chkCmdInputCmdStackCont .toolTipText {
     display: none;
-    font-family:"Courier", monospace;
+    font-family: Tahoma, sans-serif;
     font-size: small;
+    color: white;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    white-space: nowrap;
+}
+.pane-content .CodeMirror {
+    height: 100% !important;
+}
+
+.winJsScript-code {
+    height: 100%;
+}
+
+#menuBar {
+	max-width: calc(100% - 150px) !important;
 }
 
 .chkCmdInputCmdStackCont:hover .toolTipText {
-    display: inline;
+    display: inline-block;
 }
 
 .winEdit-pattern {
@@ -79,4 +153,133 @@ a:link, a:visited {
 .winEdit-listBox {
     width: 100%;
     height: 100%;
+}
+#menuBar {
+	background: black !important;
+    color: #555555;
+	border-color: transparent !important;
+    font-weight: bold;
+    height: auto !important;
+    flex: none;
+    max-width: calc(100% - 150px) !important;
+}
+.winEdit-textArea, .winEdit-scriptArea {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    resize: none;
+}
+.winEdit-pattern, .winEdit-textArea, .winEdit-scriptArea {
+    margin: 3px;
+    box-sizing: border-box;
+}
+/*
+.winEdit-btnNew {}
+.winEdit-btnDelete {}
+.winEdit-pattern {}
+.winEdit-chkRegex {}
+.winEdit-chkScript {}
+.winEdit-btnSave {}
+.winEdit-btnCancel {}
+.winEdit-textArea {}
+.winEdit-scriptArea{}
+*/
+.jqx-window-content button {
+    position: static;
+	font-family: 'Lato', 'Lucida Grande', 'Lucida Sans Unicode', Tahoma, Sans-Serif;
+    -webkit-transition: color 300ms ease, background-color 300ms ease, opacity 300ms ease;
+    transition: color 300ms ease, background-color 300ms ease, opacity 300ms ease;
+    color: #403f3f;
+    background-color: #b7b7b7;
+    display: inline-block;
+    z-index: 100;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-size: 10px;
+    line-height: 12px;
+    padding: 5px 7px;
+    margin: 4px 2px;
+    border-radius: 3px;
+    border: 0;
+    cursor: pointer;
+    font-weight: bold;
+}
+.jqx-window-content button:hover {
+  background-image: linear-gradient(#b7b7b7 0%, #999999 100%) !important;
+  color: black;
+  font-weight: bolder;
+}
+.jqx-window-content button:disabled {
+    background-image: linear-gradient(#dad7d7 0%, #cec7c7 100%) !important;
+    color: #eae7e7;
+}
+.jqx-window-content {
+	overflow: hidden !important;
+	border-color: transparent !important;
+    background: #ddd !important;
+    font-family: 'Lato', 'Lucida Grande', 'Lucida Sans Unicode', Tahoma, Sans-Serif;
+}
+.jqx-widget-content {
+	border-color: transparent !important;
+    background: #ddd !important;
+}
+
+.left-pane {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;;
+    padding: 0;
+}
+
+.left-pane .list {
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+}
+
+.left-pane .buttons {
+    flex: none;
+    display: flex;
+    flex-direction: row;
+}
+
+.right-pane .pane-options {
+    text-align: right;
+}
+
+.left-pane .buttons button {
+    flex: 1
+}
+
+.right-pane {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;;
+    padding: 5px;
+    box-sizing: border-box;
+    padding-bottom: 0;
+}
+
+.right-pane .pane-header {
+    flex: none;
+}
+
+.right-pane .pane-footer {
+    flex: none;
+    text-align: right;
+    margin-top: 7px;
+}
+
+.right-pane .pane-footer button {
+    min-width: 80px;
+}
+
+.right-pane .pane-content-title {
+    flex: none;
+}
+
+.right-pane .pane-content {
+    flex: 1
 }

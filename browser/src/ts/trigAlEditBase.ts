@@ -48,29 +48,41 @@ export abstract class TrigAlEditBase {
         <div>
             <div class="winEdit-mainSplit">
                 <!--left panel-->
-                <div>
-                    <div style="height:5%">
+                <div class="left-pane">
+                    <div class="list">
+                        <select size="2" class="winEdit-listBox"></select>
+                    </div>
+                    <div class="buttons">
                         <button class="winEdit-btnNew">NEW</button>
                         <button class="winEdit-btnDelete">DELETE</button>
                     </div>
-                    <select class="winEdit-listBox" size="100%" style="height:95%"></select>
                 </div>
                 <!--right panel-->
-                <div>
-                    Pattern:<br>
-                    <input type="text" class="winEdit-pattern" style="height:5%" disabled><br>
-                    Regex<br>
-                    <input type="checkbox" class="winEdit-chkRegex" style="height:5%" disabled><br>
-                    Script<br>
-                    <input type="checkbox" class="winEdit-chkScript" style="height:5%" disabled>
-                    <div>
-                        <button class="winEdit-btnSave" style="height:5%" disabled>SAVE</button>
-                        <button class="winEdit-btnCancel" style="height:5%" disabled>CANCEL</button>
+                <div class="right-pane">
+                    <div class="pane-header">
+                        <span>Pattern</span>
+                        <input type="text" class="winEdit-pattern" disabled><br>
+                        <div class="pane-options">
+                            <label>
+                                Regex
+                                <input type="checkbox" class="winEdit-chkRegex" disabled />
+                            </label>
+                            <label>
+                                Script
+                                <input type="checkbox" class="winEdit-chkScript" disabled />
+                            </label>
+                        </div>
+                    </div>                    
+                    <div class="pane-content-title">
+                        <span>Value:</span>
                     </div>
-                    Value:<br>
-                    <div style="height:50%;width:100%">
-                        <textarea class="winEdit-textArea" style="height:100%;width:100%" disabled></textarea>
-                        <textarea class="winEdit-scriptArea" style="height:100%;width:100%" disabled></textarea>
+                    <div class="pane-content">
+                        <textarea class="winEdit-textArea" disabled></textarea>
+                        <textarea class="winEdit-scriptArea" disabled></textarea>
+                    </div>
+                    <div class="pane-footer">
+                        <button class="winEdit-btnSave" disabled>SAVE</button>
+                        <button class="winEdit-btnCancel" disabled>CANCEL</button>
                     </div>
                 </div>
             </div>

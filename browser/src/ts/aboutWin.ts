@@ -26,7 +26,7 @@ export class AboutWin {
 
         this.$win = $(win);
 
-        (<any>this.$win).jqxWindow({width: 600, height: 400});
+        (<any>this.$win).jqxWindow({width: 360, height: 200});
     }
 
     public show() {

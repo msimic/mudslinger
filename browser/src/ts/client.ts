@@ -18,6 +18,7 @@ import { AboutWin } from "./aboutWin";
 import { ConnectWin } from "./connectWin";
 import { ContactWin } from "./contactWin";
 import { StatusWin } from "./statusWin";
+import axios from 'axios';
 import * as apiUtil from "./apiUtil";
 
 
@@ -291,11 +292,28 @@ function makeCbLocalConfigSave(): (val: string) => void {
 
 export namespace Mudslinger {
     export let client: Client;
+    export async function GetLocalClientConfig() {
+        let axinst = axios.create({
+            validateStatus: (status) => {
+                return status === 200;
+            }
+        });
+        return axinst.get('./client.config.json');
+    };
+
+    export function runClient(connectionTarget: ConnectionTarget, profile:any) {
+        client = new Client(connectionTarget);
+        document.title = client.AppInfo.AppTitle;
+        if (profile) {
+            document.title += ` - ${profile.name}`;
+        }
+    }
+
     export async function init() {
         let connectionTarget: ConnectionTarget;
         let params = new URLSearchParams(location.search);
         let profileId = params.get('profile');
-        let profile;
+        let profile: any;
         if (profileId) {
             let statusWin = new StatusWin();
             statusWin.setContent('Loading profile...')
@@ -328,6 +346,12 @@ export namespace Mudslinger {
                 port: Number(params.get('port').trim())
             }
         }
+        else if (!profile && params.has('host') && params.get('host').trim()=="auto") {
+            connectionTarget = {
+                host: null,
+                port: 0
+            }
+        }
 
         if (profile) {
             UserConfig.init(profile.config, (val: string): void => {
@@ -337,11 +361,32 @@ export namespace Mudslinger {
             UserConfig.init(localStorage.getItem("userConfig"), makeCbLocalConfigSave());
         }
 
-        client = new Client(connectionTarget);
-        document.title = client.AppInfo.AppTitle;
-        if (profile) {
-            document.title += ` - ${profile.name}`;
-        }
+        
+        GetLocalClientConfig().then(resp => {
+            if (resp && resp.data) {
+                const cfg = resp.data;
+                if (cfg.apiBaseUrl) {
+                    // enable api and override base url
+                    apiUtil.setApiBaseUrl(cfg.apiBaseUrl);
+                    apiUtil.setEnabled(true);
+                } else {
+                    // local config with no api url means api disabled
+                    apiUtil.setEnabled(false);
+                }
+            } else {
+                // we got nothing, work as before
+                apiUtil.setEnabled(true);
+            }
+        }, () => {
+            // we got error fetching client config, work the API as normal
+            apiUtil.setEnabled(true);
+        }).then(() => {
+            runClient(connectionTarget, profile);
+        },
+        (err) => {
+            console.log("Failed loading local config: " + err);
+            runClient(connectionTarget, profile); // run even if fetching the local config fails and fallback to previous behavior with the API
+        })
     }
 }
 

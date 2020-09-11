@@ -13,5 +13,7 @@ config.adminWebPort = 9001;
 config.apiBaseUrl = "http://somehost:9001";
 config.apiKey = "somekey";
 
+config.fixedTelnetHost = "";
+config.fixedTelnetPort = "";
 
 module.exports = config;

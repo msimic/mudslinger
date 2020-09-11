@@ -1,5 +1,6 @@
 var path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   entry: './src/ts/client',
@@ -10,14 +11,18 @@ module.exports = {
     // so VSCode can match the source file.
     devtoolModuleFilenameTemplate: '[absolute-resource-path]',
   },
-  plugins: [new HtmlWebpackPlugin({
+  plugins: [
+    new CleanWebpackPlugin({
+      /*dry: true,*/
+      verbose: true,
+      cleanOnceBeforeBuildPatterns: ['*.js', '!jquery*'],
+    }),
+    new HtmlWebpackPlugin({
       template: "./src/html/template.html",
       filename: path.resolve(__dirname, "static/public", "index.html")
   })],
   mode: 'development',
-  // Pick any source-map that does not require eval.
-  // `cheap-source-map` gives the best speed/quality for development.
-  devtool: 'eval-source-map',
+  devtool: 'eval-source-map', 
   resolve: {
     modules: ['node_modules'],
     extensions: ['.ts','.js']

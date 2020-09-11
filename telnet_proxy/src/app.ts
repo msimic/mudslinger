@@ -65,6 +65,18 @@ const argv = yargs
         type: 'string',
         requiresArg: true
     })
+    .option('fixedTelnetHost', {
+        alias: 'th',
+        description: 'If provided telnet requests will go only to this host and nowhere else. The client must give null on the telnet host.',
+        type: 'string',
+        requiresArg: true
+    })
+    .option('fixedTelnetPort', {
+        alias: 'tp',
+        description: 'If provided telnet requests will go only to this port and nowhere else. The client must give null on the telnet port.',
+        type: 'string',
+        requiresArg: true
+    })
     .option('verbosity', {
         alias: 'v',
         description: 'Verbose level (0=WARN, 1=INFO, 2=DEBUG)',
@@ -123,6 +135,8 @@ serverConfig.adminWebHost = argv.adminWebHost || serverConfig.adminWebHost;
 serverConfig.adminWebPort = argv.adminWebPort || serverConfig.adminWebPort;
 serverConfig.apiBaseUrl = argv.apiBaseUrl || serverConfig.apiBaseUrl;
 serverConfig.apiKey = argv.apiKey || serverConfig.apiKey;
+serverConfig.fixedTelnetHost = argv.fixedTelnetHost || serverConfig.fixedTelnetHost;
+serverConfig.fixedTelnetPort = argv.fixedTelnetPort || serverConfig.fixedTelnetPort;
 
 console.log(serverConfig);
 
@@ -187,6 +201,22 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
         let port: number;
 
         let conStartTime: Date;
+
+        if (serverConfig.fixedTelnetHost && args[0] && args[0]!=serverConfig.fixedTelnetHost) {
+            const error = "The telnet host is fixed on the proxy and must not be changed by the client";
+            ioEvt.srvTelnetError.fire(error);
+            return;
+        } else if (serverConfig.fixedTelnetHost && !args[0]) {
+            args[0] = serverConfig.fixedTelnetHost;
+        }
+
+        if (serverConfig.fixedTelnetPort && args[1] && args[1]!=serverConfig.fixedTelnetPort) {
+            const error = "The telnet port is fixed on the proxy and must not be changed by the client";
+            ioEvt.srvTelnetError.fire(error);
+            return;
+        } else if (serverConfig.fixedTelnetPort && !args[1]) {
+            args[1] = serverConfig.fixedTelnetPort;
+        }
 
         host = args[0];
         port = args[1];

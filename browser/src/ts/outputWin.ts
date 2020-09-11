@@ -81,10 +81,18 @@ export class OutputWin extends OutWinBase {
         }
 
         let elem = document.createElement("span");
-        elem.innerHTML = "<span style='color:cyan'>"
-            + "[[Telnet connecting to " + host + ":" + port.toString()
-            + "<span class='conn-dots'></span>"
-            + "]]<br>";
+        if (host && port) {
+            elem.innerHTML = "<span style='color:cyan'>"
+                + "[[Telnet connecting to " + host + ":" + port.toString()
+                + "<span class='conn-dots'></span>"
+                + "]]<br>";
+        }
+        else {
+            elem.innerHTML = "<span style='color:cyan'>"
+                + "[[Telnet connecting "
+                + "<span class='conn-dots'></span>"
+                + "]]<br>";
+        }
 
         let dots = elem.getElementsByClassName('conn-dots')[0] as HTMLSpanElement;
 

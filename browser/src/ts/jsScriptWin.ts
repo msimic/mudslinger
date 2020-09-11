@@ -18,9 +18,16 @@ export class JsScriptWin {
         <div>JAVASCRIPT SCRIPT</div>
         <!--content-->
         <div>
-            <button class="winJsScript-btnRun" style="height:10%">RUN SCRIPT</button>
-            <div style="height:90%">
-                <textarea class="winJsScript-code"></textarea>
+            <div class="right-pane">
+                <div class="pane-header">
+                    <span>Write the script code to execute:</span>
+                </div>                    
+                <div class="pane-content">
+                    <textarea class="winJsScript-code"></textarea>
+                </div>
+                <div class="pane-footer">
+                    <button class="winJsScript-btnRun">Run Script</button>
+                </div>
             </div>
         </div>
         `;
@@ -28,7 +35,7 @@ export class JsScriptWin {
         this.$win = $(win);
         this.$runButton = $(win.getElementsByClassName("winJsScript-btnRun")[0]);
 
-        (<any>this.$win).jqxWindow({width: 600, height: 400});
+        (<any>this.$win).jqxWindow({width: 550, height: 400});
         this.codeMirror = CodeMirror.fromTextArea(
             win.getElementsByClassName("winJsScript-code")[0], {
                 mode: "javascript",

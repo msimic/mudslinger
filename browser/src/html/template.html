@@ -64,13 +64,11 @@
   </div>
   <div id="mainWin">
     <pre id="winOutput" class="outputText"></pre>
-    <!--<br>-->
     <div id="cmdCont">
-      <textarea rows="1" id="cmdInput"></textarea>
-      <div class="chkCmdInputCmdStackCont" style="border:1px solid green">
-        <span class="toolTipText">Toggle command stacking</span>
+      <textarea autofocus rows="1" id="cmdInput"></textarea>
+      <div class="chkCmdInputCmdStackCont">
         <input id="chkCmdStack" type="checkbox" checked>
-        ;
+        <label for="chkCmdStack" class="toolTipText" aria-live="assertive" title="Command stacking">Command stacking</label>
       </div>
     </div>
   </div>

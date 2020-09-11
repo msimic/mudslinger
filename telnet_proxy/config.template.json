@@ -6,5 +6,7 @@
     "adminWebHost": "localhost",
     "adminWebPort": 9001,
     "apiBaseUrl": "",
-    "apiKey": ""
+    "apiKey": "",
+    "fixedTelnetHost": "",
+    "fixedTelnetPort": ""
 }
