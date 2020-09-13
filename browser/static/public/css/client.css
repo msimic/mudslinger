@@ -47,6 +47,15 @@ a:link, a:visited {
     flex: 1;
     width: 100%;
 }
+
+.output-prewrap {
+	white-space: pre !important;
+}
+
+.jqx-menu, .jqx-menu-popup {
+    z-index: 9999 !important;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -75,6 +84,10 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
+.extra-small-text {
+	font-size: x-small !important;
+}
+
 .small-text {
 	font-size: small !important;
 }
@@ -85,6 +98,10 @@ body {
 
 .large-text {
 	font-size: large !important;
+}
+
+.extra-large-text {
+	font-size: x-large !important;
 }
 
 #cmdInput {
@@ -116,6 +133,10 @@ body {
     font-family: "Consolas", monospace !important;
 }
 
+.monospace {
+    font-family: monospace !important;
+}
+
 .chkCmdInputCmdStackCont {
     display: block;
     float: left;
@@ -129,13 +150,6 @@ body {
     text-overflow: ellipsis;
     max-width: 100px;
     white-space: nowrap;
-}
-.pane-content .CodeMirror {
-    height: 100% !important;
-}
-
-.winJsScript-code {
-    height: 100%;
 }
 
 #menuBar {

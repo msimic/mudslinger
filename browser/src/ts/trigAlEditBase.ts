@@ -101,8 +101,10 @@ export abstract class TrigAlEditBase {
         this.$textArea = $(myDiv.getElementsByClassName("winEdit-textArea")[0]);
         this.$scriptArea = $(myDiv.getElementsByClassName("winEdit-scriptArea")[0]);
 
+        const win_w = $(window).innerWidth()-20;
+        const win_h = $(window).innerHeight()-20;
 
-        (<any>this.$win).jqxWindow({width: 600, height: 400});
+        (<any>this.$win).jqxWindow({width: Math.min(600, win_w), height: Math.min(400, win_h)});
 
         (<any>this.$mainSplit).jqxSplitter({
             width: "100%",

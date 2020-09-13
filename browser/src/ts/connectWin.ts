@@ -47,7 +47,8 @@ export class ConnectWin {
     }
 
     private handleKeyUp(event:KeyboardEvent) {
-        if (event.keyCode == 13) {
+        const k = (event.key || event.keyCode);
+        if (k == "Enter" || k == 13) {
             this.handleConnectButtonClick();
         }
     }

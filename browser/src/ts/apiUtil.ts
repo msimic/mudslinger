@@ -12,6 +12,11 @@ export namespace clientInfo {
 
 export function setEnabled(val : boolean) {
     enabled = val;
+    if (!enabled) {
+        $("[data-require-api='true']").hide();
+    } else {
+        $("[data-require-api='true']").show();
+    }
 }
 
 export function getApiBaseUrl() {

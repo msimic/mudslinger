@@ -15,7 +15,7 @@ module.exports = {
     new CleanWebpackPlugin({
       /*dry: true,*/
       verbose: true,
-      cleanOnceBeforeBuildPatterns: ['*.js', '!jquery*'],
+      cleanOnceBeforeBuildPatterns: ['*.hot-update.json', '*.js', '!jquery*'],
     }),
     new HtmlWebpackPlugin({
       template: "./src/html/template.html",
@@ -40,6 +40,7 @@ module.exports = {
     inline: true,
     writeToDisk: true,
     host: 'localhost',
+    /*https: true,*/
     port: 8080,
   },
 };

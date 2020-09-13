@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="The mud client running in a browser."/>
+
+  <title>Mudslinger Client</title>
+
   <link rel="icon" type="image/ico" href="favicon.ico">
   <link rel="stylesheet" href="jqwidgets/styles/jqx.base.css">
 
@@ -22,6 +27,12 @@
   <link rel="stylesheet" href="css/client.css">
 
   <script>
+
+    // set caching to max one month, this prevents browsers from indefinitely caching mudslinger even if the server code has been updated
+    // in case the server does not have response headers that prevent it
+    var dt = new Date();dt.setDate((dt.getDate()+31));
+    document.write('<meta http-equiv="expires" content="' + dt.toGMTString() + '"/>');
+
     $(document).ready(function() {
       Mudslinger.init();
     });
@@ -31,41 +42,63 @@
 <div id="mudslinger">
   <div id="menuBar">
     <ul>
-      <li id=menuBar-conn-disconn>Connect</li>
-      <li>Aliases</li>
-      <li>Triggers</li>
-      <li>Script</li>
-      <li>Config
+      <li id="menuBar-conn-disconn" data-option-name="connect">Connect</li>
+      <li data-option-name="aliases">Aliases</li>
+      <li data-option-name="triggers">Triggers</li>
+      <li data-option-name="script">Script</li>
+      <li data-option-name="config">Config
         <ul>
-          <li>Text Color
+          <li data-option-name="text-settings">Text
             <ul>
-              <li>White on Black</li>
-              <li>Green on Black</li>
-              <li>Black on Grey</li>
-              <li>Black on White</li>
+              <li data-option-name="text-color">Color
+                <ul>
+                  <li data-option-name="enable-color"><label><input id="menuBar-chkEnableColor" type="checkbox" checked>Enable ANSI</label></li>
+                  <li data-option-name="white-on-black">White on Black</li>
+                  <li data-option-name="green-on-black">Green on Black</li>
+                  <li data-option-name="black-on-gray">Black on Grey</li>
+                  <li data-option-name="black-on-white">Black on White</li>
+                </ul>
+              </li>
+              <li>Font
+                <ul>
+                  <li data-option-name="monospace">Default</li>
+                  <li data-option-name="courier">Courier</li>
+                  <li data-option-name="consolas">Consolas</li>
+                </ul>
+              </li>
+              <li>Size
+                <ul>
+                  <li data-option-name="extra-small-font">Smallest</li>
+                  <li data-option-name="small-font">Small</li>
+                  <li data-option-name="normal-font">Normal</li>
+                  <li data-option-name="large-font">Large</li>
+                  <li data-option-name="extra-large-font">Largest</li>
+                </ul>
+              </li>
+              <li data-option-name="wrap-lines"><label><input id="menuBar-chkWrapLines" type="checkbox" checked>Wrap Lines</label></li>
+              <li data-option-name="enable-utf8"><label><input id="menuBar-chkEnableUtf8" type="checkbox" checked>Enable UTF-8</label></li>
             </ul>
           </li>
-          <li><label><input id="menuBar-chkEnableColor" type="checkbox" checked>Enable Color</label></li>
-          <li><label><input id="menuBar-chkEnableUtf8" type="checkbox" checked>Enable UTF-8</label></li>
-          <li><label><input id="menuBar-chkEnableMxp" type="checkbox" checked>Enable MXP</label></li>
+          
+          <li data-option-name="enable-mxp"><label><input id="menuBar-chkEnableMxp" type="checkbox" checked>Enable MXP</label></li>
           
           <li type="separator"></li>
 
-          <li><label><input id="menuBar-chkEnableTrig" type="checkbox" checked>Enable Triggers</label></li>
-          <li><label><input id="menuBar-chkEnableAlias" type="checkbox" checked>Enable Aliases</label></li>
+          <li data-option-name="enable-aliases"><label><input id="menuBar-chkEnableTrig" type="checkbox" checked>Enable Triggers</label></li>
+          <li data-option-name="enable-triggers"><label><input id="menuBar-chkEnableAlias" type="checkbox" checked>Enable Aliases</label></li>
 
         </ul>
       </li>
-      <li>About</li>
-      <li><a href="/docs/" target="_blank">Docs</a></li>
-      <li>Contact</li>
-      <li><a href="/user/profiles">Profiles</a></li>
+      <li data-option-name="about">About</li>
+      <li data-require-api="true" data-option-name="docs"><a href="/docs/" target="_blank">Docs</a></li>
+      <li data-require-api="true" data-option-name="contact">Contact</li>
+      <li data-require-api="true" data-option-name="profiles"><a href="/user/profiles">Profiles</a></li>
     </ul>
   </div>
   <div id="mainWin">
-    <pre id="winOutput" class="outputText"></pre>
+    <pre id="winOutput" aria-live="assertive" class="outputText"></pre>
     <div id="cmdCont">
-      <textarea autofocus rows="1" id="cmdInput"></textarea>
+      <textarea autofocus rows="1" id="cmdInput" aria-live="off"></textarea>
       <div class="chkCmdInputCmdStackCont">
         <input id="chkCmdStack" type="checkbox" checked>
         <label for="chkCmdStack" class="toolTipText" aria-live="assertive" title="Command stacking">Command stacking</label>

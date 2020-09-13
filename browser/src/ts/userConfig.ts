@@ -34,9 +34,10 @@ export namespace UserConfig {
     }
 
     export function set(key: string, val: any) {
+        const prev = cfgVals[key];
         cfgVals[key] = val;
         saveConfig();
-        if (key in setHandlers) {
+        if (prev != val && key in setHandlers) {
             setHandlers[key].fire(val);
         }
     }

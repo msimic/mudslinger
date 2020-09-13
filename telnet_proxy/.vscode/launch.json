@@ -7,7 +7,7 @@
             "name": "Launch Proxy",
             "preLaunchTask": "build proxy",
             "program": "${workspaceFolder}/src/app.ts",
-            "args": ["config.json","--th","192.168.8.164","--tp","4000"]
+            "args": ["config.json"]
         }
     ]
   }

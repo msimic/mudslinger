@@ -37,11 +37,31 @@ export class Socket {
             this.EvtWsError.fire(err);
             return false;
         }
-
-        let ioUrl = location.protocol + "//" +
-            (res.data.socket_io_host) +
+        let url:URL;
+        let protocol = location.protocol;
+        let host = res.data.socket_io_host;
+        let port = location.port;
+        try {
+            // check if res.data.socket_io_host is a full url specification and if yes use that
+            url = new URL(res.data.socket_io_host);
+            if (url.protocol) {
+                protocol = url.protocol;
+            }
+            if (url.hostname) {
+                host = url.hostname;
+            }
+            if (url.port) {
+                port = url.port;
+            }
+        } catch (error) {
+            // assume we have host and porta separately
+            host = res.data.socket_io_host;
+            port = res.data.socket_io_port;
+        }
+        let ioUrl = protocol + "//" +
+            (host) +
             ":" +
-            (res.data.socket_io_port || location.port) +
+            (port) +
             "/telnet";
         console.log("Connecting to telnet proxy server at", ioUrl);
         this.ioConn = io.connect(ioUrl);

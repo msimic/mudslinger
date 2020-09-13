@@ -109,7 +109,15 @@ export class Client {
            this.outputWin.handleTelnetTryConnect(val[0], val[1]); 
         });
 
+        var preventNavigate = (e:any) => {
+            e.preventDefault();
+            e.returnValue = "";
+            return "";
+        };
+
         this.socket.EvtTelnetConnect.handle((val: [string, number]) => {
+            // Prevent navigating away accidentally
+            window.addEventListener("beforeunload", preventNavigate);
             this.serverEcho = false;
             this.menuBar.handleTelnetConnect();
             this.outputWin.handleTelnetConnect();
@@ -120,6 +128,8 @@ export class Client {
         });
 
         this.socket.EvtTelnetDisconnect.handle(() => {
+            // allow navigating away
+            window.removeEventListener("beforeunload", preventNavigate);
             this.menuBar.handleTelnetDisconnect();
             this.outputWin.handleTelnetDisconnect();
             apiUtil.clientInfo.telnetHost = null;
@@ -217,11 +227,6 @@ export class Client {
             this.mxp.handleMxpTag(data);
         });
 
-        // Prevent navigating away accidentally
-        window.onbeforeunload = () => {
-            return "";
-        };
-
         this.socket.open().then((success) => {
             if (!success) { return; }
             
@@ -263,6 +268,15 @@ function makeCbLocalConfigSave(): (val: string) => void {
         localStorage.setItem('userConfig', val);
         if (!localConfigAck) {
             let win = document.createElement('div');
+            let profileMessage = `
+                <p>
+                    You can convert this to a permanent profile from the
+                    <a target="_blank" href="/user/profiles">Profiles</a> page after
+                    registering and logging in.
+                </p>`;
+            if (!apiUtil.enabled) {
+                profileMessage = "";
+            }
             win.innerHTML = `
                 <!--header-->
                 <div>INFO</div>
@@ -272,11 +286,7 @@ function makeCbLocalConfigSave(): (val: string) => void {
                     Your settings are being saved to the browser <b>localStorage</b>,
                     so won't be available when playing from other devices.
                 </p>
-                <p>
-                    You can convert this to a permanent profile from the
-                    <a target="_blank" href="/user/profiles">Profiles</a> page after
-                    registering and logging in.
-                </p>
+                ${profileMessage}
 
                 </div>
             `;
@@ -301,8 +311,27 @@ export namespace Mudslinger {
         return axinst.get('./client.config.json');
     };
 
+    function setDefault(key:string, value:any) {
+        if (UserConfig.get(key) == undefined) {
+            UserConfig.set(key, value);
+        }
+    }
+
+    function setDefaults() {
+        setDefault("text-color", "green-on-black");
+        setDefault("colorsEnabled", true);
+        setDefault("wrap-lines", true);
+        setDefault("utf8Enabled", false);
+        setDefault("mxpEnabled", true);
+        setDefault("enable-aliases", true);
+        setDefault("enable-triggers", true);
+        setDefault("font-size", "small");
+        setDefault("font", "Courier");
+    }
+
     export function runClient(connectionTarget: ConnectionTarget, profile:any) {
         client = new Client(connectionTarget);
+        setDefaults();
         document.title = client.AppInfo.AppTitle;
         if (profile) {
             document.title += ` - ${profile.name}`;

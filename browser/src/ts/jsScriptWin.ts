@@ -34,8 +34,11 @@ export class JsScriptWin {
 
         this.$win = $(win);
         this.$runButton = $(win.getElementsByClassName("winJsScript-btnRun")[0]);
+        const win_w = $(window).innerWidth()-20;
+        const win_h = $(window).innerHeight()-20;
 
-        (<any>this.$win).jqxWindow({width: 550, height: 400});
+        (<any>this.$win).jqxWindow({width: Math.min(550, win_w), height: Math.min(400, win_h)});
+
         this.codeMirror = CodeMirror.fromTextArea(
             win.getElementsByClassName("winJsScript-code")[0], {
                 mode: "javascript",

@@ -6,11 +6,12 @@
             "request": "launch",
             "name": "Debug",
             "preLaunchTask": "webpack: dev server",
-            "url": "http://localhost:8080",
+            "url": "http://localhost:8080?host=auto",
+            "runtimeArgs": ["--incognito"],
             "webRoot": "${workspaceFolder}",
             "sourceMaps": true,
             "trace": "verbose",
-            "skipFiles": [
+            "skipFiles": [  
                 "${workspaceRoot}/node_modules/**/*.js",
             ]
         }

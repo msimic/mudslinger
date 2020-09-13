@@ -82,13 +82,13 @@ export class OutputWin extends OutWinBase {
 
         let elem = document.createElement("span");
         if (host && port) {
-            elem.innerHTML = "<span style='color:cyan'>"
+            elem.innerHTML = "<br/><span style='color:cyan'>"
                 + "[[Telnet connecting to " + host + ":" + port.toString()
                 + "<span class='conn-dots'></span>"
                 + "]]<br>";
         }
         else {
-            elem.innerHTML = "<span style='color:cyan'>"
+            elem.innerHTML = "<br/><span style='color:cyan'>"
                 + "[[Telnet connecting "
                 + "<span class='conn-dots'></span>"
                 + "]]<br>";
@@ -108,7 +108,7 @@ export class OutputWin extends OutWinBase {
             this.connIntervalId = null;
         }
         this.$target.append(
-            "<span style=\"color:cyan\">"
+            "<br/><span style=\"color:cyan\">"
             + "[[Telnet connected]]"
             + "<br>"
             + "</span>");
@@ -121,7 +121,7 @@ export class OutputWin extends OutWinBase {
             this.connIntervalId = null;
         }
         this.$target.append(
-            "<span style=\"color:cyan\">"
+            "<br/><span style=\"color:cyan\">"
             + "[[Telnet disconnected]]"
             + "<br>"
         + "</span>");
@@ -130,7 +130,7 @@ export class OutputWin extends OutWinBase {
 
     handleWsConnect() {
         this.$target.append(
-            "<span style=\"color:cyan\">"
+            "<br/><span style=\"color:cyan\">"
             + "[[Websocket connected]]"
             + "<br>"
             + "</span>");
@@ -143,7 +143,7 @@ export class OutputWin extends OutWinBase {
             this.connIntervalId = null;
         }
         this.$target.append(
-            "<span style=\"color:cyan\">"
+            "<br/><span style=\"color:cyan\">"
             + "[[Websocket disconnected]]"
             + "<br>"
             + "</span>");
@@ -152,7 +152,7 @@ export class OutputWin extends OutWinBase {
 
     handleTelnetError(data: string) {
         this.$target.append(
-            "<span style=\"color:red\">"
+            "<br/><span style=\"color:red\">"
             + "[[Telnet error" + "<br>"
             + data + "<br>"
             + "]]"
@@ -163,7 +163,7 @@ export class OutputWin extends OutWinBase {
 
     handleWsError() {
         this.$target.append(
-            "<span style=\"color:red\">"
+            "<br/><span style=\"color:red\">"
             + "[[Websocket error]]"
             + "<br>"
             + "</span>");
@@ -172,7 +172,7 @@ export class OutputWin extends OutWinBase {
 
     private handleWindowError(message: any, source: any, lineno: any, colno: any, error: any) {
         this.$target.append(
-            "<span style=\"color:red\">"
+            "<br/><span style=\"color:red\">"
             + "[[Web Client Error<br>"
             + message + "<br>"
             + source + "<br>"
@@ -190,7 +190,7 @@ export class OutputWin extends OutWinBase {
         let stack = Util.rawToHtml(err.stack);
 
         this.$target.append(
-            "<span style=\"color:red\">"
+            "<br/><span style=\"color:red\">"
             + "[[Script eval error<br>"
             + err.toString() + "<br>"
             + "<br>"
@@ -207,7 +207,7 @@ export class OutputWin extends OutWinBase {
         let stack = Util.rawToHtml(err.stack);
 
         this.$target.append(
-            "<span style=\"color:red\">"
+            "<br/><span style=\"color:red\">"
             + "[[Script error<br>"
             + err.toString() + "<br>"
             + "<br>"

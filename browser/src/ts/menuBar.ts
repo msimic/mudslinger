@@ -13,125 +13,251 @@ export class MenuBar {
     public EvtContactClicked = new EventHook<void>();
     public EvtConnectClicked = new EventHook<void>();
     public EvtDisconnectClicked = new EventHook<void>();
+    private clickFuncs: {[k: string]: (value:any) => void} = {};
+    private optionMappingToStorage = new Map([
+        ["connect", ""],
+        ["aliases", ""],
+        ["triggers", ""],
+        ["script", ""],
+        ["config", ""],
+        ["text-color", ""],
+        ["white-on-black", "text-color"],
+        ["green-on-black", "text-color"],
+        ["black-on-gray", "text-color"],
+        ["black-on-white", "text-color"],
+        ["wrap-lines", "wrap-lines"],
+        ["enable-color", "colorsEnabled"],
+        ["enable-utf8", "utf8Enabled"],
+        ["enable-mxp", "mxpEnabled"],
+        ["enable-aliases", "aliasesEnabled"],
+        ["enable-triggers", "triggersEnabled"],
+        ["extra-small-font", "font-size"],
+        ["small-font", "font-size"],
+        ["normal-font", "font-size"],
+        ["large-font", "font-size"],
+        ["extra-large-font", "font-size"],
+        ["courier", "font"],
+        ["consolas", "font"],
+        ["monospace", "font"],
+        ["about", ""],
+        ["docs", ""],
+        ["contact", ""],
+        ["profiles", ""],
+    ]); 
 
-    private $menuBar: JQuery;
-    private $chkEnableColor: JQuery;
-    private $chkEnableMxp: JQuery;
-    private $chkEnableUtf8: JQuery;
-    private $chkEnableTrig: JQuery;
-    private $chkEnableAlias: JQuery;
+    private attachMenuOption(name:string, element:Element, checkbox:Element) {
+        const clickable = name in this.clickFuncs;
+        const storageKey = this.optionMappingToStorage.get(name);
+        if (checkbox && storageKey) {
+            const storageVal = UserConfig.get(storageKey);
+            const onStorageChanged:(val:string)=>void = (storageVal) => {
+                if (storageVal) {
+                    $(checkbox).attr('checked', storageVal);
+                    $(element).data("checked", storageVal);
+                    if (clickable) this.clickFuncs[name](storageVal);
+                } else if (storageVal != undefined) {
+                    $(checkbox).removeAttr('checked');
+                    $(element).data("checked", false);
+                    if (clickable) this.clickFuncs[name](storageVal);
+                }
+                if (storageVal != undefined) console.log(`${name} set to ${storageVal}`);
+            };
+            onStorageChanged(storageVal);
+            UserConfig.onSet(storageKey, onStorageChanged);
+            $(checkbox).change((event: JQueryEventObject) => {
+                UserConfig.set(storageKey, (<any>event.target).checked);
+                if (clickable) this.clickFuncs[name]((<any>event.target).checked);
+            });
+        } else if (storageKey) {
+            if (clickable) this.clickFuncs[name](UserConfig.get(storageKey));
+        }
+        if (clickable) {
+            console.log(`Attaching menu item ${name}`);
+            let x = $(element);
+            $(element).click((event: JQueryEventObject) => {
+                if (!event.target || event.target.tagName != "LI") return;
+                if (!checkbox && storageKey) {
+                    UserConfig.set(storageKey, name);
+                    this.clickFuncs[name](name);
+                } else {
+                    this.clickFuncs[name]($(element).data("checked"));
+                }
+            });
+        };
+    }
 
     constructor(
         private aliasEditor: AliasEditor,
         private triggerEditor: TriggerEditor,
         private jsScriptWin: JsScriptWin,
         private aboutWin: AboutWin,
-        ) {
-
+        ) 
+    {
+        <JQuery>((<any>$("#menuBar")).jqxMenu());
         this.makeClickFuncs();
 
-        this.$menuBar = $("#menuBar");
-
-        this.$chkEnableColor = $("#menuBar-chkEnableColor");
-        this.$chkEnableUtf8 = $("#menuBar-chkEnableUtf8");
-        this.$chkEnableMxp = $("#menuBar-chkEnableMxp");
-
-        this.$chkEnableTrig = $("#menuBar-chkEnableTrig");
-        this.$chkEnableAlias = $("#menuBar-chkEnableAlias");
-
-        (<any>this.$menuBar).jqxMenu({ width: "100%", height: "4%"});
-        this.$menuBar.on("itemclick", (event: any) => { this.handleClick(event); });
-
-        this.$chkEnableColor.change(function() {
-            UserConfig.set("colorsEnabled", this.checked);
+        $("[data-option-name]").each((i, e) => {
+            const name = $(e).data("option-name");
+            const chk = $(e).find("input[type='checkbox']")[0];
+            this.attachMenuOption(name, e, chk);
         });
-        (this.$chkEnableColor[0] as HTMLInputElement).checked = UserConfig.getDef("colorsEnabled", true);
-
-        this.$chkEnableUtf8.change(function() {
-            UserConfig.set("utf8Enabled", this.checked);
-        });
-        (this.$chkEnableUtf8[0] as HTMLInputElement).checked = UserConfig.getDef("utf8Enabled", false);
-
-        this.$chkEnableMxp.change(function() {
-            UserConfig.set("mxpEnabled", this.checked);
-        });
-        (this.$chkEnableMxp[0] as HTMLInputElement).checked = UserConfig.getDef("mxpEnabled", true);
-
-        this.$chkEnableTrig.change(function() {
-            UserConfig.set("triggersEnabled", this.checked);
-        });
-        (this.$chkEnableTrig[0] as HTMLInputElement).checked = UserConfig.getDef("triggersEnabled", true);
-
-        this.$chkEnableAlias.change(function() {
-            UserConfig.set("aliasesEnabled", this.checked);
-        });
-        (this.$chkEnableAlias[0] as HTMLInputElement).checked = UserConfig.getDef("aliasesEnabled", true);
     }
 
-    private clickFuncs: {[k: string]: () => void} = {};
     private makeClickFuncs() {
-        this.clickFuncs["Connect"] = () => {
-            this.EvtConnectClicked.fire();
+        this.clickFuncs["connect"] = (val) => {
+            if (val) {
+                this.EvtDisconnectClicked.fire();
+            }
+            else {
+                this.EvtConnectClicked.fire();
+            }
         };
 
-        this.clickFuncs["Disconnect"] = () => {
-            this.EvtDisconnectClicked.fire();
+        this.clickFuncs["wrap-lines"] = (val) => {
+            if (!val) {
+                $("#winOutput").addClass("output-prewrap");
+            } else {
+                $("#winOutput").removeClass("output-prewrap");
+            }
         };
 
-        this.clickFuncs["Aliases"] = () => {
+        var removeFontSizes = () => {
+            $("#winOutput").removeClass("extra-small-text");
+            $("#winOutput").removeClass("small-text");
+            $("#winOutput").removeClass("normal-text");
+            $("#winOutput").removeClass("large-text");
+            $("#winOutput").removeClass("extra-large-text");
+        };
+
+        var removeFonts = () => {
+            $("#winOutput").removeClass("courier");
+            $("#winOutput").removeClass("consolas");
+            $("#winOutput").removeClass("monospace");
+        };
+
+        this.clickFuncs["enable-color"] = (val) => {
+            if (val) {
+                this.EvtChangeDefaultColor.fire(["white", "low"]);
+                this.EvtChangeDefaultBgColor.fire(["black", "low"]);
+            }
+        }
+
+        this.clickFuncs["courier"] = (val) => {
+            if (val == "courier") {
+                removeFonts();
+                $("#winOutput").addClass("courier");
+            }
+        };
+
+        this.clickFuncs["consolas"] = (val) => {
+            if (val == "consolas") {
+                removeFonts();
+                $("#winOutput").addClass("consolas");
+            }
+        };
+
+        this.clickFuncs["monospace"] = (val) => {
+            if (val == "monospace") {
+                removeFonts();
+                $("#winOutput").addClass("monospace");
+            }
+        };
+
+        this.clickFuncs["extra-small-font"] = (val) => {
+            if (val == "extra-small-font") {
+                removeFontSizes();
+                $("#winOutput").addClass("extra-small-text");
+            }
+        };
+
+        this.clickFuncs["small-font"] = (val) => {
+            if (val == "small-font") {
+                removeFontSizes();
+                $("#winOutput").addClass("small-text");
+            }
+        };
+
+        this.clickFuncs["normal-font"] = (val) => {
+            if (val == "normal-font") {
+                removeFontSizes();
+                $("#winOutput").addClass("normal-text");
+            }
+        };
+
+        this.clickFuncs["large-font"] = (val) => {
+            if (val == "large-font") {
+                removeFontSizes();
+                $("#winOutput").addClass("large-text");
+            }
+        };
+
+        this.clickFuncs["extra-large-font"] = (val) => {
+            if (val == "extra-large-font") {
+                removeFontSizes();
+                $("#winOutput").addClass("extra-large-text");
+            }
+        };
+
+        this.clickFuncs["aliases"] = (val) => {
             this.aliasEditor.show();
         };
 
-        this.clickFuncs["Triggers"] = () => {
+        this.clickFuncs["triggers"] = (val) => {
             this.triggerEditor.show();
         };
 
-        this.clickFuncs["Green on Black"] = () => {
-            this.EvtChangeDefaultColor.fire(["green", "low"]);
-            this.EvtChangeDefaultBgColor.fire(["black", "low"]);
+        this.clickFuncs["green-on-black"] = (val) => {
+            if (val == "green-on-black") {
+                $("#menuBar-chkEnableColor").removeAttr("checked").trigger("change");
+                this.EvtChangeDefaultColor.fire(["green", "low"]);
+                this.EvtChangeDefaultBgColor.fire(["black", "low"]);
+            }
         };
 
-        this.clickFuncs["White on Black"] = () => {
-            this.EvtChangeDefaultColor.fire(["white", "low"]);
-            this.EvtChangeDefaultBgColor.fire(["black", "low"]);
+        this.clickFuncs["white-on-black"] = (val) => {
+            if (val == "white-on-black") {
+                $("#menuBar-chkEnableColor").removeAttr("checked").trigger("change");
+                this.EvtChangeDefaultColor.fire(["white", "low"]);
+                this.EvtChangeDefaultBgColor.fire(["black", "low"]);
+            }
         };
 
-        this.clickFuncs["Black on Grey"] = () => {
-            this.EvtChangeDefaultColor.fire(["black", "low"]);
-            this.EvtChangeDefaultBgColor.fire(["white", "low"]);
+        this.clickFuncs["black-on-gray"] = (val) => {
+            if (val == "black-on-gray") {
+                $("#menuBar-chkEnableColor").removeAttr("checked").trigger("change");
+                this.EvtChangeDefaultColor.fire(["black", "low"]);
+                this.EvtChangeDefaultBgColor.fire(["white", "low"]);
+            }
         };
 
-        this.clickFuncs["Black on White"] = () => {
-            this.EvtChangeDefaultColor.fire(["black", "low"]);
-            this.EvtChangeDefaultBgColor.fire(["white", "high"]);
+        this.clickFuncs["black-on-white"] = (val) => {
+            if (val == "black-on-white") {
+                $("#menuBar-chkEnableColor").removeAttr("checked").trigger("change");
+                this.EvtChangeDefaultColor.fire(["black", "low"]);
+                this.EvtChangeDefaultBgColor.fire(["white", "high"]);
+            }
         };
 
-        this.clickFuncs["Script"] = () => {
+        this.clickFuncs["script"] = (val) => {
             this.jsScriptWin.show();
         };
 
-        this.clickFuncs["About"] = () => {
+        this.clickFuncs["about"] = (val) => {
             this.aboutWin.show();
         };
 
-        this.clickFuncs["Contact"] = () => {
+        this.clickFuncs["contact"] = (val) => {
             this.EvtContactClicked.fire(null);
         };
     }
 
-    private handleClick(event: any) {
-        let item = event.args;
-        let text = $(item).text();
-        if (text in this.clickFuncs) {
-            this.clickFuncs[text]();
-        }
-    }
-
     handleTelnetConnect() {
         $("#menuBar-conn-disconn").text("Disconnect");
+        $("#menuBar-conn-disconn").data("checked", true);
     }
 
     handleTelnetDisconnect() {
         $("#menuBar-conn-disconn").text("Connect");
+        $("#menuBar-conn-disconn").data("checked", false);
     }
 }
