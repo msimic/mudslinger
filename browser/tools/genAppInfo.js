@@ -17,8 +17,8 @@ exec(build, (error, stdout, stderr) => {
         process.exit(1);
     }
     let txt = `export namespace AppInfo {
-        export let AppTitle: string = "Mudslinger Client";
-        export let RepoUrl: string = "https://github.com/Odoth/mudslinger";
+        export let AppTitle: string = "TS2 Web Client";
+        export let RepoUrl: string = "https://github.com/msimic/mudslinger";
         export let Version: string = "${pjson.version}";
         export let Build: string = "${buildhash}";
     }`;

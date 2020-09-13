@@ -283,8 +283,8 @@ function makeCbLocalConfigSave(): (val: string) => void {
                 <!--content-->
                 <div>
                 <p>
-                    Your settings are being saved to the browser <b>localStorage</b>,
-                    so won't be available when playing from other devices.
+                    Le tue impostazioni verranno salvate in <b>locale</b> nel tuo browser,
+                    e non potrai accederci da altri senza esportare e importare.
                 </p>
                 ${profileMessage}
 

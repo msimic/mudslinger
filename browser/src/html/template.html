@@ -43,20 +43,18 @@
   <div id="menuBar">
     <ul>
       <li id="menuBar-conn-disconn" data-option-name="connect">Connetti</li>
-      <li data-option-name="aliases">Aliases</li>
-      <li data-option-name="triggers">Triggers</li>
-      <li data-option-name="script">Script</li>
-      <li data-option-name="config">Importazioni
+      <li class="configMenuItem" data-option-name="config">Impostazioni
         <ul>
           <li data-option-name="text-settings">Testo
             <ul>
               <li data-option-name="text-color">Colori
                 <ul>
-                  <li data-option-name="enable-color"><label><input id="menuBar-chkEnableColor" type="checkbox" checked>Colori ANSI</label></li>
                   <li data-option-name="white-on-black">Bianco su Nero</li>
                   <li data-option-name="green-on-black">Verde su Nero</li>
                   <li data-option-name="black-on-gray">Nero su Grigio</li>
                   <li data-option-name="black-on-white">Nero su Bianco</li>
+                  <li type="separator"></li>
+                  <li data-option-name="enable-color"><label><input id="menuBar-chkEnableColor" type="checkbox" checked>Colori ANSI</label></li>
                 </ul>
               </li>
               <li>Font
@@ -89,6 +87,9 @@
 
         </ul>
       </li>
+      <li data-option-name="aliases">Aliases</li>
+      <li data-option-name="triggers">Triggers</li>
+      <li data-option-name="script">Script</li>
       <li data-option-name="about">Info</li>
       <li data-require-api="true" data-option-name="docs"><a href="/docs/" target="_blank">Docs</a></li>
       <li data-require-api="true" data-option-name="contact">Contact</li>

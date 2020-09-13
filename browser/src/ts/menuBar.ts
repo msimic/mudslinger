@@ -206,9 +206,14 @@ export class MenuBar {
             this.triggerEditor.show();
         };
 
+        this.clickFuncs["colorsEnabled"] = (val) => {
+            if (val) {
+                UserConfig.set("text-color", undefined);
+            }
+        };
+
         this.clickFuncs["green-on-black"] = (val) => {
             if (val == "green-on-black") {
-                $("#menuBar-chkEnableColor").removeAttr("checked").trigger("change");
                 this.EvtChangeDefaultColor.fire(["green", "low"]);
                 this.EvtChangeDefaultBgColor.fire(["black", "low"]);
             }
@@ -216,7 +221,6 @@ export class MenuBar {
 
         this.clickFuncs["white-on-black"] = (val) => {
             if (val == "white-on-black") {
-                $("#menuBar-chkEnableColor").removeAttr("checked").trigger("change");
                 this.EvtChangeDefaultColor.fire(["white", "low"]);
                 this.EvtChangeDefaultBgColor.fire(["black", "low"]);
             }
@@ -224,7 +228,6 @@ export class MenuBar {
 
         this.clickFuncs["black-on-gray"] = (val) => {
             if (val == "black-on-gray") {
-                $("#menuBar-chkEnableColor").removeAttr("checked").trigger("change");
                 this.EvtChangeDefaultColor.fire(["black", "low"]);
                 this.EvtChangeDefaultBgColor.fire(["white", "low"]);
             }
@@ -232,7 +235,6 @@ export class MenuBar {
 
         this.clickFuncs["black-on-white"] = (val) => {
             if (val == "black-on-white") {
-                $("#menuBar-chkEnableColor").removeAttr("checked").trigger("change");
                 this.EvtChangeDefaultColor.fire(["black", "low"]);
                 this.EvtChangeDefaultBgColor.fire(["white", "high"]);
             }

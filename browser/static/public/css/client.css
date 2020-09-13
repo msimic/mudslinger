@@ -202,9 +202,7 @@ body {
 .jqx-window-close-button {
     background-color: #b5b3b3
 }
-.jqx-menu-item {
-    font-size: x-small !important;
-}
+
 .jqx-window-content button {
     position: static;
 	font-family: 'Lato', 'Lucida Grande', 'Lucida Sans Unicode', Tahoma, Sans-Serif;
@@ -243,6 +241,10 @@ body {
 .jqx-widget-content {
 	border-color: transparent !important;
     background: #ddd !important;
+}
+
+.jqx-menu-popup, .jqx-menu-dropdown {
+    width: 140px !important;
 }
 
 .left-pane {
@@ -303,4 +305,16 @@ body {
 
 .right-pane .pane-content {
     flex: 1
+}
+
+@media only screen and (max-width: 805px) {
+    .jqx-menu-item {
+        font-size: x-small !important;
+    }
+    .jqx-menu ul {
+        font-size: x-small;
+    }
+    .jqx-menu-popup, .jqx-menu-dropdown {
+        width: 110px !important;
+    }
 }
