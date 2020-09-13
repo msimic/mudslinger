@@ -20,6 +20,10 @@ export class OutWinBase {
         this.$targetElems = [rootElem];
         this.$target = rootElem;
 
+        this.$rootElem.mouseup((event)=> {
+            $("#cmdInput").focus();
+        });
+
         // direct children of the root will be line containers, let"s push the first one.
         this.pushElem($("<span>").appendTo(rootElem));
 

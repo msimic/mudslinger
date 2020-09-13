@@ -1,12 +1,15 @@
 {
-    "serverHost": "0.0.0.0",
-    "serverPort": 8088,
+    "serverHost": "mud.temporasanguinis.it",
+    "serverPort": 4040,
     "adminHost": "localhost",
     "adminPort": 8001,
     "adminWebHost": "localhost",
     "adminWebPort": 9001,
     "apiBaseUrl": "",
     "apiKey": "",
-    "fixedTelnetHost": "",
-    "fixedTelnetPort": ""
+    "fixedTelnetHost": "mud.temporasanguinis.it",
+    "fixedTelnetPort": "6000",
+    "privateKey": "",
+    "certificate": "",
+    "certAuthority": ""
 }

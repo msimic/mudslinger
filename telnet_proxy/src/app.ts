@@ -1,4 +1,5 @@
 import * as http from "http";
+import * as https from "https";
 import * as socketio from "socket.io";
 import * as net from "net";
 import * as readline from "readline";
@@ -77,6 +78,21 @@ const argv = yargs
         type: 'string',
         requiresArg: true
     })
+    .option('privateKey', {
+        description: 'The private key if using HTTPS.',
+        type: 'string',
+        requiresArg: true
+    })
+    .option('certificate', {
+        description: 'The certificate file if using HTTPS.',
+        type: 'string',
+        requiresArg: true
+    })
+    .option('certAuthority', {
+        description: 'The certificate authority file if using HTTPS.',
+        type: 'string',
+        requiresArg: true
+    })
     .option('verbosity', {
         alias: 'v',
         description: 'Verbose level (0=WARN, 1=INFO, 2=DEBUG)',
@@ -137,6 +153,11 @@ serverConfig.apiBaseUrl = argv.apiBaseUrl || serverConfig.apiBaseUrl;
 serverConfig.apiKey = argv.apiKey || serverConfig.apiKey;
 serverConfig.fixedTelnetHost = argv.fixedTelnetHost || serverConfig.fixedTelnetHost;
 serverConfig.fixedTelnetPort = argv.fixedTelnetPort || serverConfig.fixedTelnetPort;
+serverConfig.privateKey = argv.privateKey || serverConfig.privateKey;
+serverConfig.certificate = argv.certificate || serverConfig.certificate;
+serverConfig.certAuthority = argv.certAuthority || serverConfig.certAuthority;
+
+const isHttps = (serverConfig.privateKey && serverConfig.certificate);
 
 console.log(serverConfig);
 
@@ -152,14 +173,50 @@ interface connInfo {
 };
 
 let openConns: {[k: number]: connInfo} = {};
+let io: SocketIO.Server;
+let actualServer : any;
 
-let server: http.Server = http.createServer();
-let io: SocketIO.Server = socketio(server, {
-     // socket.io erroneusly uses fs.readyFileSync on require.resolve in runtime therefore
-     // when webpacked serving client would fail, and we cannot serve it in this case
-     // no problems for running in normal mode without webpacking the whole bundle
+if (!isHttps) {
+    let server: http.Server = http.createServer();
+    actualServer = server;
+} else {
+    var app = require('express')();
+
+    let hskey:Buffer;
+    let hscert:Buffer;
+    let ca:Buffer;
+
+    try {
+        hskey = serverConfig.privateKey ? fs.readFileSync(serverConfig.privateKey) : null;
+        hscert = serverConfig.certificate ? fs.readFileSync(serverConfig.certificate) : null;
+        ca = serverConfig.certAuthority ? fs.readFileSync(serverConfig.certAuthority) : null;
+    } catch {
+        console.log("Could not read certificate files");
+        process.exit(1);
+    }
+
+    var credentials:https.ServerOptions = {
+        ca:ca,
+        key: hskey,
+        cert: hscert,
+        requestCert: false,
+        rejectUnauthorized: false
+    };
+
+    try {
+        actualServer = https.createServer(credentials,app);
+    } catch (error) {
+        console.log("Could not start https server: " + error);
+        process.exit(1);
+    }
+}
+
+io = socketio(actualServer, {
+    // socket.io erroneusly uses fs.readyFileSync on require.resolve in runtime therefore
+    // when webpacked serving client would fail, and we cannot serve it in this case
+    // no problems for running in normal mode without webpacking the whole bundle
     serveClient: (typeof require.resolve("socket.io-client") === "string")
-  });
+});
 
 let telnetNs: SocketIO.Namespace = io.of("/telnet");
 telnetNs.on("connection", (client: SocketIO.Socket) => {
@@ -309,11 +366,11 @@ telnetNs.on("connection", (client: SocketIO.Socket) => {
     ioEvt.srvSetClientIp.fire(remoteAddr);
 });
 
-server.on("error", (err: Error) => {
+actualServer.on("error", (err: Error) => {
     WARN("Server error:", err);
 });
 
-server.listen(serverConfig.serverPort, serverConfig.serverHost, () => {
+actualServer.listen(serverConfig.serverPort, serverConfig.serverHost, () => {
     INFO("Server is running on " + serverConfig.serverHost + ":" + serverConfig.serverPort);
 });
 
