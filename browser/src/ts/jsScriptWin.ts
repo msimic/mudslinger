@@ -20,13 +20,13 @@ export class JsScriptWin {
         <div>
             <div class="right-pane">
                 <div class="pane-header">
-                    <span>Write the script code to execute:</span>
+                    <span>Il codice della script da eseguire:</span>
                 </div>                    
                 <div class="pane-content">
                     <textarea class="winJsScript-code"></textarea>
                 </div>
                 <div class="pane-footer">
-                    <button class="winJsScript-btnRun">Run Script</button>
+                    <button class="winJsScript-btnRun">ESEGUI SCRIPT</button>
                 </div>
             </div>
         </div>

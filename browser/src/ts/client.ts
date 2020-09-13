@@ -319,7 +319,6 @@ export namespace Mudslinger {
 
     function setDefaults() {
         setDefault("text-color", "green-on-black");
-        setDefault("colorsEnabled", true);
         setDefault("wrap-lines", true);
         setDefault("utf8Enabled", false);
         setDefault("mxpEnabled", true);
@@ -327,6 +326,7 @@ export namespace Mudslinger {
         setDefault("enable-triggers", true);
         setDefault("font-size", "small");
         setDefault("font", "Courier");
+        setDefault("colorsEnabled", true);
     }
 
     export function runClient(connectionTarget: ConnectionTarget, profile:any) {

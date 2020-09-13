@@ -83,13 +83,13 @@ export class OutputWin extends OutWinBase {
         let elem = document.createElement("span");
         if (host && port) {
             elem.innerHTML = "<br/><span style='color:cyan'>"
-                + "[[Telnet connecting to " + host + ":" + port.toString()
+                + "[[Connesione telnet a " + host + ":" + port.toString()
                 + "<span class='conn-dots'></span>"
                 + "]]<br>";
         }
         else {
             elem.innerHTML = "<br/><span style='color:cyan'>"
-                + "[[Telnet connecting "
+                + "[[Connessione telnet "
                 + "<span class='conn-dots'></span>"
                 + "]]<br>";
         }
@@ -109,7 +109,7 @@ export class OutputWin extends OutWinBase {
         }
         this.$target.append(
             "<br/><span style=\"color:cyan\">"
-            + "[[Telnet connected]]"
+            + "[[Telnet connesso]]"
             + "<br>"
             + "</span>");
         this.scrollBottom(true);
@@ -122,7 +122,7 @@ export class OutputWin extends OutWinBase {
         }
         this.$target.append(
             "<br/><span style=\"color:cyan\">"
-            + "[[Telnet disconnected]]"
+            + "[[Telnet disconnesso]]"
             + "<br>"
         + "</span>");
         this.scrollBottom(true);
@@ -131,7 +131,7 @@ export class OutputWin extends OutWinBase {
     handleWsConnect() {
         this.$target.append(
             "<br/><span style=\"color:cyan\">"
-            + "[[Websocket connected]]"
+            + "[[Websocket connesso]]"
             + "<br>"
             + "</span>");
         this.scrollBottom(false);
@@ -144,7 +144,7 @@ export class OutputWin extends OutWinBase {
         }
         this.$target.append(
             "<br/><span style=\"color:cyan\">"
-            + "[[Websocket disconnected]]"
+            + "[[Websocket disconnesso]]"
             + "<br>"
             + "</span>");
         this.scrollBottom(false);
@@ -153,7 +153,7 @@ export class OutputWin extends OutWinBase {
     handleTelnetError(data: string) {
         this.$target.append(
             "<br/><span style=\"color:red\">"
-            + "[[Telnet error" + "<br>"
+            + "[[Telnet errore:" + "<br>"
             + data + "<br>"
             + "]]"
             + "<br>"
@@ -164,7 +164,7 @@ export class OutputWin extends OutWinBase {
     handleWsError() {
         this.$target.append(
             "<br/><span style=\"color:red\">"
-            + "[[Websocket error]]"
+            + "[[Websocket errore]]"
             + "<br>"
             + "</span>");
         this.scrollBottom(true);
@@ -173,7 +173,7 @@ export class OutputWin extends OutWinBase {
     private handleWindowError(message: any, source: any, lineno: any, colno: any, error: any) {
         this.$target.append(
             "<br/><span style=\"color:red\">"
-            + "[[Web Client Error<br>"
+            + "[[Web Client Errore:<br>"
             + message + "<br>"
             + source + "<br>"
             + lineno + "<br>"
@@ -191,7 +191,7 @@ export class OutputWin extends OutWinBase {
 
         this.$target.append(
             "<br/><span style=\"color:red\">"
-            + "[[Script eval error<br>"
+            + "[[Errore evaluazione Script:<br>"
             + err.toString() + "<br>"
             + "<br>"
             + stack + "<br>"
@@ -208,7 +208,7 @@ export class OutputWin extends OutWinBase {
 
         this.$target.append(
             "<br/><span style=\"color:red\">"
-            + "[[Script error<br>"
+            + "[[Errore Script:<br>"
             + err.toString() + "<br>"
             + "<br>"
             + stack + "<br>"

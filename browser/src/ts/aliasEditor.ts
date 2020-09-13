@@ -3,33 +3,34 @@ import { TrigAlEditBase } from "./trigAlEditBase";
 
 export class AliasEditor extends TrigAlEditBase {
     constructor(private aliasManager: AliasManager) {
-        super("ALIASES");
+        super("LISTA ALIAS");
     }
 
     protected defaultPattern: string = null;
 
     protected defaultValue: string = 
-              "Put the alias value here.\n"
-            + "This can be 1 or more commands, including match parameters (e.g. $1).\n\n"
-            + "For non-regex aliases, use $1 in the value to represent the full argument to the command.\n"
-            + "Example: Alias pattern 'blah', alias value 'say $1', "
-            + "then issue 'blah asadf dfdfa' and 'say asadf dfdfa' will be sent.\n\n"
-            + "For regex aliases, use ${groupnum} to represent the matches from your regex pattern.\n"
-            + "Example: Alias pattern 'blah (\\w+)', alias value 'say $1', "
-            + "then issue 'blah asadf' and 'say asadf' will be sent.";
+              "Scrivi qui il valore dell'alias.\n"
+            + "Puo' essere 1 o piu' comandi, includendo i parametri (e.g. $1).\n\n"
+            + "Per gli alias non-regex, usa $1 nel valore per rappresentare l'argomento intero dato al commando.\n"
+            + "Esempio: Alias pattern 's', alias valore 'say $1', "
+            + "poi fai 's asadf dfdfa' e 'say asadf dfdfa' verra mandato.\n\n"
+            + "Per alias regex, usa $numero per rappresentare i match del tuo regex.\n"
+            + "Esempio: Alias pattern 's (\\w+)', alias valore 'say $1', "
+            + "poi fai 's asadf' e 'say asadf' verra' mandato.";
 
     protected defaultScript: string = 
-              "/* Put the script here.\n"
-            + "This is javascript code that will run when the trigger fires.\n"
-            + "You are prevented from creating global variables.\n"
-            + "Use 'var' keyword to create local variables.\n"
-            + "Add values to the 'this' object to share persistent data between scripts.\n"
-            + "Example: this.my_val = 123;\n"
-            + "Every script that runs has the same 'this' object.\n"
+              "/* Scrivi la tua script qui.\n"
+            + "Questo e' il codice javascript che verra eseguito quando l'alias viene lanciato.\n"
+            + "Non puoi creare variabili globali.\n"
+            + "Usa 'var' per creare variabili locali.\n"
+            + "Aggiungi valori a 'this' per interagire tra piu script.\n"
+            + "Esempio: this.mio_valore = 123;\n"
+            + "Ogni script lanciata usa lo stesso 'this'.\n"
             + "\n"
-            + "Use the send() function to send commands to the mud. Example: send('kill orc');\n"
-            + "For regex aliases, 'match' will be the javascript match array, with \n"
-            + "indices according to match groups.\n"
+            + "Usa la funzione send() per lanciare comandi al mud. Esempio: send('kill orc');\n"
+            + "Usa la funzione print() per per echo in locale. Esempio: print('Arrivato un avversario!!');\n"
+            + "Per alias regex, 'match' sara il l'array risultato di match della regex, con \n"
+            + "gli indici che sono i gruppi della regex.\n"
             + "*/\n";
 
     protected getList() {

@@ -11,7 +11,7 @@ export class AboutWin {
 
         win.innerHTML = `
         <!--header-->
-        <div>ABOUT</div>
+        <div>INFORMAZIONI</div>
         <!--content-->
         <div>
             <h1>${AppInfo.AppTitle}</h1>

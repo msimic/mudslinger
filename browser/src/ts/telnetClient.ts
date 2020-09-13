@@ -5,7 +5,7 @@ import { AppInfo } from "./appInfo";
 
 
 const TTYPES: string[] = [
-    "Mudslinger",
+    "TS2 Web Client",
     "ANSI",
     "-256color"
 ];

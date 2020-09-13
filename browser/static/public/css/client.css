@@ -198,6 +198,13 @@ body {
 .winEdit-textArea {}
 .winEdit-scriptArea{}
 */
+
+.jqx-window-close-button {
+    background-color: #b5b3b3
+}
+.jqx-menu-item {
+    font-size: x-small !important;
+}
 .jqx-window-content button {
     position: static;
 	font-family: 'Lato', 'Lucida Grande', 'Lucida Sans Unicode', Tahoma, Sans-Serif;

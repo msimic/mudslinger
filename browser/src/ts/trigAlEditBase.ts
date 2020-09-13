@@ -53,14 +53,14 @@ export abstract class TrigAlEditBase {
                         <select size="2" class="winEdit-listBox"></select>
                     </div>
                     <div class="buttons">
-                        <button class="winEdit-btnNew">NEW</button>
-                        <button class="winEdit-btnDelete">DELETE</button>
+                        <button class="winEdit-btnNew">Nuovo</button>
+                        <button class="winEdit-btnDelete">Elimina</button>
                     </div>
                 </div>
                 <!--right panel-->
                 <div class="right-pane">
                     <div class="pane-header">
-                        <span>Pattern</span>
+                        <span>Modello</span>
                         <input type="text" class="winEdit-pattern" disabled><br>
                         <div class="pane-options">
                             <label>
@@ -74,15 +74,15 @@ export abstract class TrigAlEditBase {
                         </div>
                     </div>                    
                     <div class="pane-content-title">
-                        <span>Value:</span>
+                        <span>Azioni:</span>
                     </div>
                     <div class="pane-content">
                         <textarea class="winEdit-textArea" disabled></textarea>
                         <textarea class="winEdit-scriptArea" disabled></textarea>
                     </div>
                     <div class="pane-footer">
-                        <button class="winEdit-btnSave" disabled>SAVE</button>
-                        <button class="winEdit-btnCancel" disabled>CANCEL</button>
+                        <button class="winEdit-btnSave" disabled>Salva</button>
+                        <button class="winEdit-btnCancel" disabled>Annulla</button>
                     </div>
                 </div>
             </div>
@@ -194,9 +194,9 @@ export abstract class TrigAlEditBase {
     private handleNewButtonClick() {
         this.setEditorDisabled(false);
         this.selectNone();
-        this.$pattern.val(this.defaultPattern || "INPUT PATTERN HERE");
-        this.$textArea.val(this.defaultValue || "INPUT VALUE HERE");
-        this.codeMirror.setValue(this.defaultScript || "// INPUT SCRIPT HERE");
+        this.$pattern.val(this.defaultPattern || "Scrivi qui il modello (pattern)");
+        this.$textArea.val(this.defaultValue || "Scrivi qui il contenuto");
+        this.codeMirror.setValue(this.defaultScript || "// Scrivi qui il codice");
     }
 
     private handleDeleteButtonClick() {

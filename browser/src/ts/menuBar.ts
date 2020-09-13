@@ -252,12 +252,12 @@ export class MenuBar {
     }
 
     handleTelnetConnect() {
-        $("#menuBar-conn-disconn").text("Disconnect");
+        $("#menuBar-conn-disconn").text("Disconnetti");
         $("#menuBar-conn-disconn").data("checked", true);
     }
 
     handleTelnetDisconnect() {
-        $("#menuBar-conn-disconn").text("Connect");
+        $("#menuBar-conn-disconn").text("Connetti");
         $("#menuBar-conn-disconn").data("checked", false);
     }
 }

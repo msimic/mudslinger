@@ -3,29 +3,30 @@ import { TriggerManager } from "./triggerManager";
 
 export class TriggerEditor extends TrigAlEditBase {
     constructor(private triggerManager: TriggerManager) {
-        super("TRIGGERS");
+        super("LISTA TRIGGER");
     }
 
     protected defaultValue: string =
-         "Put the trigger value here.\n"
-        + "This can be 1 or more commands, including match parameters (e.g. $1) for regex triggers.\n\n"
-        + "For regex triggers, use ${groupnum} to represent the matches from your regex pattern.\n"
-        + "Example: Trigger pattern '(\\w+) has arrived.', trigger value 'say Hi $1', "
-        + "then if 'Vodur has arrived' comes through, 'say hi Vodur' will be sent.";
+         "Scrivi qui il valore del tuo trigger.\n"
+        + "Puo' essere 1 o piu' comandi, includento di parametri (e.g. $1) per trigger regex.\n\n"
+        + "Per trigger regex, usa $numero per rappresentare i match della tua regex.\n"
+        + "Esempio: Trigger pattern '(\\w+) e' arrivato.', trigger value 'say Ciao $1', "
+        + "in seguito se 'Vodur e' arrivato.' arriva dal mud, 'say Ciao Vodur' verra' mandato.";
 
     protected defaultScript: string =
-         "/* Put the script here.\n"
-        + "This is javascript code that will run when the trigger fires.\n"
-        + "You are prevented from creating global variables.\n"
-        + "Use 'var' keyword to create local variables.\n"
-        + "Add values to the 'this' object to share persistent data between scripts.\n"
-        + "Example: this.my_val = 123;\n"
-        + "Every script that runs has the same 'this' object.\n"
-        + "\n"
-        + "Use the send() function to send commands to the mud. Example: send('kill orc');\n"
-        + "For regex triggers, 'match' will be the javascript match array, with \n"
-        + "indices according to match groups.\n"
-        + "*/\n";
+    "/* Scrivi la tua script qui.\n"
+    + "Questo e' il codice javascript che verra eseguito quando l'alias viene lanciato.\n"
+    + "Non puoi creare variabili globali.\n"
+    + "Usa 'var' per creare variabili locali.\n"
+    + "Aggiungi valori a 'this' per interagire tra piu script.\n"
+    + "Esempio: this.mio_valore = 123;\n"
+    + "Ogni script lanciata usa lo stesso 'this'.\n"
+    + "\n"
+    + "Usa la funzione send() per lanciare comandi al mud. Esempio: send('kill orc');\n"
+    + "Usa la funzione print() per per echo in locale. Esempio: print('Arrivato un avversario!!');\n"
+    + "Per alias regex, 'match' sara il l'array risultato di match della regex, con \n"
+    + "gli indici che sono i gruppi della regex.\n"
+    + "*/\n";
 
     protected defaultPattern: string = null;
 
