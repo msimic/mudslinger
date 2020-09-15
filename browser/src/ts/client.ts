@@ -7,7 +7,7 @@ import { CommandInput } from "./commandInput";
 import { JsScript, EvtScriptEmitCmd, EvtScriptEmitPrint, EvtScriptEmitEvalError, EvtScriptEmitError } from "./jsScript";
 import { JsScriptWin } from "./jsScriptWin";
 import { MenuBar } from "./menuBar";
-
+import { ClassManager } from "./classManager";
 import { Mxp } from "./mxp";
 import { OutputManager } from "./outputManager";
 import { OutputWin } from "./outputWin";
@@ -43,19 +43,22 @@ export class Client {
     private aboutWin: AboutWin;
     private connectWin: ConnectWin;
     private contactWin: ContactWin;
-
+    private classManager: ClassManager;
     private serverEcho = false;
 
     constructor(private connectionTarget: ConnectionTarget) {
         this.aboutWin = new AboutWin();
         this.jsScript = new JsScript();
         this.contactWin = new ContactWin();
-
+        this.classManager = new ClassManager(UserConfig);
         this.jsScriptWin = new JsScriptWin(this.jsScript);
         this.triggerManager = new TriggerManager(
-            this.jsScript, UserConfig);
+            this.jsScript, UserConfig, this.classManager);
         this.aliasManager = new AliasManager(
-            this.jsScript, UserConfig);
+            this.jsScript, UserConfig, this.classManager);
+        this.jsScript.setClassManager(this.classManager);
+        this.jsScript.setTriggerManager(this.triggerManager);
+        this.jsScript.setAliasManager(this.aliasManager);
 
         this.commandInput = new CommandInput(this.aliasManager);
 
@@ -170,7 +173,7 @@ export class Client {
         this.commandInput.EvtEmitAliasCmds.handle((data) => {
             this.outputWin.handleAliasSendCommands(data.orig, data.commands)
             for (let cmd of data.commands) {
-                this.socket.sendCmd(cmd);
+                this.commandInput.execCommand(cmd);
             }
         });
 
@@ -188,13 +191,14 @@ export class Client {
         });
 
         // JsScript events
-        EvtScriptEmitCmd.handle((data: string) => {
-            this.outputWin.handleScriptSendCommand(data);
-            this.socket.sendCmd(data);
+        EvtScriptEmitCmd.handle((data:{owner:string, message:string}) => {
+            this.outputWin.handleScriptSendCommand(data.owner, data.message);
+            this.commandInput.execCommand(data.message);
+            //this.socket.sendCmd(data);
         });
 
-        EvtScriptEmitPrint.handle((data: string) => {
-            this.outputWin.handleScriptPrint(data);
+        EvtScriptEmitPrint.handle((data:{owner:string, message:string}) => {
+            this.outputWin.handleScriptPrint(data.owner, data.message);
         });
 
         EvtScriptEmitError.handle((data: {stack: any}) => {
@@ -206,11 +210,14 @@ export class Client {
         });
 
         // TriggerManager events
-        this.triggerManager.EvtEmitTriggerCmds.handle((data: string[]) => {
-            this.outputWin.handleTriggerSendCommands(data);
-            for (let cmd of data) {
-                this.socket.sendCmd(cmd);
+        this.triggerManager.EvtEmitTriggerCmds.handle((data: {orig:string, cmds:string[]}) => {
+            this.outputWin.handleTriggerSendCommands(data.orig, data.cmds);
+            for (let cmd of data.cmds) {
+                this.commandInput.execCommand(cmd);
             }
+            /*for (let cmd of data) {
+                this.socket.sendCmd(cmd);
+            }*/
         });
 
         // OutputWin events
@@ -317,7 +324,7 @@ export namespace Mudslinger {
         }
     }
 
-    function setDefaults() {
+    export function setDefaults() {
         setDefault("text-color", "green-on-black");
         setDefault("wrap-lines", true);
         setDefault("utf8Enabled", false);
@@ -327,6 +334,12 @@ export namespace Mudslinger {
         setDefault("font-size", "small");
         setDefault("font", "Courier");
         setDefault("colorsEnabled", true);
+        setDefault("logTime", false);
+        setDefault("debugScripts", false);
+    }
+
+    function onPreloaded() {
+        $(".preloading").addClass("preloaded");
     }
 
     export function runClient(connectionTarget: ConnectionTarget, profile:any) {
@@ -336,6 +349,7 @@ export namespace Mudslinger {
         if (profile) {
             document.title += ` - ${profile.name}`;
         }
+        onPreloaded();
     }
 
     export async function init() {

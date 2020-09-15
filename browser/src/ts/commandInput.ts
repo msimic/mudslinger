@@ -28,26 +28,35 @@ export class CommandInput {
         });
     }
 
+    public execCommand(cmd: string) {
+        let cmds = [ cmd ];
+        let ocmds = [ cmd ];  // originals to fetch the info who triggered the input for aliases
+        if (this.chkCmdStack.checked) {
+            ocmds = cmd.split(";");
+            cmds = cmd.split(";");
+        }
+        for (let i = 0; i < cmds.length; i++) {
+            if (cmds[i] && cmds[i].charAt(0) == '~') {
+                this.EvtEmitCmd.fire(cmds[i].slice(1));
+                continue;
+            }
+            let result = this.aliasManager.checkAlias(cmds[i]);
+            if (result !== true && result !== undefined && result !== null) {
+                let cmds: string[] = [];
+                let lines: string[] = (<string>result).replace("\r", "").split("\n");
+                for (let i = 0; i < lines.length; i++) {
+                    cmds = cmds.concat(lines[i].split(";"));
+                }
+                this.EvtEmitAliasCmds.fire({orig: ocmds[i], commands: cmds});
+            } else if (!result) {
+                this.EvtEmitCmd.fire(cmds[i]);
+            }
+        }
+    }
+
     private sendCmd(): void {
         let cmd: string = this.$cmdInput.val();
-        let result = this.aliasManager.checkAlias(cmd);
-        if (!result) {
-            if (this.chkCmdStack.checked) {
-                let cmds = cmd.split(";");
-                for (let i = 0; i < cmds.length; i++) {
-                    this.EvtEmitCmd.fire(cmds[i]);
-                }
-            } else {
-                this.EvtEmitCmd.fire(cmd);
-            }
-        } else if (result !== true) {
-            let cmds: string[] = [];
-            let lines: string[] = (<string>result).replace("\r", "").split("\n");
-            for (let i = 0; i < lines.length; i++) {
-                cmds = cmds.concat(lines[i].split(";"));
-            }
-            this.EvtEmitAliasCmds.fire({orig: cmd, commands: cmds});
-        } /* else the script ran already */
+        this.execCommand(cmd);
 
         this.$cmdInput.select();
 
@@ -77,7 +86,21 @@ export class CommandInput {
             case 38: // up
                 if (this.cmd_index === -1) {
                     this.cmd_entered = this.$cmdInput.val();
-                    this.cmd_index = this.cmd_history.length - 1;
+
+                    let newIndex = -1;
+                    for (let index = this.cmd_history.length-1; index >= 0; index--) {
+                        const element = this.cmd_history[index];
+                        if (element.toUpperCase().indexOf(this.cmd_entered.toUpperCase())==0) {
+                            newIndex = index;
+                            break;
+                        }
+                    }
+
+                    if (newIndex>-1) {
+                        this.cmd_index = newIndex;
+                    } else {
+                        this.cmd_index = this.cmd_history.length - 1;
+                    }
                 } else {
                     this.cmd_index -= 1;
                     this.cmd_index = Math.max(this.cmd_index, 0);

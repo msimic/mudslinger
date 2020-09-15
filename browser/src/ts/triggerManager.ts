@@ -1,23 +1,25 @@
 import { EventHook } from "./event";
 import { TrigAlItem } from "./trigAlEditBase";
-
+import { ClassManager } from "./classManager";
+import { EvtScriptEmitPrint, EvtScriptEmitToggleTrigger } from "./jsScript";
 
 export interface ConfigIf {
-    set(key: "triggers", val: TrigAlItem[]): void;
-    getDef(key: "triggersEnabled", def: boolean): boolean;
-    get(key: "triggers"): TrigAlItem[];
+    set(key: string, val: TrigAlItem[]): void;
+    getDef(key: string, def: boolean): boolean;
+    get(key:string): TrigAlItem[];
+    evtConfigImport: EventHook<{[k: string]: any}>;
 }
 
 export interface ScriptIf {
-    makeScript(text: string, argsSig: string): any;
+    makeScript(owner:string, text: string, argsSig: string): any;
 }
 
 export class TriggerManager {
-    public EvtEmitTriggerCmds = new EventHook<string[]>();
+    public EvtEmitTriggerCmds = new EventHook<{orig: string, cmds: string[]}>();
 
     public triggers: Array<TrigAlItem> = null;
 
-    constructor(private jsScript: ScriptIf, private config: ConfigIf) {
+    constructor(private jsScript: ScriptIf, private config: ConfigIf, private classManager: ClassManager) {
         /* backward compatibility */
         let savedTriggers = localStorage.getItem("triggers");
         if (savedTriggers) {
@@ -26,6 +28,43 @@ export class TriggerManager {
         }
 
         this.loadTriggers();
+        config.evtConfigImport.handle(() => {
+            this.loadTriggers();
+            this.saveTriggers();
+        }, this);
+        EvtScriptEmitToggleTrigger.handle(this.onToggle, this);
+    }
+
+    private onToggle(data: {owner: string, id:string, state:boolean}) {
+        this.setEnabled(data.id, data.state);
+        if (this.config.getDef("debugScripts", false)) {
+            const msg = "Trigger " + data.id + " e' ora " + (this.isEnabled(data.id) ? "ABILITATO" : "DISABILITATO");
+            EvtScriptEmitPrint.fire({owner:"TriggerManager", message: msg});
+        }
+    }
+
+    public setEnabled(id:string, val:boolean) {
+        const t = this.getById(id);
+        if (!t) {
+            if (this.config.getDef("debugScripts", false)) {
+                const msg = "Trigger " + id + " non esiste!";
+                EvtScriptEmitPrint.fire({owner:"TriggerManager", message: msg});
+            }    
+            return;
+        }
+    }
+
+    public getById(id:string):TrigAlItem {
+        for (let index = 0; index < this.triggers.length; index++) {
+            const element = this.triggers[index];
+            if (element.id == id) return element;
+        }
+        return null;
+    }
+
+    public isEnabled(id:string):boolean {
+        const t = this.getById(id);
+        return t && t.enabled;
     }
 
     public saveTriggers() {
@@ -41,6 +80,7 @@ export class TriggerManager {
 //        console.log("TRIGGER: " + line);
         for (let i = 0; i < this.triggers.length; i++) {
             let trig = this.triggers[i];
+            if (!trig.enabled || (trig.class && !this.classManager.isEnabled(trig.class))) continue;
             if (trig.regex) {
                 let match = line.match(trig.pattern);
                 if (!match) {
@@ -48,8 +88,12 @@ export class TriggerManager {
                 }
 
                 if (trig.is_script) {
-                    let script = this.jsScript.makeScript(trig.value, "match, line");
-                    if (script) { script(match, line); };
+                    if (!trig.script) trig.script = this.jsScript.makeScript(trig.id || trig.pattern, trig.value, "match, line");
+                    if (trig.script) {
+                        trig.script(match, line); 
+                    } else {
+                        throw `Trigger '${trig.pattern}' is script but the script cannot be initialized`;
+                    }
                 } else {
                     let value = trig.value;
 
@@ -58,16 +102,20 @@ export class TriggerManager {
                     });
 
                     let cmds = value.replace("\r", "").split("\n");
-                    this.EvtEmitTriggerCmds.fire(cmds);
+                    this.EvtEmitTriggerCmds.fire({orig: trig.id || trig.pattern, cmds: cmds});
                 }
             } else {
                 if (line.includes(trig.pattern)) {
                     if (trig.is_script) {
-                        let script = this.jsScript.makeScript(trig.value, "line");
-                        if (script) { script(line); };
+                        if (!trig.script) trig.script = this.jsScript.makeScript(trig.id || trig.pattern, trig.value, "line");
+                        if (trig.script) {
+                            trig.script(line); 
+                        } else {
+                            throw `Trigger '${trig.pattern}' is script but the script cannot be initialized`;
+                        }
                     } else {
                         let cmds = trig.value.replace("\r", "").split("\n");
-                        this.EvtEmitTriggerCmds.fire(cmds);
+                        this.EvtEmitTriggerCmds.fire({orig: trig.id || trig.pattern, cmds: cmds});
                     }
                 }
             }

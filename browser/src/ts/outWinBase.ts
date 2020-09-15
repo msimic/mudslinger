@@ -3,24 +3,39 @@ import { colorIdToHtml } from "./color";
 import { EventHook } from "./event";
 
 export interface ConfigIf {
-    onSet(key: "colorsEnabled", cb: (val: any) => void): void;
-    getDef(key: "colorsEnabled", def: any): any;
+    onSet(key: string, cb: (val: any) => void): void;
+    getDef(key: string, def: any): any;
 }
 
 export class OutWinBase {
     public EvtLine = new EventHook<string>();
 
+    protected debugScripts = false;
+
     private colorsEnabled: boolean;
+    private copyOnMouseUp: boolean;
+    private logTime: boolean;
 
     private lineCount: number = 0;
     private maxLines: number = 5000;
+
+    private onMouseUp = () => {
+        document.execCommand('copy');
+        $("#cmdInput").focus();
+    }
 
     constructor(rootElem: JQuery, private config: ConfigIf) {
         this.$rootElem = rootElem;
         this.$targetElems = [rootElem];
         this.$target = rootElem;
+        this.maxLines = config.getDef("maxLines", 1000);
+        this.debugScripts = config.getDef("debugScripts", true);
+        config.onSet("debugScripts", (val) => {
+            this.debugScripts = val;
+        });
 
         this.$rootElem.mouseup((event)=> {
+            document.execCommand('copy');
             $("#cmdInput").focus();
         });
 
@@ -30,7 +45,26 @@ export class OutWinBase {
         this.$rootElem.bind("scroll", (e: any) => { this.handleScroll(e); });
 
         this.colorsEnabled = this.config.getDef("colorsEnabled", true);
+        this.copyOnMouseUp = this.config.getDef("copyOnMouseUp", true);
+        this.logTime = this.config.getDef("logTime", false);
+        this.config.onSet("logTime", (v) => {
+            this.logTime = v;
+        });
+        
+        if (this.copyOnMouseUp) {
+            this.$rootElem.mouseup(this.onMouseUp);
+        }
+
+        this.config.onSet("maxLines", (val: any) => { this.setMaxLines(val); });
+
         this.config.onSet("colorsEnabled", (val: any) => { this.setColorsEnabled(val); });
+        this.config.onSet("copyOnMouseUp", (val: any) => { 
+            this.copyOnMouseUp = val;
+            this.$rootElem[0].removeEventListener("mouseup", this.onMouseUp);
+            if (this.copyOnMouseUp) {
+                this.$rootElem[0].addEventListener("mouseup", this.onMouseUp);
+            }
+        });
     }
 
 
@@ -54,8 +88,18 @@ export class OutWinBase {
         }
     }
 
+    private blink: boolean;
+    private underline: boolean;
     private fgColorId: string;
     private bgColorId: string;
+
+    public setBlink(value: boolean) {
+        this.blink = value;
+    }
+
+    public setUnderline(value: boolean) {
+        this.underline = value;
+    }
 
     public setFgColorId(colorId: string) {
         this.fgColorId = colorId;
@@ -76,7 +120,7 @@ export class OutWinBase {
         let scrollHeight = this.$rootElem.prop("scrollHeight");
         let scrollTop = this.$rootElem.scrollTop();
         let outerHeight = this.$rootElem.outerHeight();
-        let is_at_bottom = outerHeight + scrollTop >= scrollHeight;
+        let is_at_bottom = outerHeight + scrollTop + 8 >= scrollHeight;
 
         this.scrollLock = !is_at_bottom;
     }
@@ -115,6 +159,12 @@ export class OutWinBase {
         let spanText = "<span";
 
         let classText = "";
+        if (this.underline) {
+            classText += "underline ";
+        }
+        if (this.blink) {
+            classText += "blink ";
+        }
         if (this.fgColorId) {
             classText += "fg-" + this.fgColorId + " ";
         }
@@ -159,11 +209,36 @@ export class OutWinBase {
         this.appendBuffer += spanText;
 
         if (txt.endsWith("\n")) {
-            this.$target.append(this.appendBuffer);
+            this.append(this.appendBuffer);
             this.appendBuffer = "";
             this.newLine();
         }
     };
+
+    private padStart(str:string, targetLength:number, padString:string) {
+        targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;
+        padString = String(typeof padString !== 'undefined' ? padString : ' ');
+        if (str.length >= targetLength) {
+            return String(str);
+        } else {
+            targetLength = targetLength - str.length;
+            if (targetLength > padString.length) {
+                padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+            }
+            return padString.slice(0, targetLength) + String(str);
+        }
+    };
+
+    protected append(o: any) {
+        if (o == "<span></span>") {
+            debugger;
+        }
+        if (this.logTime && o) {
+            const time = this.padStart(new Date().toISOString().split("T")[1].split("Z")[0] + " ", 12, " ");
+            this.$target.append('<span class="timeLog">' + time + "</span>");
+        }
+        this.$target.append(o);
+    }
 
     private newLine() {
         this.popElem(); // pop the old line
@@ -183,7 +258,7 @@ export class OutWinBase {
     }
 
     private writeBuffer() {
-        this.$target.append(this.appendBuffer);
+        if (this.appendBuffer != "<span></span>") this.$target.append(this.appendBuffer);
         this.appendBuffer = "";
     };
 

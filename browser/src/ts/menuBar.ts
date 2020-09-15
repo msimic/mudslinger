@@ -6,6 +6,7 @@ import { AliasEditor } from "./aliasEditor";
 import { TriggerEditor } from "./triggerEditor";
 import { JsScriptWin } from "./jsScriptWin";
 import { AboutWin } from "./aboutWin";
+import { Mudslinger } from "./client";
 
 export class MenuBar {
     public EvtChangeDefaultColor = new EventHook<[string, string]>();
@@ -39,6 +40,11 @@ export class MenuBar {
         ["courier", "font"],
         ["consolas", "font"],
         ["monospace", "font"],
+        ["reset-settings", ""],
+        ["import-settings", ""],
+        ["export-settings", ""],
+        ["log-time", "logTime"],
+        ["debug-scripts", "debugScripts"],
         ["about", ""],
         ["docs", ""],
         ["contact", ""],
@@ -86,6 +92,29 @@ export class MenuBar {
         };
     }
 
+    private detachMenuOption(name:string, element:Element, checkbox:Element) {
+        if (element) $(element).off("click");
+        const storageKey = this.optionMappingToStorage.get(name);
+        if (storageKey) UserConfig.onSet(storageKey, null);
+        if (checkbox) $(checkbox).off("change");
+    }
+
+    private attachMenu() {
+        $("[data-option-name]").each((i, e) => {
+            const name = $(e).data("option-name");
+            const chk = $(e).find("input[type='checkbox']")[0];
+            this.attachMenuOption(name, e, chk);
+        });
+    }
+
+    private detachMenu() {
+        $("[data-option-name]").each((i, e) => {
+            const name = $(e).data("option-name");
+            const chk = $(e).find("input[type='checkbox']")[0];
+            this.detachMenuOption(name, e, chk);
+        });
+    }
+
     constructor(
         private aliasEditor: AliasEditor,
         private triggerEditor: TriggerEditor,
@@ -95,11 +124,10 @@ export class MenuBar {
     {
         <JQuery>((<any>$("#menuBar")).jqxMenu());
         this.makeClickFuncs();
-
-        $("[data-option-name]").each((i, e) => {
-            const name = $(e).data("option-name");
-            const chk = $(e).find("input[type='checkbox']")[0];
-            this.attachMenuOption(name, e, chk);
+        this.attachMenu();
+        UserConfig.evtConfigImport.handle(() => {
+            this.detachMenu();
+            this.attachMenu();
         });
     }
 
@@ -111,6 +139,19 @@ export class MenuBar {
             else {
                 this.EvtConnectClicked.fire();
             }
+        };
+
+        this.clickFuncs["reset-settings"] = (val) => {
+            UserConfig.remove(new RegExp("^(?!alias)(?!trigger)"), Mudslinger.setDefaults);
+            location.reload();
+        };
+
+        this.clickFuncs["export-settings"] = () => {
+            UserConfig.exportToFile();
+        };
+
+        this.clickFuncs["import-settings"] = () => {
+            UserConfig.importFromFile();
         };
 
         this.clickFuncs["wrap-lines"] = (val) => {

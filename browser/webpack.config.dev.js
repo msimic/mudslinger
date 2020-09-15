@@ -39,6 +39,7 @@ module.exports = {
     contentBase: path.resolve(__dirname, "static/public/"),
     inline: true,
     writeToDisk: true,
+    watchContentBase: true,
     host: 'localhost',
     /*https: true,*/
     port: 8080,

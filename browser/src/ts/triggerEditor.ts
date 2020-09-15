@@ -1,4 +1,4 @@
-import { TrigAlEditBase } from "./trigAlEditBase";
+import { TrigAlEditBase, TrigAlItem } from "./trigAlEditBase";
 import { TriggerManager } from "./triggerManager";
 
 export class TriggerEditor extends TrigAlEditBase {
@@ -34,7 +34,7 @@ export class TriggerEditor extends TrigAlEditBase {
         let triggers = this.triggerManager.triggers;
         let lst = [];
         for (let i = 0; i < triggers.length; i++) {
-            lst.push(triggers[i].pattern);
+            lst.push((triggers[i].id || triggers[i].pattern) + (triggers[i].class ? " <" + triggers[i].class + ">": ""));
         }
 
         return lst;
@@ -49,19 +49,13 @@ export class TriggerEditor extends TrigAlEditBase {
         }
     }
 
-    protected saveItem(ind: number, pattern: string, value: string, regex: boolean, is_script: boolean) {
-        let trig = {
-            pattern: pattern,
-            value: value,
-            regex: regex,
-            is_script: is_script
-        };
+    protected saveItem(ind: number, trigger:TrigAlItem) {
         if (ind < 0) {
             // New trigger
-            this.triggerManager.triggers.push(trig);
+            this.triggerManager.triggers.push(trigger);
         } else {
             // Update trigger
-            this.triggerManager.triggers[ind] = trig;
+            this.triggerManager.triggers[ind] = trigger;
         }
         this.triggerManager.saveTriggers();
     }

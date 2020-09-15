@@ -10,19 +10,17 @@ export class OutputWin extends OutWinBase {
         });
     }
 
-    handleScriptPrint(data: string) {
-        let message = data;
-        let output = JSON.stringify(message);
-        this.$target.append(
-            "<span style=\"color:orange\">"
-            + Util.rawToHtml(output)
+    handleScriptPrint(owner:string, data: string) {
+        this.append(
+            "<span style=\"color:orange\">" /*+ owner + ": "*/
+            + Util.rawToHtml(data)
             + "<br>"
             + "</span>");
         this.scrollBottom(true);
     }
 
     handleSendCommand(cmd: string) {
-        this.$target.append(
+        this.append(
             "<span style=\"color:yellow\">"
             + Util.rawToHtml(cmd)
             + "<br>"
@@ -30,33 +28,36 @@ export class OutputWin extends OutWinBase {
         this.scrollBottom(true);
     }
 
-    handleScriptSendCommand(cmd: string) {
-        this.$target.append(
-            "<span style=\"color:cyan\">"
-            + Util.rawToHtml(cmd)
-            + "<br>"
+    handleScriptSendCommand(owner:string, cmd: string) {
+        if (!this.debugScripts) return;
+        this.append(
+            "<span style=\"color:cyan\">[" + owner /*": "
+            + Util.rawToHtml(cmd)*/
+            + "]<br>"
             + "</span>");
         this.scrollBottom(true);
     }
 
-    handleTriggerSendCommands(data: string[]) {
-        let html = "<span style=\"color:cyan\">";
+    handleTriggerSendCommands(orig:string, cmds:string[]) {
+        if (!this.debugScripts) return;
+        let html = "<span style=\"color:magenta\">[" + orig + "]<br></span>";
 
-        for (let i = 0; i < data.length; i++) {
+        /*for (let i = 0; i < data.length; i++) {
             if (i >= 5) {
                 html += "...<br>";
                 break;
             } else {
                 html += Util.rawToHtml(data[i]) + "<br>";
             }
-        }
-        this.$target.append(html);
+        }*/
+        this.append(html);
         this.scrollBottom(false);
     }
 
     handleAliasSendCommands(orig: string, cmds: string[]) {
-        let html = "<span style=\"color:yellow\">";
-        html += Util.rawToHtml(orig);
+        if (!this.debugScripts) return;
+        let html = "<span style=\"color:cyan\">[" + orig+ "]<br></span>";
+        /*html += Util.rawToHtml(orig);
         html += "</span><span style=\"color:cyan\"> --> ";
 
         for (let i = 0; i < cmds.length; i++) {
@@ -67,8 +68,8 @@ export class OutputWin extends OutWinBase {
                 html += Util.rawToHtml(cmds[i]) + "<br>";
             }
         }
-
-        this.$target.append(html);
+        */
+        this.append(html);
         this.scrollBottom(true);
     }
 
@@ -98,7 +99,7 @@ export class OutputWin extends OutWinBase {
 
         this.connIntervalId = setInterval(() => dots.textContent += '.', 1000);
 
-        this.$target.append(elem);
+        this.append(elem);
         this.scrollBottom(true);
     }
 
@@ -107,7 +108,7 @@ export class OutputWin extends OutWinBase {
             clearInterval(this.connIntervalId);
             this.connIntervalId = null;
         }
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:cyan\">"
             + "[[Telnet connesso]]"
             + "<br>"
@@ -120,7 +121,7 @@ export class OutputWin extends OutWinBase {
             clearInterval(this.connIntervalId);
             this.connIntervalId = null;
         }
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:cyan\">"
             + "[[Telnet disconnesso]]"
             + "<br>"
@@ -129,7 +130,7 @@ export class OutputWin extends OutWinBase {
     }
 
     handleWsConnect() {
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:cyan\">"
             + "[[Websocket connesso]]"
             + "<br>"
@@ -142,7 +143,7 @@ export class OutputWin extends OutWinBase {
             clearInterval(this.connIntervalId);
             this.connIntervalId = null;
         }
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:cyan\">"
             + "[[Websocket disconnesso]]"
             + "<br>"
@@ -151,7 +152,7 @@ export class OutputWin extends OutWinBase {
     }
 
     handleTelnetError(data: string) {
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:red\">"
             + "[[Telnet errore:" + "<br>"
             + data + "<br>"
@@ -162,7 +163,7 @@ export class OutputWin extends OutWinBase {
     }
 
     handleWsError() {
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:red\">"
             + "[[Websocket errore]]"
             + "<br>"
@@ -171,7 +172,7 @@ export class OutputWin extends OutWinBase {
     }
 
     private handleWindowError(message: any, source: any, lineno: any, colno: any, error: any) {
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:red\">"
             + "[[Web Client Errore:<br>"
             + message + "<br>"
@@ -189,7 +190,7 @@ export class OutputWin extends OutWinBase {
         let msg = Util.rawToHtml(err.toString());
         let stack = Util.rawToHtml(err.stack);
 
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:red\">"
             + "[[Errore evaluazione Script:<br>"
             + err.toString() + "<br>"
@@ -206,7 +207,7 @@ export class OutputWin extends OutWinBase {
         let msg = Util.rawToHtml(err.toString());
         let stack = Util.rawToHtml(err.stack);
 
-        this.$target.append(
+        this.append(
             "<br/><span style=\"color:red\">"
             + "[[Errore Script:<br>"
             + err.toString() + "<br>"

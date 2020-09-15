@@ -11,6 +11,7 @@ export interface ConfigIf {
     set(key: "defaultAnsiFg" | "defaultAnsiBg", val: ansiColorTuple): void;
     get(key: "defaultAnsiFg" | "defaultAnsiBg"): ansiColorTuple;
     get(key: "utf8Enabled"): boolean;
+    evtConfigImport: EventHook<{[k: string]: any}>;
 }
 
 export class OutputManager {
@@ -22,6 +23,8 @@ export class OutputManager {
 
     private ansiReverse = false;
     private ansiBold = false;
+    private ansiUnderline = false;
+    private ansiBlink = false;
 
     private ansiFg: ansiColorTuple;
     private ansiBg: ansiColorTuple;
@@ -39,6 +42,7 @@ export class OutputManager {
         this.target = this.outputWin;
 
         this.loadConfig();
+        config.evtConfigImport.handle(this.loadConfig, this);
     }
 
     private loadConfig() {
@@ -167,6 +171,10 @@ export class OutputManager {
                 new_bg = null;
                 this.ansiReverse = false;
                 this.ansiBold = false;
+                this.ansiUnderline = false;
+                this.ansiBlink = false;
+                this.target.setBlink(this.ansiBlink);
+                this.target.setUnderline(this.ansiUnderline);
                 continue;
             }
 
@@ -227,6 +235,18 @@ export class OutputManager {
                     }
                 }
                 new_fg[1] = "low";
+                continue;
+            }
+
+            if (code == 4) {
+                this.ansiUnderline = true;
+                this.target.setUnderline(this.ansiUnderline);
+                continue;
+            }
+
+            if (code == 5) {
+                this.ansiBlink = true;
+                this.target.setBlink(this.ansiBlink);
                 continue;
             }
 

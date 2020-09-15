@@ -5,8 +5,12 @@ declare let CodeMirror: any;
 export interface TrigAlItem {
     pattern: string;
     value: string;
+    id: string,
+    class: string;
     regex: boolean;
+    enabled: boolean;
     is_script: boolean;
+    script?: any;
 }
 
 export abstract class TrigAlEditBase {
@@ -14,6 +18,9 @@ export abstract class TrigAlEditBase {
 
     protected $listBox: JQuery;
     protected $pattern: JQuery;
+    protected $id: JQuery;
+    protected $className: JQuery;
+    protected $enabledCheckbox: JQuery;
     protected $regexCheckbox: JQuery;
     protected $scriptCheckbox: JQuery;
     protected $textArea: JQuery;
@@ -29,7 +36,7 @@ export abstract class TrigAlEditBase {
     /* these need to be overridden */
     protected abstract getList(): Array<string>;
     protected abstract getItem(ind: number): TrigAlItem;
-    protected abstract saveItem(ind: number, pattern: string, value: string, checked: boolean, is_script: boolean): void;
+    protected abstract saveItem(ind: number, item:TrigAlItem): void;
     protected abstract deleteItem(ind: number): void;
 
     protected abstract defaultPattern: string;
@@ -50,7 +57,7 @@ export abstract class TrigAlEditBase {
                 <!--left panel-->
                 <div class="left-pane">
                     <div class="list">
-                        <select size="2" class="winEdit-listBox"></select>
+                        <ul size="2" class="winEdit-listBox select"></ul>
                     </div>
                     <div class="buttons">
                         <button class="winEdit-btnNew">Nuovo</button>
@@ -62,7 +69,15 @@ export abstract class TrigAlEditBase {
                     <div class="pane-header">
                         <span>Modello</span>
                         <input type="text" class="winEdit-pattern" disabled><br>
+                        <div class="pane-optional">
+                            <input type="text" class="winEdit-id" disabled placeholder="ID (opzionale)" title="Per visualizzare meglio nella lista o per poter usare toggleTrigger(id, stato) o toggleAlias(id, stato) in script">
+                            <input type="text" class="winEdit-className" disabled placeholder="Classe (opzionale)" title="Se appartiene a una classe disablitata sara' inattivo (usare toggleClass(id, stato)"">
+                        </div>
                         <div class="pane-options">
+                            <label>
+                                Enabled
+                                <input type="checkbox" class="winEdit-chkEnabled" disabled />
+                            </label>
                             <label>
                                 Regex
                                 <input type="checkbox" class="winEdit-chkRegex" disabled />
@@ -94,6 +109,9 @@ export abstract class TrigAlEditBase {
         this.$deleteButton = $(myDiv.getElementsByClassName("winEdit-btnDelete")[0]);
         this.$listBox = $(myDiv.getElementsByClassName("winEdit-listBox")[0]);
         this.$pattern = $(myDiv.getElementsByClassName("winEdit-pattern")[0]);
+        this.$id = $(myDiv.getElementsByClassName("winEdit-id")[0]);
+        this.$className = $(myDiv.getElementsByClassName("winEdit-className")[0]);
+        this.$enabledCheckbox = $(myDiv.getElementsByClassName("winEdit-chkEnabled")[0]);
         this.$regexCheckbox = $(myDiv.getElementsByClassName("winEdit-chkRegex")[0]);
         this.$scriptCheckbox = $(myDiv.getElementsByClassName("winEdit-chkScript")[0]);
         this.$saveButton = $(myDiv.getElementsByClassName("winEdit-btnSave")[0]);
@@ -126,7 +144,7 @@ export abstract class TrigAlEditBase {
         this.$codeMirrorWrapper.height("100%");
         this.$codeMirrorWrapper.hide();
 
-        this.$listBox.change(this.handleListBoxChange.bind(this));
+        this.$listBox.click(this.itemClick.bind(this));
         this.$newButton.click(this.handleNewButtonClick.bind(this));
         this.$deleteButton.click(this.handleDeleteButtonClick.bind(this));
         this.$saveButton.click(this.handleSaveButtonClick.bind(this));
@@ -135,48 +153,77 @@ export abstract class TrigAlEditBase {
 
     }
 
+    private itemClick(e:MouseEvent) {
+        var item = $(e.target);
+        if (item.is("li")) {
+            item.addClass('selected');
+            item.siblings().removeClass('selected');
+            const index = item.parent().children().index(item);
+            this.$listBox.data("selectedIndex", index);
+        } else {
+            item.children().removeClass('selected');
+            this.$listBox.data("selectedIndex", -1);
+        }
+        this.handleListBoxChange();
+    }
+
     private setEditorDisabled(state: boolean): void {
         this.$pattern.prop("disabled", state);
+        this.$id.prop("disabled", state);
+        this.$className.prop("disabled", state);
+        this.$enabledCheckbox.prop("disabled", state);
         this.$regexCheckbox.prop("disabled", state);
         this.$scriptCheckbox.prop("disabled", state);
         this.$textArea.prop("disabled", state);
         this.$codeMirrorWrapper.prop("disabled", state);
         this.$saveButton.prop("disabled", state);
         this.$cancelButton.prop("disabled", state);
+        this.showTextInput();
     }
 
     private selectNone(): void {
-        this.$listBox.prop("selectedItem", 0);
-        this.$listBox.val([]);
+        this.$listBox.data("selectedIndex", -1);
+        this.$listBox.children().removeClass('selected');
     }
 
     private clearEditor(): void {
         this.$pattern.val("");
         this.$textArea.val("");
+        this.$id.val("");
+        this.$className.val("");
         this.codeMirror.setValue("");
+        this.$enabledCheckbox.prop("checked", false);
         this.$regexCheckbox.prop("checked", false);
         this.$scriptCheckbox.prop("checked", false);
+        this.showTextInput();
     }
 
     private updateListBox() {
         let lst = this.getList();
         let html = "";
         for (let i = 0; i < lst.length; i++) {
-            html += "<option>" + Util.rawToHtml(lst[i]) + "</option>";
+            html += "<li>" + Util.rawToHtml(lst[i]) + "</option>";
         }
         this.$listBox.html(html);
     };
 
     private handleSaveButtonClick() {
-        let ind = this.$listBox.prop("selectedIndex");
+        let ind = this.$listBox.data("selectedIndex");
         let is_script = this.$scriptCheckbox.is(":checked");
+
+        let trg:TrigAlItem = {
+            pattern: this.$pattern.val(),
+            id: this.$id.val(),
+            value: is_script ? this.codeMirror.getValue() : this.$textArea.val(),
+            regex: this.$regexCheckbox.is(":checked"),
+            is_script: is_script,
+            class: this.$className.val(),
+            enabled: this.$enabledCheckbox.is(":checked")
+        };
 
         this.saveItem(
             ind,
-            this.$pattern.val(),
-            is_script ? this.codeMirror.getValue() : this.$textArea.val(),
-            this.$regexCheckbox.is(":checked"),
-            is_script
+            trg
         );
 
         this.selectNone();
@@ -192,15 +239,18 @@ export abstract class TrigAlEditBase {
     }
 
     private handleNewButtonClick() {
+        this.clearEditor();
         this.setEditorDisabled(false);
         this.selectNone();
+        this.$enabledCheckbox.prop("checked", true);
         this.$pattern.val(this.defaultPattern || "Scrivi qui il modello (pattern)");
         this.$textArea.val(this.defaultValue || "Scrivi qui il contenuto");
         this.codeMirror.setValue(this.defaultScript || "// Scrivi qui il codice");
     }
 
     private handleDeleteButtonClick() {
-        let ind = this.$listBox.prop("selectedIndex");
+        let ind = this.$listBox.data("selectedIndex");
+        if (ind == undefined || ind < 0) return;
 
         this.deleteItem(ind);
 
@@ -222,14 +272,19 @@ export abstract class TrigAlEditBase {
     }
 
     private handleListBoxChange() {
-        let ind = this.$listBox.prop("selectedIndex");
+        let ind = this.$listBox.data("selectedIndex");
         let item = this.getItem(ind);
 
         if (!item) {
+            this.clearEditor();
+            this.showTextInput();
+            this.setEditorDisabled(true);
             return;
         }
         this.setEditorDisabled(false);
         this.$pattern.val(item.pattern);
+        this.$id.val(item.id);
+        this.$className.val(item.class);
         if (item.is_script) {
             this.showScriptInput();
             this.codeMirror.setValue(item.value);
@@ -239,6 +294,7 @@ export abstract class TrigAlEditBase {
             this.$textArea.val(item.value);
             this.codeMirror.setValue("");
         }
+        this.$enabledCheckbox.prop("checked", item.enabled ? true : false);
         this.$regexCheckbox.prop("checked", item.regex ? true : false);
         this.$scriptCheckbox.prop("checked", item.is_script ? true : false);
     }

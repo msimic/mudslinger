@@ -13,6 +13,10 @@ export function replaceLf(text: string): string {
 }
 
 export function rawToHtml(text: string): string {
+    if (typeof text != "string") {
+        text = JSON.stringify(text);
+        text = text.slice(1, text.length-1);
+    }
     return replaceLf(
             replaceLtGt(
             replaceAmp(text)));

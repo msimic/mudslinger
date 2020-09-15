@@ -64,7 +64,7 @@
                   <li data-option-name="consolas">Consolas</li>
                 </ul>
               </li>
-              <li>Size
+              <li>Grandezza
                 <ul>
                   <li data-option-name="extra-small-font">Minuscolo</li>
                   <li data-option-name="small-font">Piccolo</li>
@@ -84,7 +84,13 @@
 
           <li data-option-name="enable-aliases"><label><input id="menuBar-chkEnableTrig" type="checkbox" checked>Triggers</label></li>
           <li data-option-name="enable-triggers"><label><input id="menuBar-chkEnableAlias" type="checkbox" checked>Aliases</label></li>
-
+          <li type="separator"></li>
+          <li data-option-name="log-time"><label><input type="checkbox">Mostra Timestamp</label></li>
+          <li data-option-name="debug-scripts"><label><input type="checkbox">Script Info</label></li>
+          <li type="separator"></li>
+          <li data-option-name="reset-settings">Ripristina</li>
+          <li data-option-name="import-settings">Importa</li>
+          <li data-option-name="export-settings">Esporta</li>
         </ul>
       </li>
       <li data-option-name="aliases">Aliases</li>
@@ -99,12 +105,17 @@
   <div id="mainWin">
     <pre id="winOutput" aria-live="assertive" class="outputText"></pre>
     <div id="cmdCont">
-      <textarea autofocus rows="1" id="cmdInput" aria-live="off"></textarea>
+      <textarea autofocus rows="1" id="cmdInput" aria-live="off" autocapitalize="off"></textarea>
       <div class="chkCmdInputCmdStackCont">
         <input id="chkCmdStack" type="checkbox" checked>
         <label for="chkCmdStack" class="toolTipText" aria-live="assertive" title="Command stacking">Comandi Multipli</label>
       </div>
     </div>
+  </div>
+</div>
+<div class="preloading">
+  <div class="vertical-center">
+    <h3 class="slideLeftRight">Caricamento in corso ...</h3>
   </div>
 </div>
 </body>
