@@ -70,12 +70,12 @@ export abstract class TrigAlEditBase {
                         <span>Modello</span>
                         <input type="text" class="winEdit-pattern" disabled><br>
                         <div class="pane-optional">
-                            <input type="text" class="winEdit-id" disabled placeholder="ID (opzionale)" title="Per visualizzare meglio nella lista o per poter usare toggleTrigger(id, stato) o toggleAlias(id, stato) in script">
-                            <input type="text" class="winEdit-className" disabled placeholder="Classe (opzionale)" title="Se appartiene a una classe disablitata sara' inattivo (usare toggleClass(id, stato)"">
+                            <label>ID: <input type="text" class="winEdit-id" disabled placeholder="(opzionale)" title="Per visualizzare meglio nella lista o per poter usare toggleTrigger(id, stato) o toggleAlias(id, stato) in script"></label>
+                            <label>Classe: <input type="text" class="winEdit-className" disabled placeholder="(opzionale)" title="Se appartiene a una classe disablitata sara' inattivo (usare toggleClass(id, stato)""></label>
                         </div>
                         <div class="pane-options">
                             <label>
-                                Enabled
+                                Abilitato
                                 <input type="checkbox" class="winEdit-chkEnabled" disabled />
                             </label>
                             <label>

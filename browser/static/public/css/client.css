@@ -335,6 +335,9 @@ body {
     overflow-y: hidden;
     overflow-x: hidden;
 }
+.jqx-menu-item-separator {
+    border-bottom: 1px solid gray;
+}
 
 .vertical-center {
     margin: 0;

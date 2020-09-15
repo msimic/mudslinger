@@ -76,13 +76,12 @@ export class AliasManager {
             let alias = this.aliases[i];
             if (!alias.enabled || (alias.class && !this.classManager.isEnabled(alias.class))) continue;
             if (alias.regex) {
-                let re = alias.pattern;
+                let re = alias.pattern.charAt(0) == "^" ? alias.pattern : ("^" + alias.pattern);
                 let alias_match:RegExpMatchArray;
                 alias_match = cmd.match(re);
                 if (!alias_match || alias_match == undefined) {
                     continue;
                 }
-
                 if (alias.is_script) {
                     if (!alias.script) {
                         alias.script = this.jsScript.makeScript(alias.id || alias.pattern, alias.value, "match, input");
