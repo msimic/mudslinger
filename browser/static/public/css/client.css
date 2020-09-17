@@ -192,6 +192,10 @@ body {
     width: 100px;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
 /*
 .winEdit-btnNew {}
 .winEdit-btnDelete {}

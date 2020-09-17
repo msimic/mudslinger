@@ -1,7 +1,9 @@
 import { EventHook } from "./event";
-
+import stripAnsi from 'strip-ansi';
 import { OutputManager } from "./outputManager";
 import { OutWinBase } from "./outWinBase";
+import { CommandInput } from "./commandInput";
+import { JsScript } from "./jsScript";
 
 
 // class DestWin extends OutWinBase {
@@ -27,19 +29,76 @@ import { OutWinBase } from "./outWinBase";
 //     }
 // }
 
+export interface mxpElement {
+    name: string;
+    regex: RegExp;
+    definition:string;
+    att:string;
+    flag:string;
+    tag:string;
+    empty:string;
+    open:string;
+    delete:string;
+    closing:string;
+}
 
 export class Mxp {
     public EvtEmitCmd = new EventHook<{value: string, noPrint: boolean}>();
 
     private openTags: Array<string> = [];
+    private elements:mxpElement[] = [];
     private tagHandlers: Array<(tag: string) => boolean> = [];
+    private elementRegex:RegExp;
+
     // private destWins: {[k: string]: DestWin} = {};
 
-    constructor(private outputManager: OutputManager) {
+    constructor(private outputManager: OutputManager, private commandInput: CommandInput, private script: JsScript) {
+        this.elementRegex = (/<!ELEMENT (?<name>(\w|_)+) +(('|")+(?<definition>([^"'])*)?('|")+)? ?(ATT='?(?<att>[^" ']*)'? ?)?(TAG='?(?<tag>[^" ']*)'? ?)?(FLAG=('|")?(?<flag>[^"']*)('|")? ?)?(?<open>OPEN)? ?(?<empty>EMPTY)? ?(?<delete>DELETE)? ?[^>]*>/gi);
         this.makeTagHandlers();
     }
 
+    private addElement(e:mxpElement):mxpElement {
+        e = this.parseElement(e);
+        this.elements.push(e);
+        return e;
+    }
+
+    private parseElement(e: mxpElement):mxpElement {
+        if (e.definition && e.definition.indexOf("<") > -1) {
+            // replacement tags
+            const tags = e.definition.match(/<([^>]+)>/g);
+            if (tags && tags.length) {
+                e.closing = '';
+                for (let index = tags.length - 1; index >= 0; index--) {
+                    const closeTag = "</" + tags[index].slice(1);
+                    e.closing += closeTag;
+                }
+            }
+        }
+        e.regex = new RegExp('<' + e.name + '\\b[^>]*>([\\s\\S]*?)<\/' + e.name + '>', 'i');
+        return e;
+    }
+
     private makeTagHandlers() {
+
+        this.elements = [];
+        this.tagHandlers.push((t) => {
+            if (t.match(/!element/i)) {
+                var re = this.elementRegex; // (/<!ELEMENT (?<name>(\w|_)+) +(('|")+(?<definition>([^"'])*)?('|")+)? ?(ATT='?(?<att>[^" ']*)'? ?)?(TAG='?(?<tag>[^" ']*)'? ?)?(FLAG=('|")?(?<flag>[^"']*)('|")? ?)?(?<open>OPEN)? ?(?<empty>EMPTY)? ?(?<delete>DELETE)? ?[^>]*>/gi);
+                let m = re.exec(t);
+                if (m) {
+                    let ele = this.addElement(<mxpElement>(<any>m).groups);
+                    console.debug("Element: ", ele);
+                    while (m = re.exec(t)) {
+                        ele = this.addElement(<mxpElement>(<any>m).groups);
+                        console.debug("MXP Element: ", ele);
+                    }
+                    return true;
+                }
+            };
+            return false;
+        });
+
         this.tagHandlers.push((tag) => {
             let re = /^<version>$/i;
             let match = re.exec(tag);
@@ -47,6 +106,7 @@ export class Mxp {
                 this.EvtEmitCmd.fire({
                     value: "\x1b[1z<VERSION CLIENT=Mudslinger MXP=0.01>", // using closing line tag makes it print twice...
                     noPrint: true});
+                    console.debug("MXP Version");
                 return true;
             }
             return false;
@@ -61,6 +121,7 @@ export class Mxp {
                 let elem = $("<img src=\"" + match[2] + match[1] + "\">");
                 this.outputManager.pushMxpElem(elem);
                 this.outputManager.popMxpElem();
+                console.debug("MXP Image: ", match[2] + match[1]);
                 return true;
             }
 
@@ -152,35 +213,32 @@ export class Mxp {
             let re = /^<send/i;
             let match = re.exec(tag);
             if (match) {
-                /* match with explicit href */
-                let tag_re = /^<send (?:href=)?["'](.*)["']>$/i;
+                
+                /* just the tag */
+                let tag_re = /^<send ?(?:href=)?(["'](.*)["'])?([^>]*)?>([^<]+)<\/send>/i;
                 let tag_m = tag_re.exec(tag);
                 if (tag_m) {
-                    let cmd = tag_m[1];
-                    let html_tag = "<a href=\"#\" title=\"" + cmd + "\">";
-                    let elem = $(html_tag);
-
-                    elem.addClass("underline");
-
-                    elem.click(() => {
-                        this.EvtEmitCmd.fire({value: tag_m[1], noPrint: false});
-                    });
                     this.openTags.push("send");
-                    this.outputManager.pushMxpElem(elem);
-                    return true;
-                }
-
-                /* just the tag */
-                tag_re = /^<send>$/i;
-                tag_m = tag_re.exec(tag);
-                if (tag_m) {
-                    this.openTags.push("send");
-                    let html_tag = "<a href=\"#\">";
+                    let html_tag = "<a>";
                     let elem = $(html_tag);
-
+                    const tagCommand = stripAnsi(tag_m[2] ? tag_m[2] : tag_m[4]);
+                    elem[0].setAttribute("title", tagCommand);
                     elem.addClass("underline");
-
+                    elem.addClass("clickable");
+                    if (tag_m[3] && tag_m[3].match(/prompt/i)) {
+                        elem.click(() => {
+                            this.commandInput.setInput(tagCommand);
+                        });
+                    }
+                    else {
+                        elem.click(() => {
+                            this.EvtEmitCmd.fire({value: tagCommand, noPrint: false});
+                        });
+                    }
                     this.outputManager.pushMxpElem(elem);
+                    this.outputManager.handleTelnetData(this.str2ab(tag_m[4]));
+                    this.openTags.pop();
+                    this.outputManager.popMxpElem();
                     return true;
                 }
             }
@@ -209,11 +267,48 @@ export class Mxp {
         });
     }
 
+    str2ab(str:string) {
+        var buf = new ArrayBuffer(str.length); // 2 bytes for each char
+        var bufView = new Uint8Array(buf);
+        for (var i=0, strLen=str.length; i < strLen; i++) {
+          bufView[i] = str.charCodeAt(i);
+        }
+        return buf;
+      }
+
     handleMxpTag(data: string) {
         let handled = false;
-        for (let i = 0; i < this.tagHandlers.length; i++) {
+
+        for (var i = 0; i < this.elements.length; i++) {
+            let tmp:RegExpMatchArray;
+            if (this.elements[i].regex && (tmp = data.match(this.elements[i].regex))) {
+                data = '';
+                if (this.elements[i].definition) {
+                    data += this.elements[i].definition;
+                }
+                handled = true;
+                data += tmp[1];
+                if (this.elements[i].closing) {
+                    data += this.elements[i].closing;
+                }
+                if (this.elements[i].flag && this.elements[i].flag.match(/set /i)) {
+                    const varName = this.elements[i].flag.replace(/set /i, "");
+                    tmp[1] = stripAnsi(tmp[1]);
+                    this.script.getScriptThis()[varName] = tmp[1];
+                    console.debug("MXP set var: ", varName, tmp[1]);
+                }
+                console.debug("MXP Parse Element: ", this.elements[i].name, data);
+            }
+        }
+
+        if (handled) {
+            this.outputManager.handleTelnetData(this.str2ab(data));
+            return;
+        }
+
+        for (let ti = 0; ti < this.tagHandlers.length; ti++) {
             /* tag handlers will return true if it"s a match */
-            if (this.tagHandlers[i](data)) {
+            if (this.tagHandlers[ti](data)) {
                 handled = true;
                 break;
             }
@@ -221,6 +316,12 @@ export class Mxp {
 
         if (!handled) {
             console.log("Unsupported MXP tag: " + data);
+            const re = /^<([a-zA-Z0-9]*)\b[^>]*>([\s\S]*?)<\/\1>/;
+            const m = data.match(re);
+            if (m && m.length >= 2) {
+                data = m[2];
+                this.outputManager.handleTelnetData(this.str2ab(data));
+            }
         }
     };
 

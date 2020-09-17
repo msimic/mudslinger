@@ -28,6 +28,11 @@ export class CommandInput {
         });
     }
 
+    public setInput(str:string) {
+        this.$cmdInput.val(str);
+        this.$cmdInput.focus();
+    }
+
     public execCommand(cmd: string) {
         let cmds = [ cmd ];
         let ocmds = [ cmd ];  // originals to fetch the info who triggered the input for aliases

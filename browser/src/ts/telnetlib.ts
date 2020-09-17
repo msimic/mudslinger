@@ -83,7 +83,11 @@ export class Telnet {
 
                 let opt = c;
 
-                if ([Cmd.DO, Cmd.DONT].indexOf(cmd) !== -1) {
+                if ([Cmd.SE].indexOf(cmd) !== -1) {
+                    let handled = this.EvtNegotiation.fire({cmd: cmd, opt: opt});
+                    console.log("SE " + opt +" handled: " + handled);
+                }
+                else if ([Cmd.DO, Cmd.DONT].indexOf(cmd) !== -1) {
                     let handled = this.EvtNegotiation.fire({cmd: cmd, opt: opt});
 
                     if (!handled) {

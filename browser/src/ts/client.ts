@@ -69,7 +69,7 @@ export class Client {
 
         this.outputManager = new OutputManager(this.outputWin, UserConfig);
 
-        this.mxp = new Mxp(this.outputManager);
+        this.mxp = new Mxp(this.outputManager, this.commandInput, this.jsScript);
         this.socket = new Socket(this.outputManager, this.mxp);
         this.connectWin = new ConnectWin(this.socket);
         this.menuBar = new MenuBar(this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin);

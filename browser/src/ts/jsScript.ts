@@ -12,6 +12,51 @@ export let EvtScriptEmitToggleAlias = new EventHook<{owner:string, id:string, st
 export let EvtScriptEmitToggleTrigger = new EventHook<{owner:string, id:string, state:boolean}>();
 export let EvtScriptEmitToggleClass = new EventHook<{owner:string, id:string, state:boolean}>();
 
+export interface PropertyChanged {
+    obj: any;
+    propName: any;
+    oldValue: any;
+    newValue: any;
+}
+
+declare interface ScriptThis {
+    startWatch(onWatch:(ev:PropertyChanged)=>void) : void;
+    [prop:string]:any;
+}
+
+let startWatch = function (this : ScriptThis, onWatch:(ev:PropertyChanged)=>void) {
+
+    var self = <any>this;
+
+    if (!self.watchTask) {
+        self.oldValues = [];
+
+        for (var propName in self) {
+            self.oldValues[propName] = self[propName];
+        }
+
+
+        setInterval(function () {
+            for (var propName in self) {
+                var propValue = self[propName];
+                if (typeof (propValue) != 'function') {
+
+
+                    var oldValue = self.oldValues[propName];
+
+                    if (propValue != oldValue) {
+                        self.oldValues[propName] = propValue;
+
+                        onWatch({ obj: self, propName: propName, oldValue: oldValue, newValue: propValue });
+
+                    }
+
+                }
+            }
+        }, 30);
+    }
+}
+
 function makeScript(owner:string, text: string, argsSig: string,
     classManager: ClassManager,
     aliasManager: AliasManager,
@@ -76,12 +121,21 @@ function makeScript(owner:string, text: string, argsSig: string,
 }
 
 export class JsScript {
-    private scriptThis: any = {}; /* the 'this' used for all scripts */
+    private scriptThis: ScriptThis = {
+        startWatch: startWatch
+    }; /* the 'this' used for all scripts */
     private classManager: ClassManager;
     private aliasManager: AliasManager;
     private triggerManager: TriggerManager;
 
-    getScriptThis() { return this.scriptThis; }
+    constructor() {
+        this.scriptThis.startWatch((e)=>{
+            console.debug(e.propName + ": " + e.newValue);
+            this.aliasManager.checkAlias("on"+e.propName + " " + e.oldValue);
+        });
+    }
+
+    public getScriptThis() { return this.scriptThis; }
 
     public makeScript(owner:string, text: string, argsSig: string): any {
         try {

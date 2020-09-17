@@ -5,6 +5,8 @@ import { utf8decode } from "./util";
 
 import { ansiColorTuple, copyAnsiColorTuple, colorIdToHtml,
          ansiFgLookup, ansiBgLookup, ansiName, ansiLevel } from "./color";
+import { UserConfig } from "./userConfig";
+import { Socket } from "./socket";
 
 
 export interface ConfigIf {
@@ -36,13 +38,21 @@ export class OutputManager {
     private defaultFgId: string;
     private defaultAnsiBg: ansiColorTuple;
     private defaultBgId: string;
+    private socket:Socket;
+
+    public setSocket(socket:Socket) {
+        this.socket = socket;
+    }
+
+    public mxpActive(): boolean {
+        return this.socket && this.socket.mxpActive();
+    }
 
     constructor(private outputWin: OutputWin, private config: ConfigIf) {
         this.targetWindows = [this.outputWin];
         this.target = this.outputWin;
-
         this.loadConfig();
-        config.evtConfigImport.handle(this.loadConfig, this);
+        if (config.evtConfigImport) config.evtConfigImport.handle(this.loadConfig, this);
     }
 
     private loadConfig() {
@@ -85,7 +95,7 @@ export class OutputManager {
         return this.target.popElem();
     }
 
-    private handleText(data: string) {
+    public handleText(data: string) {
         this.target.addText(data);
     }
 
@@ -359,7 +369,7 @@ export class OutputManager {
                 continue;
             }
 
-            if (char !== "\x1b") {
+            if (char !== "\x1b" && !(char == '<' && this.mxpActive()) && !(char == '&' && this.mxpActive())) {
                 output += char;
                 i++;
                 continue;
@@ -370,6 +380,29 @@ export class OutputManager {
             let substr = rx.slice(i);
             let re;
             let match;
+
+            re = /^\&(\w+)\;/;
+            match = re.exec(substr);
+            if (match) {
+                switch (match[1]) {
+                    case 'quot':
+                        output += '"';
+                        break;
+                    case 'amp':
+                        output += '&';
+                        break;
+                    case 'lt':
+                        output += '<';
+                        break;
+                    case 'gt':
+                        output += '>';
+                        break;
+                }
+                this.handleText(output);
+                output = "";
+                i += match[0].length;
+                continue;
+            }
 
             /* ansi default, equivalent to [0m */
             re = /^\x1b\[m/;
@@ -397,7 +430,7 @@ export class OutputManager {
             }
 
             /* MXP escapes */
-            re = /^\x1b\[1z(<.*?>)\x1b\[7z/;
+            re = /^\x1b\[[1-7]z(<.*>)/;
             match = re.exec(substr);
             if (match) {
                 // MXP tag. no discerning what it is or if it"s opening/closing tag here
@@ -413,6 +446,17 @@ export class OutputManager {
             if (match) {
                 /* this gets sent once at the beginning to set the line mode. We don"t need to do anything with it */
                 i += match[0].length;
+                continue;
+            }
+
+            re = /^<([a-zA-Z0-9]*)\b[^>]*>([\s\S]*?)<\/\1>/;
+            if (this.mxpActive()) match = re.exec(substr);
+            if (match) {
+                // MXP tag. no discerning what it is or if it"s opening/closing tag here
+                i += match[0].length;
+                this.handleText(output);
+                output = "";
+                this.EvtMxpTag.fire(match[0]);
                 continue;
             }
 

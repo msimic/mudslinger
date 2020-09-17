@@ -15,6 +15,15 @@ export class TelnetClient extends Telnet {
     public EvtServerEcho = new EventHook<boolean>();
 
     public clientIp: string;
+    public _mxp: boolean;
+
+    public get mxp():boolean{
+        return this._mxp;
+    }
+
+    public set mxp(v:boolean){
+        this._mxp = v;
+    }
 
     private ttypeIndex: number = 0;
 
@@ -90,6 +99,12 @@ export class TelnetClient extends Telnet {
                 this.writeArr([Cmd.IAC, Cmd.DO, Opt.ECHO]);
             } else if (opt === Opt.SGA) {
                 this.writeArr([Cmd.IAC, Cmd.DO, Opt.SGA]);
+            } else if (opt === ExtOpt.MXP) {
+                if (UserConfig.getDef("mxpEnabled", true)) {
+                  this.writeArr([Cmd.IAC, Cmd.DO, ExtOpt.MXP]);
+                } else {
+                    this.writeArr([Cmd.IAC, Cmd.WONT, ExtOpt.MXP]);
+                }
             } else {
                 this.writeArr([Cmd.IAC, Cmd.DONT, opt]);
             }
@@ -106,6 +121,8 @@ export class TelnetClient extends Telnet {
                 this.doNewEnviron = true;
             } else if (opt === ExtOpt.MXP && UserConfig.getDef("mxpEnabled", true) === true) {
                 this.writeArr([Cmd.IAC, Cmd.WILL, ExtOpt.MXP]);
+            } else if (opt === ExtOpt.MXP && !UserConfig.getDef("mxpEnabled", true)) {
+                this.writeArr([Cmd.IAC, Cmd.WONT, ExtOpt.MXP]);
             } else {
                 this.writeArr([Cmd.IAC, Cmd.WONT, opt]);
             }
@@ -113,6 +130,7 @@ export class TelnetClient extends Telnet {
             if (opt === Opt.NEW_ENVIRON) {
                 this.doNewEnviron = false;
             }
+        } else if (cmd === Cmd.SB) {
         } else if (cmd === Cmd.SE) {
             let sb = this.readSbArr();
 
@@ -120,7 +138,14 @@ export class TelnetClient extends Telnet {
                 return;
             }
 
-            if (sb.length === 2 && sb[0] === Opt.TTYPE && sb[1] === SubNeg.SEND) {
+            if (sb.length === 1 && sb[0] === ExtOpt.MXP) {
+                if (UserConfig.getDef("mxpEnabled", true)) {
+                    this.mxp = true;
+                } else {
+                    this.mxp = false;
+                }
+            }
+            else if (sb.length === 2 && sb[0] === Opt.TTYPE && sb[1] === SubNeg.SEND) {
                 let ttype: string;
                 if (this.ttypeIndex >= TTYPES.length) {
                     ttype = this.clientIp || "UNKNOWNIP";

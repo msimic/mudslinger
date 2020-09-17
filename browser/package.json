@@ -3,6 +3,7 @@
   "version": "0.3.0",
   "scripts": {
     "postinstall": "node tools/postinstall.js",
+    "compile": "tsc -p tsconfig.json",
     "build": "node tools/genAppInfo.js \"git rev-parse HEAD\" && tsc -p tsconfig.json && webpack",
     "build-dev": "node tools/genAppInfo.js \"git rev-parse HEAD\" && tsc -p tsconfig.json && webpack --mode=development --config webpack.config.dev.js",
     "start": "tsc -p tsconfig.json && webpack-dev-server --config ./webpack.config.dev.js --inline --hot",
@@ -23,6 +24,7 @@
     "moxios": "^0.4.0",
     "qunit": "^2.11.2",
     "socket.io-client": "^2.3.0",
+    "strip-ansi": "^6.0.0",
     "ts-loader": "^8.0.3",
     "typescript": "^3.9.7",
     "webpack": "^4.44.1",

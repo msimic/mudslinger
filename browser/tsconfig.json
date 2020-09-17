@@ -3,7 +3,9 @@
         "sourceMap": true,
         "outDir": "./build",
         "noImplicitAny": true,
+        "esModuleInterop": true,
         "noImplicitReturns": true,
+        "target": "es5",
         "lib": [
             "DOM",
             "ES6",

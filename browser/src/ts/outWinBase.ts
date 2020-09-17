@@ -159,10 +159,10 @@ export class OutWinBase {
         let spanText = "<span";
 
         let classText = "";
-        if (this.underline) {
+        if (this.underline && this.colorsEnabled) {
             classText += "underline ";
         }
-        if (this.blink) {
+        if (this.blink && this.colorsEnabled) {
             classText += "blink ";
         }
         if (this.fgColorId) {
@@ -185,7 +185,7 @@ export class OutWinBase {
             styleText += "border-bottom-style:solid;";
             styleText += "border-bottom-width:1px;";
             if (this.colorsEnabled) {
-                styleText += "border-bottom-color:" + colorIdToHtml[this.fgColorId] + ";";
+                styleText += "border-bottom-color:" + colorIdToHtml[this.fgColorId] + ";display: inline-block;";
             }
         }
 

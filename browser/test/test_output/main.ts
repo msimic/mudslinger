@@ -3,14 +3,16 @@ import { OutputManager, ConfigIf } from "../../src/ts/outputManager";
 import { Mxp } from "../../src/ts/mxp";
 import { ansiColorTuple} from "../../src/ts/color";
 import { utf8encode } from "../../src/ts/util";
+import { EventHook } from "../../src/ts/event";
 
 let fakeMgrConfig = {
-    set: (key: "defaultAnsiFg" | "defaultAnsiBg", val: ansiColorTuple): void => {
+    set: (key: "defaultAnsiFg" | "defaultAnsiBg" | "utf8Enabled", val: ansiColorTuple): void => {
 
     },
     get: (key: string): any => {
         return undefined;
-    }
+    },
+    evtConfigImport: null
 }
 
 let fakeWinConfig = {

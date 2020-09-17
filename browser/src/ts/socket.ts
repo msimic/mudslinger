@@ -25,8 +25,12 @@ export class Socket {
     private ioEvt: IoEvent;
     private telnetClient: TelnetClient;
     private clientIp: string;
+    public mxpActive(): boolean {
+        return this.telnetClient && this.telnetClient.mxp;
+    }
 
     constructor(private outputManager: OutputManager, private mxp: Mxp) {
+        this.outputManager.setSocket(this);
     }
 
     public async open() {
