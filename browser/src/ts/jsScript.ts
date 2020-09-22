@@ -67,10 +67,10 @@ function makeScript(owner:string, text: string, argsSig: string,
 
     /* Scripting API section */
     const send = function(cmd: string) {
-        EvtScriptEmitCmd.fire({owner: own, message: cmd});
+        EvtScriptEmitCmd.fire({owner: own, message: cmd.toString()});
     };
     const print = function(message: string) {
-        EvtScriptEmitPrint.fire({owner: own, message: message});
+        EvtScriptEmitPrint.fire({owner: own, message: message.toString()});
     };
     const toggleTrigger = function(id:string, state: boolean) {
         EvtScriptEmitToggleTrigger.fire({owner: own, id: id, state: state});
@@ -130,7 +130,7 @@ export class JsScript {
 
     constructor() {
         this.scriptThis.startWatch((e)=>{
-            console.debug(e.propName + ": " + e.newValue);
+            //console.debug(e.propName + ": " + e.newValue);
             this.aliasManager.checkAlias("on"+e.propName + " " + e.oldValue);
         });
     }

@@ -15,7 +15,7 @@ export class TelnetClient extends Telnet {
     public EvtServerEcho = new EventHook<boolean>();
 
     public clientIp: string;
-    public _mxp: boolean;
+    public _mxp: boolean = false;
 
     public get mxp():boolean{
         return this._mxp;
@@ -23,6 +23,8 @@ export class TelnetClient extends Telnet {
 
     public set mxp(v:boolean){
         this._mxp = v;
+        const msg = "[MXP " + (v ? "ABILITATO" : "DISABILITATO") + "]";
+        this.EvtData.fire(new Uint8Array( arrayFromString(msg)));
     }
 
     private ttypeIndex: number = 0;

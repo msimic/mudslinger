@@ -49,11 +49,13 @@ export class Mxp {
     private elements:mxpElement[] = [];
     private tagHandlers: Array<(tag: string) => boolean> = [];
     private elementRegex:RegExp;
+    private entityRegex:RegExp;
 
     // private destWins: {[k: string]: DestWin} = {};
 
     constructor(private outputManager: OutputManager, private commandInput: CommandInput, private script: JsScript) {
         this.elementRegex = (/<!ELEMENT (?<name>(\w|_)+) +(('|")+(?<definition>([^"'])*)?('|")+)? ?(ATT='?(?<att>[^" ']*)'? ?)?(TAG='?(?<tag>[^" ']*)'? ?)?(FLAG=('|")?(?<flag>[^"']*)('|")? ?)?(?<open>OPEN)? ?(?<empty>EMPTY)? ?(?<delete>DELETE)? ?[^>]*>/gi);
+        this.entityRegex = (/<!ENTITY +(?<name>(\w|_)+) +(('|")+(?<definition>([^>])*)?('|")+)? ?(?<remove>REMOVE)? ?(?<add>ADD)?>/gi);
         this.makeTagHandlers();
     }
 
@@ -85,13 +87,42 @@ export class Mxp {
         this.tagHandlers.push((t) => {
             if (t.match(/!element/i)) {
                 var re = this.elementRegex; // (/<!ELEMENT (?<name>(\w|_)+) +(('|")+(?<definition>([^"'])*)?('|")+)? ?(ATT='?(?<att>[^" ']*)'? ?)?(TAG='?(?<tag>[^" ']*)'? ?)?(FLAG=('|")?(?<flag>[^"']*)('|")? ?)?(?<open>OPEN)? ?(?<empty>EMPTY)? ?(?<delete>DELETE)? ?[^>]*>/gi);
+                re.lastIndex = 0;
                 let m = re.exec(t);
                 if (m) {
                     let ele = this.addElement(<mxpElement>(<any>m).groups);
-                    console.debug("Element: ", ele);
+                    //console.debug("Element: ", ele);
                     while (m = re.exec(t)) {
                         ele = this.addElement(<mxpElement>(<any>m).groups);
-                        console.debug("MXP Element: ", ele);
+                        //console.debug("MXP Element: ", ele);
+                    }
+                    return true;
+                }
+            };
+            return false;
+        });
+
+        this.tagHandlers.push((t) => {
+            if (t.match(/<!entity/i)) {
+                var re = this.entityRegex;
+                re.lastIndex = 0;
+                let m = re.exec(t);
+                if (m) {
+                    const def = (<any>m).groups.definition || '';
+                    if ((<any>m).groups.remove) {
+                        delete this.script.getScriptThis()[(<any>m).groups.name];
+                    }
+                    else if ((<any>m).groups.add) {
+                        if (!this.script.getScriptThis()[(<any>m).groups.name]) {
+                            this.script.getScriptThis()[(<any>m).groups.name] = "";
+                        }
+                        if (this.script.getScriptThis()[(<any>m).groups.name].length) {
+                            this.script.getScriptThis()[(<any>m).groups.name] += "|";
+                        }
+                        this.script.getScriptThis()[(<any>m).groups.name]+=unescape(def.replace(/\\"/g, '"'));
+                    }
+                    else {
+                        this.script.getScriptThis()[(<any>m).groups.name] = unescape(def.replace(/\\"/g, '"'));
                     }
                     return true;
                 }
@@ -106,7 +137,7 @@ export class Mxp {
                 this.EvtEmitCmd.fire({
                     value: "\x1b[1z<VERSION CLIENT=Mudslinger MXP=0.01>", // using closing line tag makes it print twice...
                     noPrint: true});
-                    console.debug("MXP Version");
+                    //console.debug("MXP Version");
                 return true;
             }
             return false;
@@ -114,14 +145,14 @@ export class Mxp {
 
         this.tagHandlers.push((tag) => {
             /* hande image tags */
-            let re = /^<image\s*(\S+)\s*url="(.*)">$/i;
+            let re = /^<image ?(FName=["|']?([^ '"]+)["|']?)? ?url="([^">]*)">/i;
             let match = re.exec(tag);
             if (match) {
                 /* push and pop is dirty way to do this, clean it up later */
-                let elem = $("<img src=\"" + match[2] + match[1] + "\">");
+                let elem = $("<img style=\"max-width:90%;max-height:70%;\" src=\"" + match[3] + match[2] + "\">");
                 this.outputManager.pushMxpElem(elem);
                 this.outputManager.popMxpElem();
-                console.debug("MXP Image: ", match[2] + match[1]);
+                //console.debug("MXP Image: ", match[2] + match[1]);
                 return true;
             }
 
@@ -291,13 +322,13 @@ export class Mxp {
                 if (this.elements[i].closing) {
                     data += this.elements[i].closing;
                 }
-                if (this.elements[i].flag && this.elements[i].flag.match(/set /i)) {
-                    const varName = this.elements[i].flag.replace(/set /i, "");
+                if (this.elements[i].flag) {
+                    const varName = this.elements[i].flag.replace(/^set /i, "");
                     tmp[1] = stripAnsi(tmp[1]);
                     this.script.getScriptThis()[varName] = tmp[1];
-                    console.debug("MXP set var: ", varName, tmp[1]);
+                    //console.debug("MXP set var: ", varName, tmp[1]);
                 }
-                console.debug("MXP Parse Element: ", this.elements[i].name, data);
+                //console.debug("MXP Parse Element: ", this.elements[i].name, data);
             }
         }
 

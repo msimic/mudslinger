@@ -32,6 +32,7 @@ export class MenuBar {
         ["enable-mxp", "mxpEnabled"],
         ["enable-aliases", "aliasesEnabled"],
         ["enable-triggers", "triggersEnabled"],
+        ["smallest-font", "font-size"],
         ["extra-small-font", "font-size"],
         ["small-font", "font-size"],
         ["normal-font", "font-size"],
@@ -40,6 +41,7 @@ export class MenuBar {
         ["courier", "font"],
         ["consolas", "font"],
         ["monospace", "font"],
+        ["lucida", "font"],
         ["reset-settings", ""],
         ["import-settings", ""],
         ["export-settings", ""],
@@ -59,11 +61,11 @@ export class MenuBar {
             const onStorageChanged:(val:string)=>void = (storageVal) => {
                 if (storageVal) {
                     $(checkbox).attr('checked', storageVal);
-                    $(element).data("checked", storageVal);
+                    $(element)[0].setAttribute("data-checked", storageVal);
                     if (clickable) this.clickFuncs[name](storageVal);
                 } else if (storageVal != undefined) {
                     $(checkbox).removeAttr('checked');
-                    $(element).data("checked", false);
+                    $(element)[0].setAttribute("data-checked", "false");
                     if (clickable) this.clickFuncs[name](storageVal);
                 }
                 if (storageVal != undefined) console.log(`${name} set to ${storageVal}`);
@@ -86,7 +88,7 @@ export class MenuBar {
                     UserConfig.set(storageKey, name);
                     this.clickFuncs[name](name);
                 } else {
-                    this.clickFuncs[name]($(element).data("checked"));
+                    this.clickFuncs[name]($(element)[0].getAttribute("data-checked"));
                 }
             });
         };
@@ -101,7 +103,7 @@ export class MenuBar {
 
     private attachMenu() {
         $("[data-option-name]").each((i, e) => {
-            const name = $(e).data("option-name");
+            const name = $(e)[0].getAttribute("data-option-name");
             const chk = $(e).find("input[type='checkbox']")[0];
             this.attachMenuOption(name, e, chk);
         });
@@ -109,7 +111,7 @@ export class MenuBar {
 
     private detachMenu() {
         $("[data-option-name]").each((i, e) => {
-            const name = $(e).data("option-name");
+            const name = $(e)[0].getAttribute("data-option-name");
             const chk = $(e).find("input[type='checkbox']")[0];
             this.detachMenuOption(name, e, chk);
         });
@@ -131,9 +133,15 @@ export class MenuBar {
         });
     }
 
+    private isTrue(v:any):boolean {
+        if (typeof v == "boolean") return v;
+        if (typeof v == "string") return v == "true";
+        return false;
+    }
+
     private makeClickFuncs() {
         this.clickFuncs["connect"] = (val) => {
-            if (val) {
+            if (this.isTrue(val)) {
                 this.EvtDisconnectClicked.fire();
             }
             else {
@@ -155,7 +163,7 @@ export class MenuBar {
         };
 
         this.clickFuncs["wrap-lines"] = (val) => {
-            if (!val) {
+            if (!this.isTrue(val)) {
                 $("#winOutput").addClass("output-prewrap");
             } else {
                 $("#winOutput").removeClass("output-prewrap");
@@ -163,6 +171,7 @@ export class MenuBar {
         };
 
         var removeFontSizes = () => {
+            $("#winOutput").removeClass("smalles-text");
             $("#winOutput").removeClass("extra-small-text");
             $("#winOutput").removeClass("small-text");
             $("#winOutput").removeClass("normal-text");
@@ -174,10 +183,11 @@ export class MenuBar {
             $("#winOutput").removeClass("courier");
             $("#winOutput").removeClass("consolas");
             $("#winOutput").removeClass("monospace");
+            $("#winOutput").removeClass("lucida");
         };
 
         this.clickFuncs["enable-color"] = (val) => {
-            if (val) {
+            if (this.isTrue(val)) {
                 this.EvtChangeDefaultColor.fire(["white", "low"]);
                 this.EvtChangeDefaultBgColor.fire(["black", "low"]);
             }
@@ -197,6 +207,13 @@ export class MenuBar {
             }
         };
 
+        this.clickFuncs["lucida"] = (val) => {
+            if (val == "lucida") {
+                removeFonts();
+                $("#winOutput").addClass("lucida");
+            }
+        };
+
         this.clickFuncs["monospace"] = (val) => {
             if (val == "monospace") {
                 removeFonts();
@@ -208,6 +225,13 @@ export class MenuBar {
             if (val == "extra-small-font") {
                 removeFontSizes();
                 $("#winOutput").addClass("extra-small-text");
+            }
+        };
+
+        this.clickFuncs["smallest-font"] = (val) => {
+            if (val == "smallest-font") {
+                removeFontSizes();
+                $("#winOutput").addClass("smallest-text");
             }
         };
 
@@ -248,7 +272,7 @@ export class MenuBar {
         };
 
         this.clickFuncs["colorsEnabled"] = (val) => {
-            if (val) {
+            if (this.isTrue(val)) {
                 UserConfig.set("text-color", undefined);
             }
         };
@@ -296,11 +320,11 @@ export class MenuBar {
 
     handleTelnetConnect() {
         $("#menuBar-conn-disconn").text("Disconnetti");
-        $("#menuBar-conn-disconn").data("checked", true);
+        $("#menuBar-conn-disconn")[0].setAttribute("data-checked", "true");
     }
 
     handleTelnetDisconnect() {
         $("#menuBar-conn-disconn").text("Connetti");
-        $("#menuBar-conn-disconn").data("checked", false);
+        $("#menuBar-conn-disconn")[0].setAttribute("data-checked", "false");
     }
 }

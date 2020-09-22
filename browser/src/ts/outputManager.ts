@@ -382,7 +382,8 @@ export class OutputManager {
             let match;
 
             re = /^\&(\w+)\;/;
-            match = re.exec(substr);
+            match = null;
+            if (this.mxpActive()) match = re.exec(substr);
             if (match) {
                 switch (match[1]) {
                     case 'quot':
@@ -450,9 +451,22 @@ export class OutputManager {
             }
 
             re = /^<([a-zA-Z0-9]*)\b[^>]*>([\s\S]*?)<\/\1>/;
+            match = null;
             if (this.mxpActive()) match = re.exec(substr);
             if (match) {
                 // MXP tag. no discerning what it is or if it"s opening/closing tag here
+                i += match[0].length;
+                this.handleText(output);
+                output = "";
+                this.EvtMxpTag.fire(match[0]);
+                continue;
+            }
+
+            re = /^<!\w+ [^>]+>/;
+            match = null;
+            if (this.mxpActive()) match = re.exec(substr);
+            if (match) {
+                // MXP ! tag
                 i += match[0].length;
                 this.handleText(output);
                 output = "";
@@ -466,6 +480,18 @@ export class OutputManager {
             if (match) {
                 console.log("Unsupported CSI sequence:", match[0]);
                 i += match[0].length;
+                continue;
+            }
+
+            re = /^<\w+ [^>]+>/;
+            match = null;
+            if (this.mxpActive()) match = re.exec(substr);
+            if (match) {
+                // MXP non closing tag
+                i += match[0].length;
+                this.handleText(output);
+                output = "";
+                this.EvtMxpTag.fire(match[0]);
                 continue;
             }
 

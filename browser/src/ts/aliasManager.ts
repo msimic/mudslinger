@@ -97,7 +97,7 @@ export class AliasManager {
                     return value;
                 }
             } else {
-                let re = "^" + alias.pattern + "\\s*(.*)$";
+                let re = "^" + alias.pattern + "(?:\\s+(.*))?$";
                 let match = cmd.match(re);
                 if (!match) {
                     continue;

@@ -54,7 +54,7 @@
                   <li data-option-name="black-on-gray">Nero su Grigio</li>
                   <li data-option-name="black-on-white">Nero su Bianco</li>
                   <li type="separator"></li>
-                  <li data-option-name="enable-color"><label><input id="menuBar-chkEnableColor" type="checkbox" checked>Colori ANSI</label></li>
+                  <li data-option-name="enable-color"><label for="menuBar-chkEnableColor"><input id="menuBar-chkEnableColor" type="checkbox" checked>Colori ANSI</label></li>
                 </ul>
               </li>
               <li>Font
@@ -62,10 +62,12 @@
                   <li data-option-name="monospace">Predefinito</li>
                   <li data-option-name="courier">Courier</li>
                   <li data-option-name="consolas">Consolas</li>
+                  <li data-option-name="lucida">Lucida Console</li>
                 </ul>
               </li>
               <li>Grandezza
                 <ul>
+                  <li data-option-name="smallest-font">Microscopico</li>
                   <li data-option-name="extra-small-font">Minuscolo</li>
                   <li data-option-name="small-font">Piccolo</li>
                   <li data-option-name="normal-font">Normale</li>
@@ -73,17 +75,17 @@
                   <li data-option-name="extra-large-font">Enorme</li>
                 </ul>
               </li>
-              <li data-option-name="wrap-lines"><label><input id="menuBar-chkWrapLines" type="checkbox" checked>Capolinea</label></li>
-              <li data-option-name="enable-utf8"><label><input id="menuBar-chkEnableUtf8" type="checkbox" checked>UTF-8</label></li>
+              <li data-option-name="wrap-lines"><label for="menuBar-chkWrapLines"><input id="menuBar-chkWrapLines" type="checkbox" checked>Capolinea</label></li>
+              <li data-option-name="enable-utf8"><label for="menuBar-chkEnableUtf8"><input id="menuBar-chkEnableUtf8" type="checkbox" checked>UTF-8</label></li>
             </ul>
           </li>
           
-          <li data-option-name="enable-mxp"><label><input id="menuBar-chkEnableMxp" type="checkbox" checked>MXP</label></li>
+          <li data-option-name="enable-mxp"><label for="menuBar-chkEnableMxp"><input id="menuBar-chkEnableMxp" type="checkbox" checked>MXP</label></li>
           
           <li type="separator"></li>
 
-          <li data-option-name="enable-aliases"><label><input id="menuBar-chkEnableTrig" type="checkbox" checked>Triggers</label></li>
-          <li data-option-name="enable-triggers"><label><input id="menuBar-chkEnableAlias" type="checkbox" checked>Aliases</label></li>
+          <li data-option-name="enable-aliases"><label for="menuBar-chkEnableTrig"><input id="menuBar-chkEnableTrig" type="checkbox" checked>Triggers</label></li>
+          <li data-option-name="enable-triggers"><label for="menuBar-chkEnableAlias"><input id="menuBar-chkEnableAlias" type="checkbox" checked>Aliases</label></li>
           <li type="separator"></li>
           <li data-option-name="log-time"><label><input type="checkbox">Timestamp</label></li>
           <li data-option-name="debug-scripts"><label><input type="checkbox">ScriptInfo</label></li>
@@ -107,7 +109,7 @@
     </ul>
   </div>
   <div id="mainWin">
-    <pre id="winOutput" aria-live="assertive" class="outputText"></pre>
+    <pre id="winOutput" aria-live="assertive" aria-relevant="additions" class="outputText"></pre>
     <div id="cmdCont">
       <textarea autofocus rows="1" id="cmdInput" aria-live="off" autocapitalize="off"></textarea>
       <div class="chkCmdInputCmdStackCont">

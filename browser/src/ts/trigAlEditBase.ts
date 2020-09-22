@@ -32,6 +32,7 @@ export abstract class TrigAlEditBase {
     protected $mainSplit: JQuery;
     protected $saveButton: JQuery;
     protected $cancelButton: JQuery;
+    $filter: JQuery;
 
     /* these need to be overridden */
     protected abstract getList(): Array<string>;
@@ -42,6 +43,18 @@ export abstract class TrigAlEditBase {
     protected abstract defaultPattern: string;
     protected abstract defaultValue: string;
     protected abstract defaultScript: string;
+
+    protected Filter(str:string) {
+        $("li", this.$listBox).each((i,e) => {
+            const visible = !str || $(e).text().match(new RegExp(str, 'gi')) != null;
+            if (visible) {
+                $(e).show();
+            }
+            else {
+                $(e).hide();
+            }
+        })
+    }
 
     constructor(title: string) {
         let myDiv = document.createElement("div");
@@ -56,6 +69,10 @@ export abstract class TrigAlEditBase {
             <div class="winEdit-mainSplit">
                 <!--left panel-->
                 <div class="left-pane">
+                    <div class="buttons">
+                        <label class="filter-label">Filtra:</label>
+                        <input class="winEdit-filter" type="text" placeholder="<filtro>"/>
+                    </div>
                     <div class="list">
                         <ul size="2" class="winEdit-listBox select"></ul>
                     </div>
@@ -118,6 +135,10 @@ export abstract class TrigAlEditBase {
         this.$cancelButton = $(myDiv.getElementsByClassName("winEdit-btnCancel")[0]);
         this.$textArea = $(myDiv.getElementsByClassName("winEdit-textArea")[0]);
         this.$scriptArea = $(myDiv.getElementsByClassName("winEdit-scriptArea")[0]);
+        this.$filter = $(myDiv.getElementsByClassName("winEdit-filter")[0]);
+        this.$filter.keyup((e)=> {
+            this.Filter($(e.target).val());
+        });
 
         const win_w = $(window).innerWidth()-20;
         const win_h = $(window).innerHeight()-20;

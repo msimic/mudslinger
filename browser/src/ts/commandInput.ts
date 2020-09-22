@@ -73,10 +73,12 @@ export class CommandInput {
             return;
         }
 
-        this.cmd_history.push(cmd);
-        this.cmd_history = this.cmd_history.slice(-20);
-        this.saveHistory();
-        this.cmd_index = -1;
+        if (cmd.length > 1) {
+            this.cmd_history.push(cmd);
+            this.cmd_history = this.cmd_history.slice(-20);
+            this.saveHistory();
+            this.cmd_index = -1;
+        }
     };
 
     private keydown(event: KeyboardEvent): boolean {
