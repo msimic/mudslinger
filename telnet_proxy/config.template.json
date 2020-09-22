@@ -8,7 +8,7 @@
     "apiBaseUrl": "",
     "apiKey": "",
     "fixedTelnetHost": "mud.temporasanguinis.it",
-    "fixedTelnetPort": "6000",
+    "fixedTelnetPort": "6000,4000",
     "privateKey": "",
     "certificate": "",
     "certAuthority": ""
