@@ -17,7 +17,7 @@ export class OutWinBase {
     private logTime: boolean;
 
     private lineCount: number = 0;
-    private maxLines: number = 5000;
+    private maxLines: number = 500;
 
     private onMouseUp = () => {
         document.execCommand('copy');
@@ -32,11 +32,6 @@ export class OutWinBase {
         this.debugScripts = config.getDef("debugScripts", true);
         config.onSet("debugScripts", (val) => {
             this.debugScripts = val;
-        });
-
-        this.$rootElem.mouseup((event)=> {
-            document.execCommand('copy');
-            $("#cmdInput").focus();
         });
 
         // direct children of the root will be line containers, let"s push the first one.
@@ -209,7 +204,7 @@ export class OutWinBase {
         this.appendBuffer += spanText;
 
         if (txt.endsWith("\n")) {
-            this.append(this.appendBuffer);
+            this.append(this.appendBuffer, false);
             this.appendBuffer = "";
             this.newLine();
         }
@@ -229,15 +224,25 @@ export class OutWinBase {
         }
     };
 
-    protected append(o: any) {
+    protected append(o: any, toRoot:boolean) {
         if (o == "<span></span>") {
             debugger;
         }
+        //const time = new Date();
         if (this.logTime && o) {
             const time = this.padStart(new Date().toISOString().split("T")[1].split("Z")[0] + " ", 12, " ");
             this.$target.append('<span class="timeLog">' + time + "</span>");
         }
-        this.$target.append(o);
+        if (toRoot) {
+            this.lineCount += 1;
+            this.$rootElem.append(o);
+        }
+        else {
+            this.$target.append(o);
+        }
+        //const time2 = new Date();
+        //const timeDif = Math.abs(<any>time2-<any>time);
+        //console.log(timeDif);
     }
 
     private newLine() {

@@ -15,7 +15,7 @@ export class OutputWin extends OutWinBase {
             "<span style=\"color:orange\">" /*+ owner + ": "*/
             + Util.rawToHtml(data)
             + "<br>"
-            + "</span>");
+            + "</span>", true);
         this.scrollBottom(true);
     }
 
@@ -24,7 +24,7 @@ export class OutputWin extends OutWinBase {
             "<span style=\"color:yellow\">"
             + Util.rawToHtml(cmd)
             + "<br>"
-            + "</span>");
+            + "</span>", true);
         this.scrollBottom(true);
     }
 
@@ -34,7 +34,7 @@ export class OutputWin extends OutWinBase {
             "<span style=\"color:cyan\">[" + owner /*": "
             + Util.rawToHtml(cmd)*/
             + "]<br>"
-            + "</span>");
+            + "</span>", true);
         this.scrollBottom(true);
     }
 
@@ -50,7 +50,7 @@ export class OutputWin extends OutWinBase {
                 html += Util.rawToHtml(data[i]) + "<br>";
             }
         }*/
-        this.append(html);
+        this.append(html, true);
         this.scrollBottom(false);
     }
 
@@ -69,7 +69,7 @@ export class OutputWin extends OutWinBase {
             }
         }
         */
-        this.append(html);
+        this.append(html, true);
         this.scrollBottom(true);
     }
 
@@ -99,7 +99,7 @@ export class OutputWin extends OutWinBase {
 
         this.connIntervalId = setInterval(() => dots.textContent += '.', 1000);
 
-        this.append(elem);
+        this.append(elem, true);
         this.scrollBottom(true);
     }
 
@@ -112,7 +112,7 @@ export class OutputWin extends OutWinBase {
             "<br/><span style=\"color:cyan\">"
             + "[[Telnet connesso]]"
             + "<br>"
-            + "</span>");
+            + "</span>", true);
         this.scrollBottom(true);
     }
 
@@ -125,7 +125,7 @@ export class OutputWin extends OutWinBase {
             "<br/><span style=\"color:cyan\">"
             + "[[Telnet disconnesso]]"
             + "<br>"
-        + "</span>");
+        + "</span>", true);
         this.scrollBottom(true);
     }
 
@@ -134,7 +134,7 @@ export class OutputWin extends OutWinBase {
             "<br/><span style=\"color:cyan\">"
             + "[[Websocket connesso]]"
             + "<br>"
-            + "</span>");
+            + "</span>", true);
         this.scrollBottom(false);
     }
 
@@ -147,7 +147,7 @@ export class OutputWin extends OutWinBase {
             "<br/><span style=\"color:cyan\">"
             + "[[Websocket disconnesso]]"
             + "<br>"
-            + "</span>");
+            + "</span>", true);
         this.scrollBottom(false);
     }
 
@@ -158,7 +158,7 @@ export class OutputWin extends OutWinBase {
             + data + "<br>"
             + "]]"
             + "<br>"
-            + "</span>");
+            + "</span>", true);
         this.scrollBottom(true);
     }
 
@@ -167,7 +167,7 @@ export class OutputWin extends OutWinBase {
             "<br/><span style=\"color:red\">"
             + "[[Websocket errore]]"
             + "<br>"
-            + "</span>");
+            + "</span>", true);
         this.scrollBottom(true);
     }
 
@@ -181,7 +181,7 @@ export class OutputWin extends OutWinBase {
             + colno + "<br>"
             + "]]"
             + "<br>"
-            + "</span>"
+            + "</span>", true
         );
         this.scrollBottom(true);
     }
@@ -198,7 +198,7 @@ export class OutputWin extends OutWinBase {
             + stack + "<br>"
             + "]]"
             + "<br>"
-            + "</span>"
+            + "</span>", true
         );
         this.scrollBottom(true);
     }
@@ -215,7 +215,7 @@ export class OutputWin extends OutWinBase {
             + stack + "<br>"
             + "]]"
             + "<br>"
-            + "</span>"
+            + "</span>", true
         );
         this.scrollBottom(true);
     }
