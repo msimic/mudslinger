@@ -235,7 +235,11 @@ export class OutWinBase {
         }
         if (toRoot) {
             this.lineCount += 1;
-            this.$rootElem.append(o);
+            if (this.$rootElem != this.$target) {
+                $(o).insertBefore(this.$target);
+            } else {
+                this.$rootElem.append(o);
+            }
         }
         else {
             this.$target.append(o);
