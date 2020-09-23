@@ -55,7 +55,7 @@ export class Mxp {
 
     constructor(private outputManager: OutputManager, private commandInput: CommandInput, private script: JsScript) {
         this.elementRegex = (/<!ELEMENT (?<name>(\w|_)+) +(('|")+(?<definition>([^"'])*)?('|")+)? ?(ATT='?(?<att>[^" ']*)'? ?)?(TAG='?(?<tag>[^" ']*)'? ?)?(FLAG=('|")?(?<flag>[^"']*)('|")? ?)?(?<open>OPEN)? ?(?<empty>EMPTY)? ?(?<delete>DELETE)? ?[^>]*>/gi);
-        this.entityRegex = (/<!ENTITY +(?<name>(\w|_)+) +(('|")+(?<definition>([^>])*)?('|")+)? ?(?<remove>REMOVE)? ?(?<add>ADD)?>/gi);
+        this.entityRegex = (/<!ENTITY +(?<name>(\w|_)+) +(('|")+(?<definition>([^>])*)?('|")+)? ?(?<private>PRIVATE)? ?(?<delete>DELETE)? ?(?<remove>REMOVE)? ?(?<add>ADD)?>/gi);
         this.makeTagHandlers();
     }
 
@@ -109,17 +109,21 @@ export class Mxp {
                 let m = re.exec(t);
                 if (m) {
                     const def = (<any>m).groups.definition || '';
-                    if ((<any>m).groups.remove) {
+                    if (!this.script.getScriptThis()[(<any>m).groups.name]) {
+                        this.script.getScriptThis()[(<any>m).groups.name] = "";
+                    }
+                    if ((<any>m).groups.delete) {
                         delete this.script.getScriptThis()[(<any>m).groups.name];
                     }
                     else if ((<any>m).groups.add) {
-                        if (!this.script.getScriptThis()[(<any>m).groups.name]) {
-                            this.script.getScriptThis()[(<any>m).groups.name] = "";
-                        }
                         if (this.script.getScriptThis()[(<any>m).groups.name].length) {
                             this.script.getScriptThis()[(<any>m).groups.name] += "|";
                         }
                         this.script.getScriptThis()[(<any>m).groups.name]+=unescape(def.replace(/\\"/g, '"'));
+                    }
+                    else if ((<any>m).groups.remove) {
+                        // todo remove from list instead of deleting
+                        delete this.script.getScriptThis()[(<any>m).groups.name];
                     }
                     else {
                         this.script.getScriptThis()[(<any>m).groups.name] = unescape(def.replace(/\\"/g, '"'));
