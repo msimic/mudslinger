@@ -26,7 +26,7 @@ export class JsScriptWin {
                     <textarea class="winJsScript-code"></textarea>
                 </div>
                 <div class="pane-footer">
-                    <button class="winJsScript-btnRun">ESEGUI SCRIPT</button>
+                    <button class="winJsScript-btnRun bluebutton">ESEGUI SCRIPT</button>
                 </div>
             </div>
         </div>

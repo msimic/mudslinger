@@ -1,76 +1,89 @@
 import { EventHook } from "./event";
 
 
-export namespace UserConfig {
-    let cfgVals: {[k: string]: any};
-    let setHandlers: {[k: string]: EventHook<any>} = {};
-    export const evtConfigImport = new EventHook<{[k: string]: any}>();
+export class UserConfig {
+    private cfgVals: {[k: string]: any};
+    private setHandlers: {[k: string]: EventHook<any>} = {};
+    public evtConfigImport = new EventHook<{[k: string]: any}>();
 
-    let saveFunc: (v: string) => void;
+    private saveFunc: (v: string) => string;
 
-    export function init(userConfigStr: string, saveFunc_: (v: string) => void) {
-        saveFunc = saveFunc_;
+    public init(userConfigStr: string, saveFunc_: (v: string) => string) {
+        this.saveFunc = saveFunc_;
 
         if (userConfigStr) {
-            cfgVals = JSON.parse(userConfigStr);
+            this.cfgVals = JSON.parse(userConfigStr);
         } else {
-            cfgVals = {};
+            this.cfgVals = {};
         }
+
+        this.evtConfigImport.fire({});
     }
 
-    export function remove(nameFilter:RegExp, cb:()=>void) {
+    public copy(userConfigStr: string) {
+        const cfgVals: {[k: string]: any} = JSON.parse(userConfigStr);
         for (const key in cfgVals) {
             if (Object.prototype.hasOwnProperty.call(cfgVals, key)) {
                 const element = cfgVals[key];
+                this.set(key, element);
+            }
+        }
+        this.saveConfig();
+    }
+
+    public remove(nameFilter:RegExp, cb:()=>void) {
+        for (const key in this.cfgVals) {
+            if (Object.prototype.hasOwnProperty.call(this.cfgVals, key)) {
+                const element = this.cfgVals[key];
                 if (nameFilter.test(key)) {
-                    delete cfgVals[key];
+                    delete this.cfgVals[key];
                 }
             }
         }
         cb();
-        for (const key in setHandlers) {
-            if (Object.prototype.hasOwnProperty.call(setHandlers, key)) {
-                const element = setHandlers[key];
-                setHandlers[key].fire(get(key));
+        for (const key in this.setHandlers) {
+            if (Object.prototype.hasOwnProperty.call(this.setHandlers, key)) {
+                const element = this.setHandlers[key];
+                this.setHandlers[key].fire(this.get(key));
             }
         }
     }
 
-    export function onSet(key: string, cb: (val: any) => void) {
-        if (key in setHandlers === false) {
-            setHandlers[key] = new EventHook<any>();
+    public onSet(key: string, cb: (val: any) => void) {
+        if (key in this.setHandlers === false) {
+            this.setHandlers[key] = new EventHook<any>();
         }
         if (cb) {
-            setHandlers[key].handle(cb);
+            this.setHandlers[key].handle(cb);
         } else {
-            delete setHandlers[key];
+            delete this.setHandlers[key];
         }
     }
 
-    export function getDef(key: string, def: any): any {
-        let res = cfgVals[key];
+    public getDef(key: string, def: any): any {
+        let res = this.cfgVals[key];
         return (res === undefined) ? def : res;
     }
 
-    export function get(key: string): any {
-        return cfgVals[key];
+    public get(key: string): any {
+        return this.cfgVals[key];
     }
 
-    export function set(key: string, val: any) {
-        const prev = cfgVals[key];
-        cfgVals[key] = val;
-        saveConfig();
-        if (prev != val && key in setHandlers) {
-            setHandlers[key].fire(val);
+    public set(key: string, val: any) {
+        const prev = this.cfgVals[key];
+        this.cfgVals[key] = val;
+        this.saveConfig();
+        if (prev != val && key in this.setHandlers) {
+            this.setHandlers[key].fire(val);
         }
     }
 
-    function saveConfig() {
-        saveFunc(JSON.stringify(cfgVals));
+    public saveConfig():string {
+        return this.saveFunc(JSON.stringify(this.cfgVals));
     }
 
-    export function exportToFile() {
-        let data = "data:text/json;charset=utf-8," + JSON.stringify(cfgVals, null, 2);
+    public exportToFile() {
+        let data = "data:text/json;charset=utf-8," + JSON.stringify(this.cfgVals, null, 2);
         let uri = encodeURI(data);
         let link = document.createElement("a");
         link.setAttribute("href", uri);
@@ -82,7 +95,7 @@ export namespace UserConfig {
         document.body.removeChild(link);
     }
 
-    export function importFromFile() {
+    public importFromFile() {
         let inp: HTMLInputElement = document.createElement("input");
         inp.type = "file";
         inp.style.visibility = "hidden";
@@ -97,8 +110,8 @@ export namespace UserConfig {
             reader.onload = (e1: any) => {
                 let text = e1.target.result;
                 let vals = JSON.parse(text);
-                cfgVals = vals;
-                evtConfigImport.fire(vals);
+                this.cfgVals = vals;
+                this.evtConfigImport.fire(vals);
                 // saveConfig();
             };
             reader.readAsText(file);

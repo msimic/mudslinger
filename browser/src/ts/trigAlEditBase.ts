@@ -77,8 +77,8 @@ export abstract class TrigAlEditBase {
                         <ul size="2" class="winEdit-listBox select"></ul>
                     </div>
                     <div class="buttons">
-                        <button class="winEdit-btnNew">Nuovo</button>
-                        <button class="winEdit-btnDelete">Elimina</button>
+                        <button title="Crea nuovo" class="winEdit-btnNew greenbutton">Aggiungi</button>
+                        <button title="Elimina selezionato" class="winEdit-btnDelete redbutton">Elimina</button>
                     </div>
                 </div>
                 <!--right panel-->
@@ -113,7 +113,7 @@ export abstract class TrigAlEditBase {
                         <textarea class="winEdit-scriptArea" disabled></textarea>
                     </div>
                     <div class="pane-footer">
-                        <button class="winEdit-btnSave" disabled>Salva</button>
+                        <button class="winEdit-btnSave bluebutton" disabled>Salva</button>
                         <button class="winEdit-btnCancel" disabled>Annulla</button>
                     </div>
                 </div>

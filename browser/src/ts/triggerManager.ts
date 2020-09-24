@@ -18,8 +18,9 @@ export class TriggerManager {
     public EvtEmitTriggerCmds = new EventHook<{orig: string, cmds: string[]}>();
 
     public triggers: Array<TrigAlItem> = null;
+    public allTriggers: Array<TrigAlItem> = null;
 
-    constructor(private jsScript: ScriptIf, private config: ConfigIf, private classManager: ClassManager) {
+    constructor(private jsScript: ScriptIf, private config: ConfigIf, private baseConfig: ConfigIf, private classManager: ClassManager) {
         /* backward compatibility */
         let savedTriggers = localStorage.getItem("triggers");
         if (savedTriggers) {
@@ -67,19 +68,43 @@ export class TriggerManager {
         return t && t.enabled;
     }
 
+    public contains(pattern:string, maxIndex:number) {
+        for (let index = 0; index < Math.min(maxIndex, this.allTriggers.length); index++) {
+            const element = this.allTriggers[index];
+            if (element.pattern == pattern) return true;
+        }
+        return false;
+    }
+
+    public mergeTriggers() {
+        var triggers = $.merge([], this.config.get("triggers") || []);
+        triggers = $.merge(triggers, this.baseConfig.get("triggers") || []);
+        this.allTriggers = triggers;
+        for (let index = 0; index < this.allTriggers.length; index++) {
+            const element = this.allTriggers[index];
+            if (element && index>0 && this.contains(element.pattern, index)) {
+                this.allTriggers.splice(index, 1);
+                index--;
+                continue;
+            }
+        }
+    }
+
     public saveTriggers() {
         this.config.set("triggers", this.triggers);
+        this.mergeTriggers();
     }
 
     private loadTriggers() {
         this.triggers = this.config.get("triggers") || [];
+        this.mergeTriggers();
     }
 
     public handleLine(line: string): void {
         if (this.config.getDef("triggersEnabled", true) !== true) return;
 //        console.log("TRIGGER: " + line);
-        for (let i = 0; i < this.triggers.length; i++) {
-            let trig = this.triggers[i];
+        for (let i = 0; i < this.allTriggers.length; i++) {
+            let trig = this.allTriggers[i];
             if (!trig.enabled || (trig.class && !this.classManager.isEnabled(trig.class))) continue;
             if (trig.regex) {
                 let match = line.match(trig.pattern);

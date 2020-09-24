@@ -6,6 +6,7 @@
         "esModuleInterop": true,
         "noImplicitReturns": true,
         "target": "es5",
+        "downlevelIteration": true,
         "lib": [
             "DOM",
             "ES6",

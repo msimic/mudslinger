@@ -151,6 +151,124 @@ body {
     font-family: monospace !important;
 }
 
+.messageboxbuttons {
+    margin-top: 5px;
+    text-align: center;
+}
+
+.messageboxtext {
+    padding:5px;
+}
+
+.acceptbutton {
+    min-width: 100px;
+}
+
+.cancelbutton {
+    min-width: 100px;
+}
+
+.winProfiles-modifica {
+    float: left;
+    margin-top: 10px !important;
+}
+.winProfiles-elimina {
+    float: left;
+    margin-top: 10px !important;
+}
+
+.winProfiles-crea {
+    float: left;
+    margin-top: 10px !important;
+}
+
+.winProfiles-connect {
+    font-size: large !important;
+    float: right;
+    padding: 10px !important;
+}
+
+.greenbutton {
+    color: white !important;
+    background-color: rgb(108, 150, 25) !important;
+    font-weight: normal !important;
+}
+
+.yellowbutton {
+    color: black !important;
+    background-color: #fced99 !important;
+    font-weight: normal !important;
+}
+
+.redbutton {
+    color: white !important;
+    background-color: rgb(209, 77, 77) !important;
+    font-weight: normal !important;
+}
+
+.bluebutton {
+    font-weight: normal !important;
+    color: #d6d6d6 !important;
+    background-color: rgb(109, 118, 250) !important;
+}
+
+.bluebutton:disabled {
+    color: #eae7e7 !important;
+}
+
+.select-box {
+    cursor: pointer;
+    position : relative;
+    margin: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 5px;
+  }
+  
+  .dropdown,
+  .label {
+    color: #414141;
+    display: block;
+    font: 400 16px sans-serif;
+    cursor: pointer;
+  }
+  
+  .dropdown {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    padding: 5px 0;
+    height: 30px;
+    opacity: 0;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    filter: opacity(0);
+    background: none transparent;
+    border: 0 none;
+  }
+  .select-box1 {
+    background: #ececec;
+  }
+  
+  .label {
+    position: relative;
+    padding: 5px 10px;
+    cursor: pointer;
+    height: 16px;
+  }
+  .open .profile-label::after {
+     content: "▲";
+  }
+  .label::after {
+    content: "▼";
+    font-size: 12px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 5px 15px;
+    border-left: 5px solid #fff;
+  }
+
+
 .chkCmdInputCmdStackCont {
     display: block;
     float: left;
@@ -228,6 +346,10 @@ body {
 .winEdit-scriptArea{}
 */
 
+.jqx-window {
+    border: 1px solid #a8a8a869 !important;
+}
+
 .jqx-window-close-button {
     background-color: #b5b3b3
 }
@@ -248,7 +370,7 @@ body {
     padding: 5px 7px;
     margin: 4px 2px;
     border-radius: 3px;
-    border: 0;
+    border: 1px solid #0a0a0a21;
     cursor: pointer;
     font-weight: bold;
 }
@@ -268,7 +390,7 @@ body {
     font-family: 'Lato', 'Lucida Grande', 'Lucida Sans Unicode', Tahoma, Sans-Serif;
 }
 .jqx-widget-content {
-	border-color: transparent !important;
+	border: none;
     background: #ddd !important;
 }
 

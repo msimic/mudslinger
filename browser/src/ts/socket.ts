@@ -29,7 +29,7 @@ export class Socket {
         return this.telnetClient && this.telnetClient.mxp;
     }
 
-    constructor(private outputManager: OutputManager, private mxp: Mxp) {
+    constructor(private outputManager: OutputManager, private mxp: Mxp, private config:UserConfig) {
         this.outputManager.setSocket(this);
     }
 
@@ -91,7 +91,7 @@ export class Socket {
         this.ioEvt.srvTelnetOpened.handle((val: [string, number]) => {
             this.telnetClient = new TelnetClient((data) => {
                 this.ioEvt.clReqTelnetWrite.fire(data);
-            });
+            }, this.config);
             this.telnetClient.clientIp = this.clientIp;
 
             this.telnetClient.EvtData.handle((data) => {
@@ -150,7 +150,7 @@ export class Socket {
     sendCmd(cmd: string) {
         cmd += "\r\n";
         let arr: Uint8Array;
-        if (UserConfig.get("utf8Enabled") === true) {
+        if (this.config.get("utf8Enabled") === true) {
             arr = utf8encode(cmd);
         } else {
             arr = new Uint8Array(cmd.length);

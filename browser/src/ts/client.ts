@@ -20,6 +20,9 @@ import { ContactWin } from "./contactWin";
 import { StatusWin } from "./statusWin";
 import axios from 'axios';
 import * as apiUtil from "./apiUtil";
+import { ProfilesWindow } from "./profilesWindow";
+import { ProfileManager } from "./profileManager";
+import { ProfileWindow } from "./profileWindow";
 
 
 interface ConnectionTarget {
@@ -33,6 +36,8 @@ export class Client {
     private commandInput: CommandInput;
     private jsScript: JsScript;
     private jsScriptWin: JsScriptWin;
+    private profilesWin: ProfilesWindow;
+    private profileWin:ProfileWindow;
     private menuBar: MenuBar;
     private mxp: Mxp;
     private outputManager: OutputManager;
@@ -46,33 +51,62 @@ export class Client {
     private classManager: ClassManager;
     private serverEcho = false;
 
-    constructor(private connectionTarget: ConnectionTarget) {
+    private _connected = false;
+    public get connected():boolean {
+        return this._connected;
+    }
+    public set connected(v:boolean) {
+        this._connected = v;
+    }
+
+    public disconnect() {
+        this.socket.closeTelnet();
+    }
+
+    public connect(ct?:ConnectionTarget) {
+        if (ct) {
+            this.connectionTarget = ct;
+        }
+        if (this.connectionTarget) {
+            this.socket.openTelnet(
+                this.connectionTarget.host,
+                this.connectionTarget.port
+            );
+        } else {
+            this.connectWin.show();
+        }
+    }
+
+    constructor(private connectionTarget: ConnectionTarget, private baseConfig:UserConfig, private profileManager:ProfileManager) {
         this.aboutWin = new AboutWin();
         this.jsScript = new JsScript();
         this.contactWin = new ContactWin();
-        this.classManager = new ClassManager(UserConfig);
+        this.profileWin = new ProfileWindow(this.profileManager);
+        this.profilesWin = new ProfilesWindow(this.profileManager, this.profileWin, this);
+        this.classManager = new ClassManager(this.profileManager.activeConfig);
         this.jsScriptWin = new JsScriptWin(this.jsScript);
         this.triggerManager = new TriggerManager(
-            this.jsScript, UserConfig, this.classManager);
+            this.jsScript, this.profileManager.activeConfig, baseConfig, this.classManager);
         this.aliasManager = new AliasManager(
-            this.jsScript, UserConfig, this.classManager);
+            this.jsScript, this.profileManager.activeConfig, baseConfig, this.classManager);
         this.jsScript.setClassManager(this.classManager);
         this.jsScript.setTriggerManager(this.triggerManager);
         this.jsScript.setAliasManager(this.aliasManager);
 
         this.commandInput = new CommandInput(this.aliasManager);
 
-        this.outputWin = new OutputWin(UserConfig);
+        this.outputWin = new OutputWin(this.profileManager.activeConfig);
 
         this.aliasEditor = new AliasEditor(this.aliasManager);
         this.triggerEditor = new TriggerEditor(this.triggerManager);
 
-        this.outputManager = new OutputManager(this.outputWin, UserConfig);
+        this.outputManager = new OutputManager(this.outputWin, this.profileManager.activeConfig);
 
         this.mxp = new Mxp(this.outputManager, this.commandInput, this.jsScript);
-        this.socket = new Socket(this.outputManager, this.mxp);
+        this.socket = new Socket(this.outputManager, this.mxp, this.profileManager.activeConfig);
         this.connectWin = new ConnectWin(this.socket);
-        this.menuBar = new MenuBar(this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin);
+
+        this.menuBar = new MenuBar(this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin, this.profilesWin, this.profileManager.activeConfig);
 
         // MenuBar events
         this.menuBar.EvtChangeDefaultColor.handle((data: [string, string]) => {
@@ -88,18 +122,11 @@ export class Client {
         });
 
         this.menuBar.EvtConnectClicked.handle(() => {
-            if (this.connectionTarget) {
-                this.socket.openTelnet(
-                    this.connectionTarget.host,
-                    this.connectionTarget.port
-                );
-            } else {
-                this.connectWin.show();
-            }
+            this.connect();
         });
 
         this.menuBar.EvtDisconnectClicked.handle(() => {
-            this.socket.closeTelnet();
+            this.disconnect();
         });
 
         // Socket events
@@ -120,6 +147,7 @@ export class Client {
 
         this.socket.EvtTelnetConnect.handle((val: [string, number]) => {
             // Prevent navigating away accidentally
+            this.connected = true;
             window.addEventListener("beforeunload", preventNavigate);
             this.serverEcho = false;
             this.menuBar.handleTelnetConnect();
@@ -132,6 +160,7 @@ export class Client {
 
         this.socket.EvtTelnetDisconnect.handle(() => {
             // allow navigating away
+            this.connected = false;
             window.removeEventListener("beforeunload", preventNavigate);
             this.menuBar.handleTelnetDisconnect();
             this.outputWin.handleTelnetDisconnect();
@@ -252,38 +281,14 @@ export class Client {
     public readonly AppInfo = AppInfo;
 }
 
-function profileConfigSave(profileId: string, val:string) {
-    let statusWin = new StatusWin();
-    statusWin.setContent('Saving profile...')
-    statusWin.show();
-    
-    (async () => {
-        try {
-            await apiUtil.apiPostProfileConfig(profileId, val);
-            statusWin.destroy();
-        } catch(err) {
-            // TODO: handle not logged in 
-            statusWin.setContent('Could not save profile.\n\n' + err);
-        }
-    })();
-}
-
-function makeCbLocalConfigSave(): (val: string) => void {
+function makeCbLocalConfigSave(): (val: string) => string {
     let localConfigAck = localStorage.getItem("localConfigAck");
 
-    return (val: string) => {
+    return (val: string):string => {
         localStorage.setItem('userConfig', val);
         if (!localConfigAck) {
             let win = document.createElement('div');
-            let profileMessage = `
-                <p>
-                    You can convert this to a permanent profile from the
-                    <a target="_blank" href="/user/profiles">Profiles</a> page after
-                    registering and logging in.
-                </p>`;
-            if (!apiUtil.enabled) {
-                profileMessage = "";
-            }
+            let profileMessage = ``;
             win.innerHTML = `
                 <!--header-->
                 <div>INFO</div>
@@ -304,11 +309,14 @@ function makeCbLocalConfigSave(): (val: string) => void {
             localConfigAck = "true";
             localStorage.setItem('localConfigAck', localConfigAck);
         }
+        return val;
     };
 }
 
 export namespace Mudslinger {
     export let client: Client;
+    export let baseConfig = new UserConfig();
+    export let profileManager:ProfileManager = null;
     export async function GetLocalClientConfig() {
         let axinst = axios.create({
             validateStatus: (status) => {
@@ -318,93 +326,77 @@ export namespace Mudslinger {
         return axinst.get('./client.config.json');
     };
 
-    function setDefault(key:string, value:any) {
-        if (UserConfig.get(key) == undefined) {
-            UserConfig.set(key, value);
+    export async function GetLocalBaseConfig() {
+        let axinst = axios.create({
+            validateStatus: (status) => {
+                return status === 200;
+            }
+        });
+        return axinst.get('./baseConfig.json');
+    };
+
+    function setDefault(cfg:UserConfig, key:string, value:any) {
+        if (cfg.get(key) == undefined) {
+            cfg.set(key, value);
         }
     }
 
-    export function setDefaults() {
-        setDefault("text-color", "green-on-black");
-        setDefault("wrap-lines", true);
-        setDefault("utf8Enabled", false);
-        setDefault("mxpEnabled", true);
-        setDefault("enable-aliases", true);
-        setDefault("enable-triggers", true);
-        setDefault("font-size", "small");
-        setDefault("font", "Courier");
-        setDefault("colorsEnabled", true);
-        setDefault("logTime", false);
-        setDefault("debugScripts", false);
+    export function setDefaults(cfg:UserConfig) {
+        setDefault(cfg, "text-color", "white-on-black");
+        setDefault(cfg, "wrap-lines", true);
+        setDefault(cfg, "utf8Enabled", false);
+        setDefault(cfg, "mxpEnabled", true);
+        setDefault(cfg, "enable-aliases", true);
+        setDefault(cfg, "enable-triggers", true);
+        setDefault(cfg, "font-size", "small");
+        setDefault(cfg, "font", "Consolas");
+        setDefault(cfg, "colorsEnabled", true);
+        setDefault(cfg, "logTime", false);
+        setDefault(cfg, "debugScripts", false);
     }
 
     function onPreloaded() {
         $(".preloading").addClass("preloaded");
     }
 
-    export function runClient(connectionTarget: ConnectionTarget, profile:any) {
-        client = new Client(connectionTarget);
-        setDefaults();
-        document.title = client.AppInfo.AppTitle;
-        if (profile) {
-            document.title += ` - ${profile.name}`;
-        }
-        onPreloaded();
-    }
-
-    export async function init() {
+    export function runClient() {
         let connectionTarget: ConnectionTarget;
         let params = new URLSearchParams(location.search);
-        let profileId = params.get('profile');
-        let profile: any;
-        if (profileId) {
-            let statusWin = new StatusWin();
-            statusWin.setContent('Loading profile...')
-            statusWin.show();
-            try {
-                let resp = await apiUtil.apiGetProfile(profileId);
-                profile = resp.data;
-                statusWin.destroy();
-            } catch(err) {
-                if (err.response.status == 403) {
-                    statusWin.setContent(
-                        'Must log in.' +
-                        '<br>' +
-                        '<br>' +
-                        '<a href="/auth/login">CLICK HERE TO LOG IN</a>');
-                } else {
-                    statusWin.setContent('Could not load profile.\n\n' + err);
-                }
-                return;
-            }
-            connectionTarget = {
-                host: profile.host.trim(),
-                port: profile.port
-            }
-        }
+
+        baseConfig.init(localStorage.getItem("userConfig"), makeCbLocalConfigSave());
+        setDefaults(baseConfig);
+        profileManager = new ProfileManager(baseConfig);
         
-        if (!profile && params.has('host') && params.has('port')) {
-            connectionTarget = {
-                host: params.get('host').trim(),
-                port: Number(params.get('port').trim())
-            }
-        }
-        else if (!profile && params.has('host') && params.get('host').trim()=="auto") {
+        if (params.has('host') && params.get('host').trim()=="auto") {
             connectionTarget = {
                 host: null,
                 port: 0
             }
-        }
-
-        if (profile) {
-            UserConfig.init(profile.config, (val: string): void => {
-                profileConfigSave(profileId, val)
-            });
+        } else if (params.has('host') && params.has('port')) {
+            connectionTarget = {
+                host: params.get("host").trim(),
+                port: Number(params.get("port").trim())
+            }
+        } else if (profileManager.getCurrent()) {
+            const sprof = profileManager.getCurrent();
+            const prof = profileManager.getProfile(sprof);
+            connectionTarget = {
+                host: prof.host.trim(),
+                port: Number(prof.port.trim())
+            }
         } else {
-            UserConfig.init(localStorage.getItem("userConfig"), makeCbLocalConfigSave());
+            connectionTarget = {
+                host: "mud.temporasanguinis.it",
+                port: 4000
+            }
         }
+        profileManager.setTitle();
+        client = new Client(connectionTarget, baseConfig, profileManager);
+        onPreloaded();
+    }
 
-        
+    export async function init() {
+
         GetLocalClientConfig().then(resp => {
             if (resp && resp.data) {
                 const cfg = resp.data;
@@ -424,11 +416,11 @@ export namespace Mudslinger {
             // we got error fetching client config, work the API as normal
             apiUtil.setEnabled(true);
         }).then(() => {
-            runClient(connectionTarget, profile);
+            runClient();
         },
         (err) => {
             console.log("Failed loading local config: " + err);
-            runClient(connectionTarget, profile); // run even if fetching the local config fails and fallback to previous behavior with the API
+            runClient(); // run even if fetching the local config fails and fallback to previous behavior with the API
         })
     }
 }

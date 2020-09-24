@@ -16,8 +16,9 @@ export interface ScriptIf {
 
 export class AliasManager {
     public aliases: Array<TrigAlItem> = null;
+    public allAliases: Array<TrigAlItem> = null;
 
-    constructor(private jsScript: ScriptIf, private config: ConfigIf, private classManager:ClassManager) {
+    constructor(private jsScript: ScriptIf, private config: ConfigIf, private baseConfig: ConfigIf, private classManager:ClassManager) {
         this.loadAliases();
         config.evtConfigImport.handle(() => {
             this.loadAliases();
@@ -60,10 +61,34 @@ export class AliasManager {
 
     public saveAliases() {
         this.config.set("aliases", this.aliases);
+        this.mergeAliases();
+    }
+
+    public contains(pattern:string, maxIndex:number) {
+        for (let index = 0; index < Math.min(maxIndex, this.allAliases.length); index++) {
+            const element = this.allAliases[index];
+            if (element.pattern == pattern) return true;
+        }
+        return false;
+    }
+
+    private mergeAliases() {
+        var aliases = $.merge([], this.config.get("aliases") || []);
+        aliases = $.merge(aliases, this.baseConfig.get("aliases") || []);
+        this.allAliases = aliases;
+        for (let index = 0; index < this.allAliases.length; index++) {
+            const element = this.allAliases[index];
+            if (element && index>0 && this.contains(element.pattern, index)) {
+                this.allAliases.splice(index, 1);
+                index--;
+                continue;
+            }
+        }
     }
 
     private loadAliases() {
         this.aliases = this.config.get("aliases") || [];
+        this.mergeAliases();
     }
 
     // return the result of the alias if any (string with embedded lines)
@@ -72,8 +97,8 @@ export class AliasManager {
     public checkAlias(cmd: string): boolean | string {
         if (this.config.getDef("aliasesEnabled", true) !== true) return null;
 
-        for (let i = 0; i < this.aliases.length; i++) {
-            let alias = this.aliases[i];
+        for (let i = 0; i < this.allAliases.length; i++) {
+            let alias = this.allAliases[i];
             if (!alias.enabled || (alias.class && !this.classManager.isEnabled(alias.class))) continue;
             if (alias.regex) {
                 let re = alias.pattern.charAt(0) == "^" ? alias.pattern : ("^" + alias.pattern);

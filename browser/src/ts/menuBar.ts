@@ -7,6 +7,7 @@ import { TriggerEditor } from "./triggerEditor";
 import { JsScriptWin } from "./jsScriptWin";
 import { AboutWin } from "./aboutWin";
 import { Mudslinger } from "./client";
+import { ProfilesWindow } from "./profilesWindow";
 
 export class MenuBar {
     public EvtChangeDefaultColor = new EventHook<[string, string]>();
@@ -17,6 +18,7 @@ export class MenuBar {
     private clickFuncs: {[k: string]: (value:any) => void} = {};
     private optionMappingToStorage = new Map([
         ["connect", ""],
+        ["use-profile", ""],
         ["aliases", ""],
         ["triggers", ""],
         ["script", ""],
@@ -57,27 +59,29 @@ export class MenuBar {
         const clickable = name in this.clickFuncs;
         const storageKey = this.optionMappingToStorage.get(name);
         if (checkbox && storageKey) {
-            const storageVal = UserConfig.get(storageKey);
+            const storageVal = this.config.get(storageKey);
             const onStorageChanged:(val:string)=>void = (storageVal) => {
                 if (storageVal) {
                     $(checkbox).attr('checked', storageVal);
+                    $(checkbox).prop('checked', storageVal);
                     $(element)[0].setAttribute("data-checked", storageVal);
                     if (clickable) this.clickFuncs[name](storageVal);
                 } else if (storageVal != undefined) {
                     $(checkbox).removeAttr('checked');
+                    $(checkbox).prop('checked', storageVal);
                     $(element)[0].setAttribute("data-checked", "false");
                     if (clickable) this.clickFuncs[name](storageVal);
                 }
                 if (storageVal != undefined) console.log(`${name} set to ${storageVal}`);
             };
             onStorageChanged(storageVal);
-            UserConfig.onSet(storageKey, onStorageChanged);
+            this.config.onSet(storageKey, onStorageChanged);
             $(checkbox).change((event: JQueryEventObject) => {
-                UserConfig.set(storageKey, (<any>event.target).checked);
+                this.config.set(storageKey, (<any>event.target).checked);
                 if (clickable) this.clickFuncs[name]((<any>event.target).checked);
             });
         } else if (storageKey) {
-            if (clickable) this.clickFuncs[name](UserConfig.get(storageKey));
+            if (clickable) this.clickFuncs[name](this.config.get(storageKey));
         }
         if (clickable) {
             console.log(`Attaching menu item ${name}`);
@@ -85,7 +89,7 @@ export class MenuBar {
             $(element).click((event: JQueryEventObject) => {
                 if (!event.target || event.target.tagName != "LI") return;
                 if (!checkbox && storageKey) {
-                    UserConfig.set(storageKey, name);
+                    this.config.set(storageKey, name);
                     this.clickFuncs[name](name);
                 } else {
                     this.clickFuncs[name]($(element)[0].getAttribute("data-checked"));
@@ -97,7 +101,7 @@ export class MenuBar {
     private detachMenuOption(name:string, element:Element, checkbox:Element) {
         if (element) $(element).off("click");
         const storageKey = this.optionMappingToStorage.get(name);
-        if (storageKey) UserConfig.onSet(storageKey, null);
+        if (storageKey) this.config.onSet(storageKey, null);
         if (checkbox) $(checkbox).off("change");
     }
 
@@ -122,15 +126,35 @@ export class MenuBar {
         private triggerEditor: TriggerEditor,
         private jsScriptWin: JsScriptWin,
         private aboutWin: AboutWin,
+        private profileWin: ProfilesWindow,
+        private config: UserConfig
         ) 
     {
         <JQuery>((<any>$("#menuBar")).jqxMenu());
         this.makeClickFuncs();
+        setTimeout(() => {
         this.attachMenu();
-        UserConfig.evtConfigImport.handle(() => {
+        this.handleNewConfig();
+        }, 0);
+    }
+
+    public setConfig(newConfig:UserConfig) {
+        if (this.config) {
             this.detachMenu();
-            this.attachMenu();
-        });
+            this.config.evtConfigImport.release(this.onImport);
+        }
+        this.config = newConfig;
+        this.handleNewConfig();
+        this.attachMenu();
+    }
+
+    private onImport = ()=> {
+        this.detachMenu();
+        this.attachMenu();
+    }
+
+    private handleNewConfig() {
+        this.config.evtConfigImport.handle(this.onImport);
     }
 
     private isTrue(v:any):boolean {
@@ -150,16 +174,16 @@ export class MenuBar {
         };
 
         this.clickFuncs["reset-settings"] = (val) => {
-            UserConfig.remove(new RegExp("^(?!alias)(?!trigger)"), Mudslinger.setDefaults);
+            this.config.remove(new RegExp("^(?!alias)(?!trigger)"), () => {Mudslinger.setDefaults(this.config)});
             location.reload();
         };
 
         this.clickFuncs["export-settings"] = () => {
-            UserConfig.exportToFile();
+            this.config.exportToFile();
         };
 
         this.clickFuncs["import-settings"] = () => {
-            UserConfig.importFromFile();
+            this.config.importFromFile();
         };
 
         this.clickFuncs["wrap-lines"] = (val) => {
@@ -191,6 +215,10 @@ export class MenuBar {
                 this.EvtChangeDefaultColor.fire(["white", "low"]);
                 this.EvtChangeDefaultBgColor.fire(["black", "low"]);
             }
+        }
+
+        this.clickFuncs["use-profile"] = (val) => {
+            this.profileWin.show();
         }
 
         this.clickFuncs["courier"] = (val) => {
@@ -273,7 +301,7 @@ export class MenuBar {
 
         this.clickFuncs["colorsEnabled"] = (val) => {
             if (this.isTrue(val)) {
-                UserConfig.set("text-color", undefined);
+                this.config.set("text-color", undefined);
             }
         };
 

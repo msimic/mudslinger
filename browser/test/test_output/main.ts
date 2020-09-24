@@ -4,6 +4,10 @@ import { Mxp } from "../../src/ts/mxp";
 import { ansiColorTuple} from "../../src/ts/color";
 import { utf8encode } from "../../src/ts/util";
 import { EventHook } from "../../src/ts/event";
+import { CommandInput } from "../../src/ts/commandInput";
+import { JsScript } from "../../src/ts/jsScript";
+import { AliasManager } from "../../src/ts/aliasManager";
+import { ClassManager } from "../../src/ts/classManager";
 
 let fakeMgrConfig = {
     set: (key: "defaultAnsiFg" | "defaultAnsiBg" | "utf8Enabled", val: ansiColorTuple): void => {
@@ -24,7 +28,9 @@ let fakeWinConfig = {
 function run() {
     let outputWin = new OutputWin(fakeWinConfig);
     let outputManager = new OutputManager(outputWin, fakeMgrConfig);
-    let mxp = new Mxp(outputManager);
+    let scr = new JsScript();
+    let clm = new ClassManager(null);
+    let mxp = new Mxp(outputManager, new CommandInput(null), scr);
     outputManager.EvtMxpTag.handle((tag: string) => {
         mxp.handleMxpTag(tag);
     });

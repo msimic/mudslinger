@@ -31,7 +31,7 @@ export class TelnetClient extends Telnet {
 
     private doNewEnviron: boolean = false;
 
-    constructor(writeFunc: (data: ArrayBuffer) => void) {
+    constructor(writeFunc: (data: ArrayBuffer) => void, private config:UserConfig) {
         super(writeFunc);
 
         this.EvtNegotiation.handle((data) => { this.onNegotiation(data); });
@@ -102,7 +102,7 @@ export class TelnetClient extends Telnet {
             } else if (opt === Opt.SGA) {
                 this.writeArr([Cmd.IAC, Cmd.DO, Opt.SGA]);
             } else if (opt === ExtOpt.MXP) {
-                if (UserConfig.getDef("mxpEnabled", true)) {
+                if (this.config.getDef("mxpEnabled", true)) {
                   this.writeArr([Cmd.IAC, Cmd.DO, ExtOpt.MXP]);
                 } else {
                     this.writeArr([Cmd.IAC, Cmd.WONT, ExtOpt.MXP]);
@@ -121,9 +121,9 @@ export class TelnetClient extends Telnet {
             } else if (opt == Opt.NEW_ENVIRON) {
                 this.writeArr([Cmd.IAC, Cmd.WILL, Opt.NEW_ENVIRON]);
                 this.doNewEnviron = true;
-            } else if (opt === ExtOpt.MXP && UserConfig.getDef("mxpEnabled", true) === true) {
+            } else if (opt === ExtOpt.MXP && this.config.getDef("mxpEnabled", true) === true) {
                 this.writeArr([Cmd.IAC, Cmd.WILL, ExtOpt.MXP]);
-            } else if (opt === ExtOpt.MXP && !UserConfig.getDef("mxpEnabled", true)) {
+            } else if (opt === ExtOpt.MXP && !this.config.getDef("mxpEnabled", true)) {
                 this.writeArr([Cmd.IAC, Cmd.WONT, ExtOpt.MXP]);
             } else {
                 this.writeArr([Cmd.IAC, Cmd.WONT, opt]);
@@ -141,7 +141,7 @@ export class TelnetClient extends Telnet {
             }
 
             if (sb.length === 1 && sb[0] === ExtOpt.MXP) {
-                if (UserConfig.getDef("mxpEnabled", true)) {
+                if (this.config.getDef("mxpEnabled", true)) {
                     this.mxp = true;
                 } else {
                     this.mxp = false;
