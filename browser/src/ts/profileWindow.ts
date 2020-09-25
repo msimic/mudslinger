@@ -28,10 +28,12 @@ export class ProfileWindow {
             <div style="display:flex;flex-direction:column;height:100%">
                 <div>
                     <input id="nomeprofilo" title="Il nome del profilo" placeholder="&lt;Il nome del profilo&gt;"type="text"/>
-                    <div class="select-box">       
-                        <label for="serverName" class="label select-box1"><span class="label-desc"></span> </label>
-                        <select id="serverName" size=1" class="dropdown serverName">
-                        </select>
+                    <div class="select-box">   
+                        <div class="inner-box">    
+                            <label for="serverName" class="label select-box1"><span class="label-desc"></span> </label>
+                            <select id="serverName" size=1" class="dropdown serverName">
+                            </select>
+                        </div>
                     </div>
                     <div id='jqxComboBox'></div>
                     <input id="nomepg" title="Il nome del personaggio" placeholder="&gt;Il nome del personaggio&lt;" type="text"/>
@@ -67,7 +69,14 @@ export class ProfileWindow {
             label.find(".label-desc").html(selection);
               
           });
+          
+          $("select", this.$win).on("focus" , function() {
+            $(this).parent().addClass("focused");  
+          });
 
+          $("select", this.$win).on("blur" , function() {
+            $(this).parent().removeClass("focused");              
+          });
 
         this.$serverList = $(win.getElementsByClassName("serverName")[0] as HTMLSelectElement);
         this.$name = $("#nomeprofilo", this.$win);
@@ -76,9 +85,10 @@ export class ProfileWindow {
         this.okButton = win.getElementsByClassName("acceptbutton")[0] as HTMLButtonElement;
         this.cancelButton = win.getElementsByClassName("cancelbutton")[0] as HTMLButtonElement;
         
-        (<any>this.$win).jqxWindow({width: 370, height: 220, showCollapseButton: true});
+        (<any>this.$win).jqxWindow({width: 370, height: 220, showCollapseButton: true, isModal: true});
         $(this.okButton).click(this.handleOk.bind(this));
         $(this.cancelButton).click(this.handleCancelClick.bind(this));
+        (<any>this.$win).jqxWindow("close");
     }
 
     private handleOk() {
@@ -127,7 +137,7 @@ export class ProfileWindow {
         this.$serverList.empty();
         let base = $(`<option value="Live" ${serverName=="Live"?"selected":""}>Live</option>`);
         this.$serverList.append(base);
-        let test = $(`<option value="Test" ${serverName=="Tester"?"selected":""}>Tester</option>`);
+        let test = $(`<option value="Tester" ${serverName=="Tester"?"selected":""}>Tester</option>`);
         this.$serverList.append(test);
         this.$serverList.val(serverName).change();
         this.$autoLogin.prop('checked', this.profile.autologin);

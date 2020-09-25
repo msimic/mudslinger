@@ -15,7 +15,7 @@ export class JsScriptWin {
 
         win.innerHTML = `
         <!--header-->
-        <div>JAVASCRIPT SCRIPT</div>
+        <div>Javascript Script</div>
         <!--content-->
         <div>
             <div class="right-pane">
@@ -37,7 +37,7 @@ export class JsScriptWin {
         const win_w = $(window).innerWidth()-20;
         const win_h = $(window).innerHeight()-20;
 
-        (<any>this.$win).jqxWindow({width: Math.min(550, win_w), height: Math.min(400, win_h)});
+        (<any>this.$win).jqxWindow({width: Math.min(550, win_w), height: Math.min(400, win_h), showCollapseButton: true});
 
         this.codeMirror = CodeMirror.fromTextArea(
             win.getElementsByClassName("winJsScript-code")[0], {

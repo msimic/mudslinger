@@ -25,9 +25,11 @@ export class ProfilesWindow {
         <div>
             <div style="display:flex;flex-direction:column;height:100%">
                 <div>
-                    <div class="select-box">       
+                    <div class="select-box">
+                        <div class="inner-box">       
                         <label for="profiles" class="label select-box1"><span class="label-desc"></span> </label>
                         <select id="profiles" size=1" class="dropdown winProfiles-profiles"></select>
+                        </div>
                     </div>
                     <div id='jqxComboBox'></div>
                 </div>
@@ -68,6 +70,14 @@ export class ProfilesWindow {
               
             label.find(".label-desc").html(selection);
               
+          });
+
+          $("select", this.$win).on("focus" , function() {
+            $(this).parent().addClass("focused");  
+          });
+
+          $("select", this.$win).on("blur" , function() {
+            $(this).parent().removeClass("focused");              
           });
 
         this.profileList = $(win.getElementsByClassName("winProfiles-profiles")[0] as HTMLSelectElement);

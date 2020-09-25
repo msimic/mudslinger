@@ -3,7 +3,7 @@ import { TriggerManager } from "./triggerManager";
 
 export class TriggerEditor extends TrigAlEditBase {
     constructor(private triggerManager: TriggerManager) {
-        super("LISTA TRIGGER");
+        super("Triggers");
     }
 
     protected defaultValue: string =

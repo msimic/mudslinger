@@ -143,7 +143,7 @@ export abstract class TrigAlEditBase {
         const win_w = $(window).innerWidth()-20;
         const win_h = $(window).innerHeight()-20;
 
-        (<any>this.$win).jqxWindow({width: Math.min(600, win_w), height: Math.min(400, win_h)});
+        (<any>this.$win).jqxWindow({width: Math.min(600, win_w), height: Math.min(400, win_h), showCollapseButton: true});
 
         (<any>this.$mainSplit).jqxSplitter({
             width: "100%",
