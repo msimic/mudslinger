@@ -2,6 +2,8 @@ import { Profile, ProfileManager } from "./profileManager";
 import { messagebox } from "./messagebox";
 import { ProfileWindow } from "./profileWindow";
 import { Client } from "./client";
+import { Acknowledge } from "./util";
+import { Mudslinger } from "./client";
 
 export class ProfilesWindow {
     private $win: JQuery;
@@ -124,19 +126,11 @@ export class ProfilesWindow {
     basilari usabili da tutti gli altri profili. Premi il bottone per modificare il profilo
     base per ulteriori informazioni.`;
 
-    private Acknowledge(ack:string, str:string) {
-        const val = localStorage.getItem('ack_'+ack);
-        if (val == 'true') return;
-        messagebox("Informazione", str, () => {
-            localStorage.setItem('ack_'+ack, "true");
-        }, "OK", "", 500, null);
-    }
-
     private handleNew() {
         const prof = new Profile();
         this.load();
-        prof.autologin = true;
         this.profileWin.show(prof, (p) => {
+            prof.pass = Mudslinger.encrypt(prof.pass);
             this.manager.create(prof);
             this.load();
         });
@@ -151,9 +145,14 @@ export class ProfilesWindow {
     private handleConnectButtonClick() {
         if (this.profileList.val() != "-1") this.manager.setCurrent(this.profileList.val());
         let connectProfile = () => {
-            const cp = this.manager.getProfile(this.manager.getCurrent());
-            this.client.connect({host: cp.host, port: Number(cp.port)});
-            this.hide();
+            if (!this.manager.getCurrent()) {
+                this.client.connect({host: "mud.temporasanguinis.it", port: 4000});
+                this.hide();
+            } else {
+                const cp = this.manager.getProfile(this.manager.getCurrent());
+                this.client.connect({host: cp.host, port: Number(cp.port)});
+                this.hide();
+            }
         };
 
         if (this.client.connected) messagebox("Avvertenza", `Sei gia' connesso.
@@ -188,9 +187,13 @@ export class ProfilesWindow {
         } else {
             const prof = this.manager.getProfile(this.profileList.val());
             const oldName = this.profileList.val();
+            const oldPass = prof.pass;
             this.profileWin.show(prof, (p) => {
+                if (oldPass != p.pass) {
+                    p.pass = Mudslinger.encrypt(p.pass);
+                }
                 if (oldName != p.name) {
-                    this.manager.rename(prof, oldName);
+                    this.manager.rename(p, oldName);
                 } else {
                     this.manager.saveProfiles();
                 }
@@ -224,7 +227,7 @@ export class ProfilesWindow {
 
     public show() {
         this.load();
-        this.Acknowledge("profileCreateChar", this.profileCreateChar);
+        Acknowledge("profileCreateChar", this.profileCreateChar);
         (<any>this.$win).jqxWindow("open");
         (<any>this.$win).jqxWindow('bringToFront');
     }

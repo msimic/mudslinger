@@ -25,34 +25,75 @@ export class ProfileWindow {
         <div>Profilo</div>
         <!--content-->
         <div>
-            <div style="display:flex;flex-direction:column;height:100%">
-                <div>
-                    <input id="nomeprofilo" title="Il nome del profilo" placeholder="&lt;Il nome del profilo&gt;"type="text"/>
-                    <div class="select-box">   
-                        <div class="inner-box">    
-                            <label for="serverName" class="label select-box1"><span class="label-desc"></span> </label>
-                            <select id="serverName" size=1" class="dropdown serverName">
-                            </select>
+            <div style="display:table;width:100%;height:100%;padding:10px;box-sizing: border-box">
+                <div style="display:table-row;">
+                    <div style="display:table-cell;text-align:right;vertical-align: middle;">
+                        <label style="margin-right:10px;">Nome profilo</label>
+                    </div>
+                    <div style="display:table-cell;vertical-align: middle;">
+                        <input id="nomeprofilo" style="margin-top:5px;width:100%;" title="Il nome del profilo" placeholder="&lt;Il nome del profilo&gt;"type="text"/>
+                    </div>
+                </div>
+                <div style="display:table-row;">
+                    <div style="display:table-cell;text-align:right;vertical-align: middle;">
+                        <label style="margin-right:10px;">Server</label>
+                    </div>
+                    <div style="display:table-cell;vertical-align: middle;">
+                        <div class="select-box" style="margin-left:-10px;margin-right:-10px;">   
+                            <div class="inner-box">    
+                                <label for="serverName" class="label select-box1"><span class="label-desc"></span> </label>
+                                <select id="serverName" size=1" class="dropdown serverName">
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    <div id='jqxComboBox'></div>
-                    <input id="nomepg" title="Il nome del personaggio" placeholder="&gt;Il nome del personaggio&lt;" type="text"/>
-                    <input id="password" title="La password del personaggio" placeholder="&lt;Password: opzionale se non vuoi autologin&gt;" type="password"/>
-                    <label>
-                        Autologin
-                        <input type="checkbox" class="winProfile-autologin" />
-                    </label>
                 </div>
-                <div class="messageboxbuttons">
-                    <button title="Applica" class="acceptbutton greenbutton">Accetta</button>
-                    <button title="Annulla" class="cancelbutton redbutton">Annulla</button>
+                <div style="display:table-row;">
+                    <div style="display:table-cell;text-align:right;vertical-align: middle;">
+                        <label style="margin-right:10px;">Personaggio</label>
+                    </div>
+                    <div style="display:table-cell;vertical-align: middle;">
+                        <input id="nomepg" style="margin-top:5px;width:100%;" title="Il nome del personaggio" placeholder="&lt;Il nome del personaggio&gt;" type="text"/>
+                    </div>
+                </div>
+                <div style="display:table-row;">
+                    <div style="display:table-cell;text-align:right;vertical-align: middle;">
+                        <label style="margin-right:10px;">Password</label>
+                    </div>
+                    <div style="display:table-cell;vertical-align: middle;">
+                        <input id="password" style="margin-top:5px;width:100%;" title="La password del personaggio" placeholder="&lt;Password: opzionale&gt;" type="password"/>
+                    </div>
+                </div>
+                <div style="display:table-row;">
+                    <div style="display:table-cell;text-align:right;vertical-align: middle;">
+                        <label style="margin-right:10px;">Autologin<input type="checkbox" class="winProfile-autologin" /></label>
+                    </div>
+                    <div style="display:table-cell;vertical-align: middle;">
+                        <div class="messageboxbuttons" style="margin-top: 10px;display: inline-block;float:right;">
+                            <button title="Applica" class="acceptbutton greenbutton">Accetta</button>
+                            <button title="Annulla" class="cancelbutton redbutton">Annulla</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         `;
 
         this.$win = $(win);
+        this.$char = $("#nomepg", this.$win);
+        this.$pass = $("#password", this.$win);
+
         this.$autoLogin = $(".winProfile-autologin", this.$win);
+        this.$autoLogin.change(() => {
+            if (this.$autoLogin.is(":checked")) {
+                this.$char.removeAttr("disabled");
+                this.$pass.removeAttr("disabled");
+            } else {
+                this.$char.attr("disabled", "disabled");
+                this.$pass.attr("disabled", "disabled");
+            }
+        });
+        this.$autoLogin.prop('checked', false).trigger("change");
 
         $("select", this.$win).on("click" , function() {
   
@@ -80,8 +121,6 @@ export class ProfileWindow {
 
         this.$serverList = $(win.getElementsByClassName("serverName")[0] as HTMLSelectElement);
         this.$name = $("#nomeprofilo", this.$win);
-        this.$char = $("#nomepg", this.$win);
-        this.$pass = $("#password", this.$win);
         this.okButton = win.getElementsByClassName("acceptbutton")[0] as HTMLButtonElement;
         this.cancelButton = win.getElementsByClassName("cancelbutton")[0] as HTMLButtonElement;
         
@@ -120,7 +159,7 @@ export class ProfileWindow {
     }
 
     private apply() {
-        this.profile.host = "mud.temporasanguinis.it";
+        this.profile.host = "192.168.8.164";// "mud.temporasanguinis.it";
         if (this.$serverList.val() == "Live") {
             this.profile.port = "4000";
         } else {
@@ -140,7 +179,7 @@ export class ProfileWindow {
         let test = $(`<option value="Tester" ${serverName=="Tester"?"selected":""}>Tester</option>`);
         this.$serverList.append(test);
         this.$serverList.val(serverName).change();
-        this.$autoLogin.prop('checked', this.profile.autologin);
+        this.$autoLogin.prop('checked', this.profile.autologin).trigger("change");
         this.$name.val(this.profile.name ?? "");
         this.$char.val(this.profile.char ?? "");
         this.$pass.val(this.profile.pass ?? "");

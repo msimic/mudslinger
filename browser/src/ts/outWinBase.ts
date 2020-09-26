@@ -9,6 +9,7 @@ export interface ConfigIf {
 
 export class OutWinBase {
     public EvtLine = new EventHook<string>();
+    public EvtBuffer = new EventHook<string>();
 
     protected debugScripts = false;
 
@@ -202,11 +203,13 @@ export class OutWinBase {
         spanText += html;
         spanText += "</span>";
         this.appendBuffer += spanText;
-
+        
         if (txt.endsWith("\n")) {
             this.append(this.appendBuffer, false);
             this.appendBuffer = "";
             this.newLine();
+        } else {
+            this.EvtBuffer.fire(this.lineText);
         }
     };
 

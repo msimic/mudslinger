@@ -2,6 +2,8 @@ import { EventHook } from "./event";
 import { TrigAlItem } from "./trigAlEditBase";
 import { ClassManager } from "./classManager";
 import { EvtScriptEmitPrint, EvtScriptEmitToggleTrigger } from "./jsScript";
+import { ProfileManager } from "./profileManager";
+import { Mudslinger } from "./client";
 
 export interface ConfigIf {
     set(key: string, val: TrigAlItem[]): void;
@@ -20,7 +22,7 @@ export class TriggerManager {
     public triggers: Array<TrigAlItem> = null;
     public allTriggers: Array<TrigAlItem> = null;
 
-    constructor(private jsScript: ScriptIf, private config: ConfigIf, private baseConfig: ConfigIf, private classManager: ClassManager) {
+    constructor(private jsScript: ScriptIf, private config: ConfigIf, private baseConfig: ConfigIf, private classManager: ClassManager, private profileManager:ProfileManager) {
         /* backward compatibility */
         let savedTriggers = localStorage.getItem("triggers");
         if (savedTriggers) {
@@ -100,50 +102,87 @@ export class TriggerManager {
         this.mergeTriggers();
     }
 
-    public handleLine(line: string): void {
-        if (this.config.getDef("triggersEnabled", true) !== true) return;
-//        console.log("TRIGGER: " + line);
-        for (let i = 0; i < this.allTriggers.length; i++) {
-            let trig = this.allTriggers[i];
-            if (!trig.enabled || (trig.class && !this.classManager.isEnabled(trig.class))) continue;
-            if (trig.regex) {
-                let match = line.match(trig.pattern);
-                if (!match) {
-                    continue;
-                }
+    private handleAutologin(line: string) {
+        if (!this.profileManager.getCurrent()) {
+            return;
+        }
 
+        if (line.match(/^Che nome vuoi usare ?/)) {
+            const prof = this.profileManager.getProfile(this.profileManager.getCurrent());
+            if (prof.autologin && prof.char) {
+                this.EvtEmitTriggerCmds.fire({orig: 'autologin', cmds: [prof.char]});
+            }
+        } else if (line.match(/^Inserisci la sua password:/)) {
+            const prof = this.profileManager.getProfile(this.profileManager.getCurrent());
+            if (prof.autologin && prof.pass) {
+                const pass = Mudslinger.decrypt(prof.pass);
+                this.EvtEmitTriggerCmds.fire({orig: 'autologin', cmds: [pass, 'i', 'i', 'i']});
+            }
+        }
+    }
+
+    public runTrigger(trig:TrigAlItem, line:string) {
+        if (trig.regex) {
+            let match = line.match(trig.pattern);
+            if (!match) {
+                return;
+            }
+
+            if (trig.is_script) {
+                if (!trig.script) trig.script = this.jsScript.makeScript(trig.id || trig.pattern, trig.value, "match, line");
+                if (trig.script) {
+                    trig.script(match, line); 
+                } else {
+                    throw `Trigger '${trig.pattern}' is script but the script cannot be initialized`;
+                }
+            } else {
+                let value = trig.value;
+
+                value = value.replace(/\$(\d+)/g, function(m, d) {
+                    return match[parseInt(d)] || "";
+                });
+
+                let cmds = value.replace("\r", "").split("\n");
+                this.EvtEmitTriggerCmds.fire({orig: trig.id || trig.pattern, cmds: cmds});
+            }
+        } else {
+            if (line.includes(trig.pattern)) {
                 if (trig.is_script) {
-                    if (!trig.script) trig.script = this.jsScript.makeScript(trig.id || trig.pattern, trig.value, "match, line");
+                    if (!trig.script) trig.script = this.jsScript.makeScript(trig.id || trig.pattern, trig.value, "line");
                     if (trig.script) {
-                        trig.script(match, line); 
+                        trig.script(line); 
                     } else {
                         throw `Trigger '${trig.pattern}' is script but the script cannot be initialized`;
                     }
                 } else {
-                    let value = trig.value;
-
-                    value = value.replace(/\$(\d+)/g, function(m, d) {
-                        return match[parseInt(d)] || "";
-                    });
-
-                    let cmds = value.replace("\r", "").split("\n");
+                    let cmds = trig.value.replace("\r", "").split("\n");
                     this.EvtEmitTriggerCmds.fire({orig: trig.id || trig.pattern, cmds: cmds});
                 }
-            } else {
-                if (line.includes(trig.pattern)) {
-                    if (trig.is_script) {
-                        if (!trig.script) trig.script = this.jsScript.makeScript(trig.id || trig.pattern, trig.value, "line");
-                        if (trig.script) {
-                            trig.script(line); 
-                        } else {
-                            throw `Trigger '${trig.pattern}' is script but the script cannot be initialized`;
-                        }
-                    } else {
-                        let cmds = trig.value.replace("\r", "").split("\n");
-                        this.EvtEmitTriggerCmds.fire({orig: trig.id || trig.pattern, cmds: cmds});
-                    }
-                }
             }
+        }
+    }
+
+    public handleBuffer(line: string): void {
+        if (this.config.getDef("triggersEnabled", true) !== true) return;
+
+        this.handleAutologin(line);
+
+        for (let i = 0; i < this.allTriggers.length; i++) {
+            let trig = this.allTriggers[i];
+            if (!trig.enabled || (trig.class && !this.classManager.isEnabled(trig.class))) continue;
+            if (!trig.is_prompt) continue;
+            this.runTrigger(trig, line);
+        }
+    }
+
+    public handleLine(line: string): void {
+        if (this.config.getDef("triggersEnabled", true) !== true) return;
+
+        for (let i = 0; i < this.allTriggers.length; i++) {
+            let trig = this.allTriggers[i];
+            if (!trig.enabled || (trig.class && !this.classManager.isEnabled(trig.class))) continue;
+            if (trig.is_prompt) continue;
+            this.runTrigger(trig, line);
         }
     }
 }

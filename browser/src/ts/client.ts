@@ -1,6 +1,9 @@
 import { UserConfig } from "./userConfig";
 import { AppInfo } from "./appInfo";
-
+// @ts-ignore
+import * as Fingerprint2 from "@fingerprintjs/fingerprintjs";
+import {Md5} from 'ts-md5/dist/md5';
+import * as aesjs from "aes-js";
 import { AliasEditor } from "./aliasEditor";
 import { AliasManager } from "./aliasManager";
 import { CommandInput } from "./commandInput";
@@ -23,6 +26,7 @@ import * as apiUtil from "./apiUtil";
 import { ProfilesWindow } from "./profilesWindow";
 import { ProfileManager } from "./profileManager";
 import { ProfileWindow } from "./profileWindow";
+import { Acknowledge } from "./util";
 
 
 interface ConnectionTarget {
@@ -86,7 +90,7 @@ export class Client {
         this.classManager = new ClassManager(this.profileManager.activeConfig);
         this.jsScriptWin = new JsScriptWin(this.jsScript);
         this.triggerManager = new TriggerManager(
-            this.jsScript, this.profileManager.activeConfig, baseConfig, this.classManager);
+            this.jsScript, this.profileManager.activeConfig, baseConfig, this.classManager, profileManager);
         this.aliasManager = new AliasManager(
             this.jsScript, this.profileManager.activeConfig, baseConfig, this.classManager);
         this.jsScript.setClassManager(this.classManager);
@@ -254,6 +258,10 @@ export class Client {
             this.triggerManager.handleLine(line);
         });
 
+        this.outputWin.EvtBuffer.handle((line: string) => {
+            this.triggerManager.handleBuffer(line);
+        });
+
         // OutputManager events
         this.outputManager.EvtNewLine.handle(() => {
             this.mxp.handleNewline();
@@ -395,9 +403,54 @@ export namespace Mudslinger {
         onPreloaded();
     }
 
-    export async function init() {
+    interface component {
+        key:string;
+        value:any;
+    }
 
-        GetLocalClientConfig().then(resp => {
+    export function decrypt(text: string):string {
+        var key = aesjs.utils.hex.toBytes(localStorage.getItem("browserHash"));
+        var encryptedBytes = aesjs.utils.hex.toBytes(text);
+    
+        // The counter mode of operation maintains internal state, so to
+        // decrypt a new instance must be instantiated.
+        var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(5));
+        var decryptedBytes = aesCtr.decrypt(encryptedBytes);
+        
+        // Convert our bytes back into text
+        var decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
+        //console.log(decryptedText);
+        return decryptedText;
+    }
+
+    export function encrypt(text: string):string {
+        var key = aesjs.utils.hex.toBytes(localStorage.getItem("browserHash"));
+
+        var textBytes = aesjs.utils.utf8.toBytes(text);
+        
+        var aesCtr = new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(5));
+        var encryptedBytes = aesCtr.encrypt(textBytes);
+        
+        var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+        //console.log(encryptedHex);
+        return encryptedHex;
+    }
+
+    export async function initEncryption(browserHash:string) {
+        const prevHash = localStorage.getItem("browserHash");
+        if (prevHash!=null && prevHash != browserHash) {
+            Acknowledge("hashChanged", `La configurazione del PC o del browser e' cambiata.
+            Le password che erano state salvate per i profili sono state invalidate e dovrai rimetterle.
+            
+            <b>E' una misura di sicurezza</b> per prevenire furti di password
+            che vengono salvate nel browser e criptate con il suo numero identificativo.`);
+            localStorage.removeItem("ack_hashChanged");
+        }
+        localStorage.setItem("browserHash", browserHash);
+    }
+
+    export async function initClient() {
+        return GetLocalClientConfig().then(resp => {
             if (resp && resp.data) {
                 const cfg = resp.data;
                 if (cfg.apiBaseUrl) {
@@ -421,7 +474,34 @@ export namespace Mudslinger {
         (err) => {
             console.log("Failed loading local config: " + err);
             runClient(); // run even if fetching the local config fails and fallback to previous behavior with the API
-        })
+        });
+    }
+
+    export async function init() {
+        let componentsFetched = async (components:component[]) => {
+            let hashStr = "";
+            for (const iterator of components) {
+                hashStr+=iterator.key+iterator.value;
+            }
+            hashStr = Md5.hashStr(hashStr).toString();
+
+            await initEncryption(hashStr);
+            await initClient();
+        };
+
+        if ((<any>window).requestIdleCallback) {
+            (<any>window).requestIdleCallback(function () {
+                Fingerprint2.get(function (components:component[]) {
+                  componentsFetched(components);
+                })
+            })
+        } else {
+            setTimeout(function () {
+                Fingerprint2.get(function (components:component[]) {
+                    componentsFetched(components);
+                })  
+            }, 500)
+        }
     }
 }
 

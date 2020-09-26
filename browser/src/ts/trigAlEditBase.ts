@@ -11,6 +11,7 @@ export interface TrigAlItem {
     enabled: boolean;
     is_script: boolean;
     script?: any;
+    is_prompt: boolean;
 }
 
 export abstract class TrigAlEditBase {
@@ -21,6 +22,7 @@ export abstract class TrigAlEditBase {
     protected $id: JQuery;
     protected $className: JQuery;
     protected $enabledCheckbox: JQuery;
+    protected $isPromptCheckbox: JQuery;
     protected $regexCheckbox: JQuery;
     protected $scriptCheckbox: JQuery;
     protected $textArea: JQuery;
@@ -93,15 +95,19 @@ export abstract class TrigAlEditBase {
                         <div class="pane-options">
                             <label>
                                 Abilitato
-                                <input type="checkbox" class="winEdit-chkEnabled" disabled />
+                                <input type="checkbox" title="Se disabilitato non scatta" class="winEdit-chkEnabled" disabled />
+                            </label>
+                            <label>
+                                Prompt
+                                <input type="checkbox" title="Scatta anche se non arriva un capolinea" class="winEdit-chkIsPrompt" disabled />
                             </label>
                             <label>
                                 Regex
-                                <input type="checkbox" class="winEdit-chkRegex" disabled />
+                                <input type="checkbox" title="Il pattern e' una regular expression" class="winEdit-chkRegex" disabled />
                             </label>
                             <label>
                                 Script
-                                <input type="checkbox" class="winEdit-chkScript" disabled />
+                                <input type="checkbox" title="Il trigger contiene una script javascript" class="winEdit-chkScript" disabled />
                             </label>
                         </div>
                     </div>                    
@@ -130,6 +136,7 @@ export abstract class TrigAlEditBase {
         this.$className = $(myDiv.getElementsByClassName("winEdit-className")[0]);
         this.$enabledCheckbox = $(myDiv.getElementsByClassName("winEdit-chkEnabled")[0]);
         this.$regexCheckbox = $(myDiv.getElementsByClassName("winEdit-chkRegex")[0]);
+        this.$isPromptCheckbox = $(myDiv.getElementsByClassName("winEdit-chkIsPrompt")[0]);
         this.$scriptCheckbox = $(myDiv.getElementsByClassName("winEdit-chkScript")[0]);
         this.$saveButton = $(myDiv.getElementsByClassName("winEdit-btnSave")[0]);
         this.$cancelButton = $(myDiv.getElementsByClassName("winEdit-btnCancel")[0]);
@@ -239,7 +246,8 @@ export abstract class TrigAlEditBase {
             regex: this.$regexCheckbox.is(":checked"),
             is_script: is_script,
             class: this.$className.val(),
-            enabled: this.$enabledCheckbox.is(":checked")
+            enabled: this.$enabledCheckbox.is(":checked"),
+            is_prompt: this.$isPromptCheckbox.is(":checked")
         };
 
         this.saveItem(

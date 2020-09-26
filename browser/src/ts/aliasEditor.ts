@@ -4,6 +4,7 @@ import { TrigAlEditBase, TrigAlItem } from "./trigAlEditBase";
 export class AliasEditor extends TrigAlEditBase {
     constructor(private aliasManager: AliasManager) {
         super("Alias");
+        this.$isPromptCheckbox.hide();
     }
 
     protected defaultPattern: string = null;

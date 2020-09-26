@@ -1,3 +1,5 @@
+import { messagebox } from "./messagebox";
+
 export function replaceLtGt(text: string): string {
     return text.replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;");
@@ -20,6 +22,14 @@ export function rawToHtml(text: string): string {
     return replaceLf(
             replaceLtGt(
             replaceAmp(text)));
+}
+
+export function Acknowledge(ack:string, str:string) {
+    const val = localStorage.getItem('ack_'+ack);
+    if (val == 'true') return;
+    messagebox("Informazione", str, () => {
+        localStorage.setItem('ack_'+ack, "true");
+    }, "OK", "", 500, null);
 }
 
 // https://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
