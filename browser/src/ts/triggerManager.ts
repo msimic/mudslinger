@@ -102,6 +102,8 @@ export class TriggerManager {
         this.mergeTriggers();
     }
 
+    private charSent = false;
+    private passSent = false;
     private handleAutologin(line: string) {
         if (!this.profileManager.getCurrent()) {
             return;
@@ -109,13 +111,19 @@ export class TriggerManager {
 
         if (line.match(/^Che nome vuoi usare ?/)) {
             const prof = this.profileManager.getProfile(this.profileManager.getCurrent());
-            if (prof.autologin && prof.char) {
+            if (prof.autologin && prof.char && !this.charSent) {
+                this.charSent = true;
+                setTimeout(()=>{ this.charSent = false;}, 1000);
+                console.log(prof.char);
                 this.EvtEmitTriggerCmds.fire({orig: 'autologin', cmds: [prof.char]});
             }
         } else if (line.match(/^Inserisci la sua password:/)) {
             const prof = this.profileManager.getProfile(this.profileManager.getCurrent());
-            if (prof.autologin && prof.pass) {
+            if (prof.autologin && prof.pass && !this.passSent) {
+                this.passSent = true;
+                setTimeout(()=>{ this.passSent = false;}, 1000);
                 const pass = Mudslinger.decrypt(prof.pass);
+                console.log(pass);
                 this.EvtEmitTriggerCmds.fire({orig: 'autologin', cmds: [pass, 'i', 'i', 'i']});
             }
         }

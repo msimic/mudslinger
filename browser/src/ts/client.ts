@@ -399,6 +399,7 @@ export namespace Mudslinger {
             }
         }
         profileManager.setTitle();
+        console.log(connectionTarget);
         client = new Client(connectionTarget, baseConfig, profileManager);
         onPreloaded();
     }

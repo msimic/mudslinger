@@ -159,7 +159,7 @@ export class ProfileWindow {
     }
 
     private apply() {
-        this.profile.host = "192.168.8.164";// "mud.temporasanguinis.it";
+        this.profile.host = "mud.temporasanguinis.it";
         if (this.$serverList.val() == "Live") {
             this.profile.port = "4000";
         } else {
