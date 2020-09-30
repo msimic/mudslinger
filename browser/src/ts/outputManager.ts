@@ -89,9 +89,13 @@ export class OutputManager {
         this.target = this.targetWindows[this.targetWindows.length - 1];
     }
 
-    public sendToWindow(window:string, text:string, buffer:string) {
+    public sendToWindow(window:string, text:string, buffer:string, newLine?:boolean) {
         let wd = this.windowManager.createWindow(window);
-        wd.output.write(text, buffer);
+        if (newLine) {
+            wd.output.writeLine(text, buffer);
+        } else {
+            wd.output.write(text, buffer);
+        }
     }
 
     // propagate MXP elements to target

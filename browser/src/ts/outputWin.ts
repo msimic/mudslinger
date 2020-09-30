@@ -1,12 +1,17 @@
 import { OutWinBase, ConfigIf } from "./outWinBase";
+import { TriggerManager } from "./triggerManager";
 import * as Util from "./util";
 
 export class OutputWin extends OutWinBase {
-    constructor(config: ConfigIf) {
+    constructor(config: ConfigIf, private triggerManager:TriggerManager) {
         super($("#winOutput"), config);
 
         $(document).ready(() => {
             window.onerror = this.handleWindowError.bind(this);
+        });
+
+        triggerManager.EvtEmitTriggerOutputChanged.handle((data)=> {
+            this.outputChanged([data.line, data.buffer]);
         });
     }
 

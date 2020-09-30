@@ -101,7 +101,7 @@ export class Client {
 
         this.commandInput = new CommandInput(this.aliasManager);
 
-        this.outputWin = new OutputWin(this.profileManager.activeConfig);
+        this.outputWin = new OutputWin(this.profileManager.activeConfig, this.triggerManager);
 
         this.aliasEditor = new AliasEditor(this.aliasManager);
         this.triggerEditor = new TriggerEditor(this.triggerManager);
@@ -233,8 +233,12 @@ export class Client {
             //this.socket.sendCmd(data);
         });
 
-        EvtScriptEmitPrint.handle((data:{owner:string, message:string}) => {
-            this.outputWin.handleScriptPrint(data.owner, data.message);
+        EvtScriptEmitPrint.handle((data:{owner:string, message:string, window?:string}) => {
+            if (data.window) {
+                this.outputManager.sendToWindow(data.window, data.message, data.message, true);
+            } else {
+                this.outputWin.handleScriptPrint(data.owner, data.message);
+            }
         });
 
         EvtScriptEmitError.handle((data: {stack: any}) => {

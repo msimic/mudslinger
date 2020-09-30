@@ -19,9 +19,23 @@ export function rawToHtml(text: string): string {
         text = JSON.stringify(text);
         text = text.slice(1, text.length-1);
     }
+    return text;
     return replaceLf(
             replaceLtGt(
             replaceAmp(text)));
+}
+
+export function stripHtml(sText:string):string {
+    let intag = false;
+    let positions = [];
+    for (var i = 0; i < sText.length; i++) {
+        if (sText[i] == "<") intag = true;
+        if (!intag) {
+            positions.push(sText[i]);
+        }
+        if (sText[i] == ">") intag = false;
+    }
+    return positions.join("");
 }
 
 export function Acknowledge(ack:string, str:string) {

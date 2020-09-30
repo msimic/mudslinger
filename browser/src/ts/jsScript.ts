@@ -6,7 +6,7 @@ import { TrigAlItem } from "./trigAlEditBase";
 import { TriggerManager } from "./triggerManager";
 
 export let EvtScriptEmitCmd = new EventHook<{owner:string, message:string}>();
-export let EvtScriptEmitPrint = new EventHook<{owner:string, message:string}>();
+export let EvtScriptEmitPrint = new EventHook<{owner:string, message:string, window?:string}>();
 export let EvtScriptEmitError = new EventHook<any>();
 export let EvtScriptEmitEvalError = new EventHook<any>();
 export let EvtScriptEmitToggleAlias = new EventHook<{owner:string, id:string, state:boolean}>();
@@ -104,8 +104,8 @@ function makeScript(owner:string, text: string, argsSig: string,
     const send = function(cmd: string) {
         EvtScriptEmitCmd.fire({owner: own, message: cmd.toString()});
     };
-    const print = function(message: string) {
-        EvtScriptEmitPrint.fire({owner: own, message: message.toString()});
+    const print = function(message: string, window?:string) {
+        EvtScriptEmitPrint.fire({owner: own, message: message.toString(), window: window});
     };
     const toggleTrigger = function(id:string, state: boolean) {
         EvtScriptEmitToggleTrigger.fire({owner: own, id: id, state: state});

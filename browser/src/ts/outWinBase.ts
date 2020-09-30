@@ -215,9 +215,7 @@ export class OutWinBase {
             let data:[string,string] = [this.lineText, this.appendBuffer];
             this.EvtLine.fire(data);
             if (data[1] != this.appendBuffer) {
-                this.lineText = data[0];
-                this.appendBuffer = data[1];
-                this.$target.html(this.appendBuffer);
+                this.outputChanged(data);
             }
             this.appendBuffer = "";
             this.newLine();
@@ -225,12 +223,16 @@ export class OutWinBase {
             let data:[string,string] = [this.lineText, this.appendBuffer];
             this.EvtBuffer.fire(data);
             if (data[1] != this.appendBuffer) {
-                this.lineText = data[0];
-                this.appendBuffer = data[1];
-                this.$target.html(this.appendBuffer);
+                this.outputChanged(data);
             }
         }
     };
+
+    protected outputChanged(data: [string, string]) {
+        this.lineText = data[0];
+        this.appendBuffer = data[1];
+        this.$target.html(this.appendBuffer);
+    }
 
     private padStart(str:string, targetLength:number, padString:string) {
         targetLength = targetLength >> 0; //truncate if number, or convert non-number to 0;

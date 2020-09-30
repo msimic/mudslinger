@@ -4,6 +4,7 @@ import { ClassManager } from "./classManager";
 import { EvtScriptEmitPrint, EvtScriptEmitToggleTrigger } from "./jsScript";
 import { ProfileManager } from "./profileManager";
 import { Mudslinger } from "./client";
+import { stripHtml } from "./util";
 
 export interface ConfigIf {
     set(key: string, val: TrigAlItem[]): void;
@@ -18,6 +19,7 @@ export interface ScriptIf {
 
 export class TriggerManager {
     public EvtEmitTriggerCmds = new EventHook<{orig: string, cmds: string[]}>();
+    public EvtEmitTriggerOutputChanged = new EventHook<{line: string, buffer: string}>();
 
     public triggers: Array<TrigAlItem> = null;
     public allTriggers: Array<TrigAlItem> = null;
@@ -311,19 +313,6 @@ export class TriggerManager {
         return null;
       }
 
-    private stripHtml(sText:string):string {
-        let intag = false;
-        let positions = [];
-        for (var i = 0; i < sText.length; i++) {
-            if (sText[i] == "<") intag = true;
-            if (!intag) {
-                positions.push(sText[i]);
-            }
-            if (sText[i] == ">") intag = false;
-        }
-        return positions.join("");
-    }
-
     public subBuffer(sWhat: string, sWith: string) {
         let buffer = this.buffer;
         let text = this.line.split("\n")[0];
@@ -353,13 +342,15 @@ export class TriggerManager {
             if (buffer[i] == ">") intag = false;
         }
 
-        this.line = text.replace(new RegExp((sWhat), 'gi'), (sWith.indexOf("<span")!=-1 ? this.stripHtml(sWith) : sWith));
+        this.line = text.replace(new RegExp((sWhat), 'gi'), (sWith.indexOf("<span")!=-1 ? stripHtml(sWith) : sWith));
         this.buffer = this.doReplace(buffer, positions, positionsText, text, sWhat, sWith);
+        this.EvtEmitTriggerOutputChanged.fire({line: this.line, buffer:this.buffer});
     }
     
     gag() {
         this.buffer = "";
         this.line = "";
+        this.EvtEmitTriggerOutputChanged.fire({line: this.line, buffer:this.buffer});
     }
 }
 
