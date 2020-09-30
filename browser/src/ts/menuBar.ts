@@ -44,6 +44,7 @@ export class MenuBar {
         ["consolas", "font"],
         ["monospace", "font"],
         ["lucida", "font"],
+        ["vera", "font"],
         ["reset-settings", ""],
         ["import-settings", ""],
         ["export-settings", ""],
@@ -208,6 +209,7 @@ export class MenuBar {
             $(".outputText").removeClass("consolas");
             $(".outputText").removeClass("monospace");
             $(".outputText").removeClass("lucida");
+            $(".outputText").removeClass("vera");
         };
 
         this.clickFuncs["enable-color"] = (val) => {
@@ -246,6 +248,13 @@ export class MenuBar {
             if (val == "monospace") {
                 removeFonts();
                 $(".outputText").addClass("monospace");
+            }
+        };
+
+        this.clickFuncs["vera"] = (val) => {
+            if (val == "vera") {
+                removeFonts();
+                $(".outputText").addClass("vera");
             }
         };
 

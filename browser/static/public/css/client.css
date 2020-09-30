@@ -10,6 +10,20 @@ a:link, a:visited {
     border: 1px solid black;
 }
 
+@font-face {
+    font-family: 'Bitstream-Vera-Sans-Mono';
+      src:  url('Bitstream-Vera-Sans-Mono.ttf.woff') format('woff'),
+      url('Bitstream-Vera-Sans-Mono.ttf.svg#Bitstream-Vera-Sans-Mono') format('svg'),
+      url('Bitstream-Vera-Sans-Mono.ttf.eot'),
+      url('Bitstream-Vera-Sans-Mono.eot?#iefix') format('embedded-opentype'); 
+      font-weight: normal;
+      font-style: normal;
+  }
+  
+.vera {
+font-family: 'Bitstream-Vera-Sans-Mono' !important;  
+}
+
 #mudslinger {
     width: 100%;
     max-width: 100%;
