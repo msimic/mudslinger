@@ -43,5 +43,8 @@ module.exports = {
     host: 'localhost',
     /*https: true,*/
     port: 8080,
+    watchOptions: {
+      poll: 500
+    }
   },
 };

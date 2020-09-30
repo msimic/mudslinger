@@ -114,7 +114,6 @@ export class TriggerManager {
             if (prof.autologin && prof.char && !this.charSent) {
                 this.charSent = true;
                 setTimeout(()=>{ this.charSent = false;}, 1000);
-                console.log(prof.char);
                 this.EvtEmitTriggerCmds.fire({orig: 'autologin', cmds: [prof.char]});
             }
         } else if (line.match(/^Inserisci la sua password:/)) {
@@ -123,7 +122,6 @@ export class TriggerManager {
                 this.passSent = true;
                 setTimeout(()=>{ this.passSent = false;}, 1000);
                 const pass = Mudslinger.decrypt(prof.pass);
-                console.log(pass);
                 this.EvtEmitTriggerCmds.fire({orig: 'autologin', cmds: [pass, 'i', 'i', 'i']});
             }
         }
@@ -170,9 +168,15 @@ export class TriggerManager {
         }
     }
 
-    public handleBuffer(line: string): void {
-        if (this.config.getDef("triggersEnabled", true) !== true) return;
+    public buffer:string;
+    public line:string;
 
+    public handleBuffer(line: string, raw:string): string {
+        this.line = null;
+        this.buffer = null;
+        if (this.config.getDef("triggersEnabled", true) !== true) return null;
+        this.buffer = raw;
+        this.line = line;
         this.handleAutologin(line);
 
         for (let i = 0; i < this.allTriggers.length; i++) {
@@ -181,17 +185,181 @@ export class TriggerManager {
             if (!trig.is_prompt) continue;
             this.runTrigger(trig, line);
         }
+        return this.buffer;
     }
 
-    public handleLine(line: string): void {
-        if (this.config.getDef("triggersEnabled", true) !== true) return;
-
+    public handleLine(line: string, raw:string): string {
+        this.line = null;
+        this.buffer = null;
+        if (this.config.getDef("triggersEnabled", true) !== true) return null;
+        this.buffer = raw;
+        this.line = line;
         for (let i = 0; i < this.allTriggers.length; i++) {
             let trig = this.allTriggers[i];
             if (!trig.enabled || (trig.class && !this.classManager.isEnabled(trig.class))) continue;
             if (trig.is_prompt) continue;
-            this.runTrigger(trig, line);
+            this.runTrigger(trig, this.line);
         }
+        return this.buffer;
+    }
+
+    private doReplace(sBuffer:string, positions:number[], positionsText:number[], sText:string, sWhat:string, sWith:string) {
+        let rx = new RegExp(sWhat, 'gi');
+        let matches = rx.exec(sText);
+        if (matches && matches.length) {
+            let start = matches.index;
+            let end = start + matches[0].length-1;
+            let closeTags = [];
+            let openTags = [];
+            
+            let bufferStart = positions[positionsText[start]];
+            let bufferEnd = positions[positionsText[end]];
+            if (sBuffer[bufferEnd]=="&") bufferEnd+=3;
+            let charsBefore = [];
+            let chars = [];
+            
+            for (let i = 0; i < bufferStart; i++) {
+                charsBefore.push(sBuffer[i]);
+            }
+            
+            let intag = false;
+            let closingTag = false;
+            let tag = "";
+            let spaceFound = false;
+            for (let i = bufferStart; i < bufferEnd; i++) {
+                if (sBuffer[i] == "<") {
+                    tag = "";
+                    spaceFound = false;
+                    intag = true;
+                    if (i+1 <= bufferEnd && sBuffer[i+1]=="/") {
+                        closingTag = true;
+                    i++;
+                    }
+                    continue;
+                }
+                if (intag) {
+                    if (sBuffer[i] == ">") {
+                        if (closingTag) {
+                            closeTags.push(tag);
+                        } else {
+                            openTags.push(tag);
+                        }
+                        closingTag = false;
+                        intag = false;
+                    }
+                    else {
+                        if (sBuffer[i]==" ") {
+                            spaceFound = true;
+                        }
+                        if (!spaceFound) {
+                            tag+=sBuffer[i];
+                        }
+                    }   
+                }
+            }
+            
+            chars.push(sWith);
+            
+            for (let i = 0; i < openTags.length; i++) {
+                charsBefore.push("<" + openTags[i] + ">");
+            }
+            
+            for (let i = 0; i < closeTags.length; i++) {
+                chars.push("</" + closeTags[i] + ">");
+            }
+            
+            for (let i = bufferEnd+1; i < sBuffer.length; i++) {
+                chars.push(sBuffer[i]);
+            }
+            
+            return [...charsBefore,...chars].join("");
+        }
+        return sBuffer;
+    }
+
+    private htmlEscapes = {
+        '&lt;': '<',
+        '&gt;': '>',
+        /*'&#39;': "'",
+        '&#34;': '"',*/
+        '&amp;': "&"
+    };
+
+    htmlDecode(s:string, i:number):[string,string] {
+      for (const key in this.htmlEscapes) {
+          if (Object.prototype.hasOwnProperty.call(this.htmlEscapes, key)) {
+              const element = <string>((<any>this.htmlEscapes)[key]);
+                const sub = s.substr(i, key.length);
+                if (sub == key) {
+                    return [element, key];
+                }
+          }
+      }
+      return null;
+    }
+
+    htmlEncode(s:string, i:number):[string,string] {
+        for (const key in this.htmlEscapes) {
+            if (Object.prototype.hasOwnProperty.call(this.htmlEscapes, key)) {
+                const element = <string>((<any>this.htmlEscapes)[key]);
+                  const sub = s.substr(i, 1);
+                  if (sub == element) {
+                      return [key, element];
+                  }
+            }
+        }
+        return null;
+      }
+
+    private stripHtml(sText:string):string {
+        let intag = false;
+        let positions = [];
+        for (var i = 0; i < sText.length; i++) {
+            if (sText[i] == "<") intag = true;
+            if (!intag) {
+                positions.push(sText[i]);
+            }
+            if (sText[i] == ">") intag = false;
+        }
+        return positions.join("");
+    }
+
+    public subBuffer(sWhat: string, sWith: string) {
+        let buffer = this.buffer;
+        let text = this.line.split("\n")[0];
+        let intag = false;
+        let positions = [];
+        let positionsText = [];
+        let offset = 0;
+        let htmltext = "";
+
+        for (var i = 0; i < text.length; i++) {
+            const val = this.htmlEncode(text, i);
+            if (val) {
+                htmltext += val[0];
+                positionsText.push(i+offset);
+                offset+=val[0].length-1;
+            } else {
+                htmltext += text[i];
+                positionsText.push(i+offset);
+            }
+        }
+
+        for (var i = 0; i < buffer.length; i++) {
+            if (buffer[i] == "<") intag = true;
+            if (!intag) {
+                positions.push(i);
+            }
+            if (buffer[i] == ">") intag = false;
+        }
+
+        this.line = text.replace(new RegExp((sWhat), 'gi'), (sWith.indexOf("<span")!=-1 ? this.stripHtml(sWith) : sWith));
+        this.buffer = this.doReplace(buffer, positions, positionsText, text, sWhat, sWith);
+    }
+    
+    gag() {
+        this.buffer = "";
+        this.line = "";
     }
 }
 

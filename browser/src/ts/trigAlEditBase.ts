@@ -200,6 +200,7 @@ export abstract class TrigAlEditBase {
         this.$id.prop("disabled", state);
         this.$className.prop("disabled", state);
         this.$enabledCheckbox.prop("disabled", state);
+        this.$isPromptCheckbox.prop("disabled", state);
         this.$regexCheckbox.prop("disabled", state);
         this.$scriptCheckbox.prop("disabled", state);
         this.$textArea.prop("disabled", state);

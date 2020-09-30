@@ -7,6 +7,7 @@ import { ansiColorTuple, copyAnsiColorTuple, colorIdToHtml,
          ansiFgLookup, ansiBgLookup, ansiName, ansiLevel } from "./color";
 import { UserConfig } from "./userConfig";
 import { Socket } from "./socket";
+import { WindowManager } from "./windowManager";
 
 
 export interface ConfigIf {
@@ -39,6 +40,7 @@ export class OutputManager {
     private defaultAnsiBg: ansiColorTuple;
     private defaultBgId: string;
     private socket:Socket;
+    private reentrance: number;
 
     public setSocket(socket:Socket) {
         this.socket = socket;
@@ -48,10 +50,11 @@ export class OutputManager {
         return this.socket && this.socket.mxpActive();
     }
 
-    constructor(private outputWin: OutputWin, private config: ConfigIf) {
+    constructor(private outputWin: OutputWin, private config: ConfigIf, private windowManager: WindowManager) {
         this.targetWindows = [this.outputWin];
         this.target = this.outputWin;
         this.loadConfig();
+        this.reentrance = 0;
         if (config.evtConfigImport) config.evtConfigImport.handle(this.loadConfig, this);
     }
 
@@ -84,6 +87,11 @@ export class OutputManager {
         this.target.outputDone();
         this.targetWindows.pop();
         this.target = this.targetWindows[this.targetWindows.length - 1];
+    }
+
+    public sendToWindow(window:string, text:string, buffer:string) {
+        let wd = this.windowManager.createWindow(window);
+        wd.output.write(text, buffer);
     }
 
     // propagate MXP elements to target
@@ -321,6 +329,7 @@ export class OutputManager {
     private partialUtf8: Uint8Array;
     private partialSeq: string;
     public handleTelnetData(data: ArrayBuffer) {
+        this.reentrance++;
         // console.timeEnd("command_resp");
         // console.time("_handle_telnet_data");
 
@@ -533,7 +542,11 @@ export class OutputManager {
             /* if partial we already outputed, if not let"s hit it */
             this.handleText(output);
         }
-        this.outputDone();
+
+        if (output.length && output.indexOf('\n')==-1 && this.reentrance<=1) {
+            this.outputDone();
+        }
         // console.timeEnd("_handle_telnet_data");
+        this.reentrance--;
     }
 }

@@ -1,6 +1,7 @@
 import { AliasManager } from "./aliasManager";
 import { ClassManager } from "./classManager";
 import { EventHook } from "./event";
+import { OutputManager } from "./outputManager";
 import { TrigAlItem } from "./trigAlEditBase";
 import { TriggerManager } from "./triggerManager";
 
@@ -60,12 +61,46 @@ let startWatch = function (this : ScriptThis, onWatch:(ev:PropertyChanged)=>void
 function makeScript(owner:string, text: string, argsSig: string,
     classManager: ClassManager,
     aliasManager: AliasManager,
-    triggerManager: TriggerManager) {
+    triggerManager: TriggerManager,
+    outputManager: OutputManager) {
 
     let _scriptFunc_: any;
     let own = owner;
 
     /* Scripting API section */
+    const color = function(sText: string, sColor:string, sBackground:string, bold:boolean, underline:boolean, blink:boolean) {
+        let classes = "";
+        if (blink) {
+            classes += "blink ";
+        }
+        if (underline) {
+            classes += "underline "
+        }
+        let styles = "display: inline-block;";
+        if (sColor) {
+            styles += "color:" + sColor + ";"
+        }
+        if (sBackground) {
+            styles += "background-color:" + sBackground + ";"
+        }
+        /*if (underline) {
+            styles += "border-bottom-style:solid;border-bottom-width:1px;border-bottom-color:" + (sColor || "white") + ";";
+        }*/
+        let content = (bold ? "<b>" : "") + sText + (bold ? "</b>" : "");
+        let span = `<span class="${classes}" style="${styles}">${content}</span>`;
+        return span;
+    };
+    const sub = function(sWhat: string, sWith:string) {
+        if (triggerManager) triggerManager.subBuffer(sWhat, sWith);
+    };
+    const gag = function() {
+        if (triggerManager) triggerManager.gag();
+    };
+    const cap = function(window:string) {
+        if (triggerManager) {
+            outputManager.sendToWindow(window, triggerManager.line, triggerManager.buffer);
+        }
+    };
     const send = function(cmd: string) {
         EvtScriptEmitCmd.fire({owner: own, message: cmd.toString()});
     };
@@ -127,6 +162,7 @@ export class JsScript {
     private classManager: ClassManager;
     private aliasManager: AliasManager;
     private triggerManager: TriggerManager;
+    private outputManager: OutputManager;
 
     constructor() {
         this.scriptThis.startWatch((e)=>{
@@ -139,7 +175,7 @@ export class JsScript {
 
     public makeScript(owner:string, text: string, argsSig: string): any {
         try {
-        let scr = makeScript.call(this.scriptThis, owner, text, argsSig, this.classManager, this.aliasManager, this.triggerManager);
+        let scr = makeScript.call(this.scriptThis, owner, text, argsSig, this.classManager, this.aliasManager, this.triggerManager, this.outputManager);
         if (!scr) { return null; }
         return (...args: any[]) => {
             try {
@@ -163,5 +199,9 @@ export class JsScript {
 
     public setAliasManager(aliasManager:AliasManager) {
         this.aliasManager = aliasManager;
+    }
+
+    public setOutputManager(manager:OutputManager) {
+        this.outputManager = manager;
     }
 }

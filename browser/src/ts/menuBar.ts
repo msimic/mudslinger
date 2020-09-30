@@ -188,26 +188,26 @@ export class MenuBar {
 
         this.clickFuncs["wrap-lines"] = (val) => {
             if (!this.isTrue(val)) {
-                $("#winOutput").addClass("output-prewrap");
+                $(".outputText").addClass("output-prewrap");
             } else {
-                $("#winOutput").removeClass("output-prewrap");
+                $(".outputText").removeClass("output-prewrap");
             }
         };
 
         var removeFontSizes = () => {
-            $("#winOutput").removeClass("smalles-text");
-            $("#winOutput").removeClass("extra-small-text");
-            $("#winOutput").removeClass("small-text");
-            $("#winOutput").removeClass("normal-text");
-            $("#winOutput").removeClass("large-text");
-            $("#winOutput").removeClass("extra-large-text");
+            $(".outputText").removeClass("smalles-text");
+            $(".outputText").removeClass("extra-small-text");
+            $(".outputText").removeClass("small-text");
+            $(".outputText").removeClass("normal-text");
+            $(".outputText").removeClass("large-text");
+            $(".outputText").removeClass("extra-large-text");
         };
 
         var removeFonts = () => {
-            $("#winOutput").removeClass("courier");
-            $("#winOutput").removeClass("consolas");
-            $("#winOutput").removeClass("monospace");
-            $("#winOutput").removeClass("lucida");
+            $(".outputText").removeClass("courier");
+            $(".outputText").removeClass("consolas");
+            $(".outputText").removeClass("monospace");
+            $(".outputText").removeClass("lucida");
         };
 
         this.clickFuncs["enable-color"] = (val) => {
@@ -224,70 +224,70 @@ export class MenuBar {
         this.clickFuncs["courier"] = (val) => {
             if (val == "courier") {
                 removeFonts();
-                $("#winOutput").addClass("courier");
+                $(".outputText").addClass("courier");
             }
         };
 
         this.clickFuncs["consolas"] = (val) => {
             if (val == "consolas") {
                 removeFonts();
-                $("#winOutput").addClass("consolas");
+                $(".outputText").addClass("consolas");
             }
         };
 
         this.clickFuncs["lucida"] = (val) => {
             if (val == "lucida") {
                 removeFonts();
-                $("#winOutput").addClass("lucida");
+                $(".outputText").addClass("lucida");
             }
         };
 
         this.clickFuncs["monospace"] = (val) => {
             if (val == "monospace") {
                 removeFonts();
-                $("#winOutput").addClass("monospace");
+                $(".outputText").addClass("monospace");
             }
         };
 
         this.clickFuncs["extra-small-font"] = (val) => {
             if (val == "extra-small-font") {
                 removeFontSizes();
-                $("#winOutput").addClass("extra-small-text");
+                $(".outputText").addClass("extra-small-text");
             }
         };
 
         this.clickFuncs["smallest-font"] = (val) => {
             if (val == "smallest-font") {
                 removeFontSizes();
-                $("#winOutput").addClass("smallest-text");
+                $(".outputText").addClass("smallest-text");
             }
         };
 
         this.clickFuncs["small-font"] = (val) => {
             if (val == "small-font") {
                 removeFontSizes();
-                $("#winOutput").addClass("small-text");
+                $(".outputText").addClass("small-text");
             }
         };
 
         this.clickFuncs["normal-font"] = (val) => {
             if (val == "normal-font") {
                 removeFontSizes();
-                $("#winOutput").addClass("normal-text");
+                $(".outputText").addClass("normal-text");
             }
         };
 
         this.clickFuncs["large-font"] = (val) => {
             if (val == "large-font") {
                 removeFontSizes();
-                $("#winOutput").addClass("large-text");
+                $(".outputText").addClass("large-text");
             }
         };
 
         this.clickFuncs["extra-large-font"] = (val) => {
             if (val == "extra-large-font") {
                 removeFontSizes();
-                $("#winOutput").addClass("extra-large-text");
+                $(".outputText").addClass("extra-large-text");
             }
         };
 

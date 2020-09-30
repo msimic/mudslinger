@@ -7,9 +7,10 @@ export interface ConfigIf {
     getDef(key: string, def: any): any;
 }
 
+
 export class OutWinBase {
-    public EvtLine = new EventHook<string>();
-    public EvtBuffer = new EventHook<string>();
+    public EvtLine = new EventHook<[string, string]>();
+    public EvtBuffer = new EventHook<[string, string]>();
 
     protected debugScripts = false;
 
@@ -123,9 +124,9 @@ export class OutWinBase {
 
     // elem is the actual jquery element
     public pushElem(elem: JQuery) {
-        this.writeBuffer();
+        //this.writeBuffer();
 
-        this.$target.append(elem);
+        this.appendToCurrentTarget(elem);
         this.$targetElems.push(elem);
         this.$target = elem;
 
@@ -135,7 +136,7 @@ export class OutWinBase {
     }
 
     public popElem() {
-        this.writeBuffer();
+        //this.writeBuffer();
 
         let popped = this.$targetElems.pop();
         this.$target = this.$targetElems[this.$targetElems.length - 1];
@@ -143,14 +144,15 @@ export class OutWinBase {
         if (popped.hasClass("underline")) {
             this.underlineNest -= 1;
         }
-
+        //this.appendToCurrentTarget(popped);
         return popped;
     }
 
-    private appendBuffer = "";
-    private lineText = ""; // track full text of the line with no escape sequences or tags
+    protected appendBuffer = "";
+    protected lineText = ""; // track full text of the line with no escape sequences or tags
     public addText(txt: string) {
-        this.lineText += txt;
+        if (txt == '') return;
+
         let html = Util.rawToHtml(txt);
         let spanText = "<span";
 
@@ -202,14 +204,31 @@ export class OutWinBase {
         spanText += ">";
         spanText += html;
         spanText += "</span>";
+
+        this.lineText += txt;
         this.appendBuffer += spanText;
+        this.appendToCurrentTarget(spanText);
         
         if (txt.endsWith("\n")) {
-            this.append(this.appendBuffer, false);
+            // firo i trigger qua prima che venga a schermo
+            // cosi per il futuro posso manipulare il buffer
+            let data:[string,string] = [this.lineText, this.appendBuffer];
+            this.EvtLine.fire(data);
+            if (data[1] != this.appendBuffer) {
+                this.lineText = data[0];
+                this.appendBuffer = data[1];
+                this.$target.html(this.appendBuffer);
+            }
             this.appendBuffer = "";
             this.newLine();
         } else {
-            this.EvtBuffer.fire(this.lineText);
+            let data:[string,string] = [this.lineText, this.appendBuffer];
+            this.EvtBuffer.fire(data);
+            if (data[1] != this.appendBuffer) {
+                this.lineText = data[0];
+                this.appendBuffer = data[1];
+                this.$target.html(this.appendBuffer);
+            }
         }
     };
 
@@ -227,36 +246,52 @@ export class OutWinBase {
         }
     };
 
+    protected appendToCurrentTarget(o:any) {
+        this.$target.append(o);
+    }
+
+    protected line() {
+        return this.$targetElems[1];
+    }
+
     protected append(o: any, toRoot:boolean) {
-        if (o == "<span></span>") {
-            debugger;
+        if (o == "<span></span>" || o == '') {
+            return;
         }
         //const time = new Date();
-        if (this.logTime && o) {
+        /*if (this.logTime && o) {
             const time = this.padStart(new Date().toISOString().split("T")[1].split("Z")[0] + " ", 12, " ");
-            this.$target.append('<span class="timeLog">' + time + "</span>");
-        }
+            this.appendToCurrentTarget('<span class="timeLog">' + time + "</span>");
+        }*/
         if (toRoot) {
-            this.lineCount += 1;
-            if (this.$rootElem != this.$target) {
-                $(o).insertBefore(this.$target);
-            } else {
-                this.$rootElem.append(o);
+            this.$target.append(o); //$(o).insertBefore(this.$target);
+            if (this.$target == this.$rootElem) {
+                this.lineCount += 1;
             }
+            this.newLine();
         }
         else {
-            this.$target.append(o);
+            this.appendToCurrentTarget(o);
         }
         //const time2 = new Date();
         //const timeDif = Math.abs(<any>time2-<any>time);
         //console.log(timeDif);
     }
 
-    private newLine() {
-        this.popElem(); // pop the old line
-        this.pushElem($("<span>").appendTo(this.$target));
+    private time() {
+        const time = this.padStart(new Date().toISOString().split("T")[1].split("Z")[0] + " ", 12, " ");
+        return ('<span class="timeLog">' + time + "</span>");
+    }
+    protected newLine() {
+        while (this.$targetElems.length > 1) {
+            let line = this.popElem(); // pop the old line
+            if (this.$targetElems.length == 1 && this.logTime) {
+                line.prepend(this.time());
+            }
+        }   
+        this.pushElem($("<span>"));
+        this.scrollBottom();
 
-        this.EvtLine.fire(this.lineText);
         this.lineText = "";
 
         this.lineCount += 1;
@@ -270,7 +305,9 @@ export class OutWinBase {
     }
 
     private writeBuffer() {
-        if (this.appendBuffer != "<span></span>") this.$target.append(this.appendBuffer);
+        /*if (this.appendBuffer && this.appendBuffer != "<span></span>") {
+            this.appendToCurrentTarget(this.appendBuffer);
+        }*/
         this.appendBuffer = "";
     };
 
@@ -278,6 +315,11 @@ export class OutWinBase {
         this.writeBuffer();
         this.scrollBottom();
     };
+
+    public push(text:string, html:string) {
+        this.lineText+=text;
+        this.appendBuffer+=html;
+    }
 
     private scrollRequested = false;
     private privScrolBottom() {

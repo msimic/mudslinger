@@ -7,7 +7,7 @@
             "name": "Debug",
             "preLaunchTask": "webpack: dev server",
             "url": "http://localhost:8080?host=auto",
-            "runtimeArgs": ["--incognito"],
+            "runtimeArgs": [/*"--incognito"*/],
             "webRoot": "${workspaceFolder}",
             "sourceMaps": true,
             "trace": "verbose",

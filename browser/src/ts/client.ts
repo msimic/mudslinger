@@ -27,6 +27,7 @@ import { ProfilesWindow } from "./profilesWindow";
 import { ProfileManager } from "./profileManager";
 import { ProfileWindow } from "./profileWindow";
 import { Acknowledge } from "./util";
+import { WindowManager } from "./windowManager";
 
 
 interface ConnectionTarget {
@@ -56,6 +57,7 @@ export class Client {
     private serverEcho = false;
 
     private _connected = false;
+    windowManager: WindowManager;
     public get connected():boolean {
         return this._connected;
     }
@@ -103,8 +105,9 @@ export class Client {
 
         this.aliasEditor = new AliasEditor(this.aliasManager);
         this.triggerEditor = new TriggerEditor(this.triggerManager);
-
-        this.outputManager = new OutputManager(this.outputWin, this.profileManager.activeConfig);
+        this.windowManager = new WindowManager(this.profileManager);
+        this.outputManager = new OutputManager(this.outputWin, this.profileManager.activeConfig, this.windowManager);
+        this.jsScript.setOutputManager(this.outputManager);
 
         this.mxp = new Mxp(this.outputManager, this.commandInput, this.jsScript);
         this.socket = new Socket(this.outputManager, this.mxp, this.profileManager.activeConfig);
@@ -254,12 +257,20 @@ export class Client {
         });
 
         // OutputWin events
-        this.outputWin.EvtLine.handle((line: string) => {
-            this.triggerManager.handleLine(line);
+        this.outputWin.EvtLine.handle((data:[string, string]) => {
+            let newBuffer = null;
+            if ((newBuffer = this.triggerManager.handleLine(data[0], data[1]))!=null) {
+                data[1] = newBuffer;
+                data[0] = this.triggerManager.line;
+            }
         });
 
-        this.outputWin.EvtBuffer.handle((line: string) => {
-            this.triggerManager.handleBuffer(line);
+        this.outputWin.EvtBuffer.handle((data:[string, string]) => {
+            let newBuffer = null;
+            if ((newBuffer = this.triggerManager.handleBuffer(data[0], data[1]))!=null) {
+                data[1] = newBuffer;
+                data[0] = this.triggerManager.line;
+            }
         });
 
         // OutputManager events

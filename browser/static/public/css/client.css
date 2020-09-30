@@ -48,6 +48,11 @@ a:link, a:visited {
     width: 100%;
 }
 
+.customWindow .outputText {
+    box-sizing: border-box;
+    padding: 5px !important;
+}
+
 .output-prewrap {
 	white-space: pre !important;
 }
@@ -78,6 +83,12 @@ body {
     overflow-y:scroll;
     overflow-x:auto;
     width:100%;
+    height:100%;
+    margin:0;
+    padding:0;
+    padding-left: 15px;
+    margin-bottom: 5px;
+    flex: 1;
 }
 /* Hide scrollbar for Chrome, Safari and Opera */
 .outputText::-webkit-scrollbar {
