@@ -41,7 +41,7 @@ export class WindowManager {
 
         this.deleteWindows();
 
-        for (const iterator of wnds) {
+        if (wnds) for (const iterator of wnds) {
             this.windows.set(iterator.name, {
                 window: null,
                 output: null,
