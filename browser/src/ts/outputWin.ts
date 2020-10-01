@@ -197,7 +197,7 @@ export class OutputWin extends OutWinBase {
 
         this.append(
             "<br/><span style=\"color:red\">"
-            + "[[Errore evaluazione Script:<br>"
+            + "[[Errore compilazione script:<br>"
             + err.toString() + "<br>"
             + "<br>"
             + stack + "<br>"
@@ -208,16 +208,14 @@ export class OutputWin extends OutWinBase {
         this.scrollBottom(true);
     }
 
-    handleScriptError(err: any) {
-        let msg = Util.rawToHtml(err.toString());
-        let stack = Util.rawToHtml(err.stack);
+    handleScriptError(data:{owner:string, err:any}) {
 
         this.append(
             "<br/><span style=\"color:red\">"
-            + "[[Errore Script:<br>"
-            + err.toString() + "<br>"
-            + "<br>"
-            + stack + "<br>"
+            + "[[Errore Script (" + data.owner + "):<br>"
+            + data.err.toString() + "<br>"
+            /*+ "<br>"
+            + stack + "<br>"*/
             + "]]"
             + "<br>"
             + "</span>", true

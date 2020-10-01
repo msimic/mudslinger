@@ -24,6 +24,14 @@ a:link, a:visited {
 font-family: 'Bitstream-Vera-Sans-Mono' !important;  
 }
 
+.CodeMirror-hints {
+    z-index: 9999 !important;
+}
+
+.CodeMirror-Tern-tooltip {
+    z-index: 9999 !important;
+}
+
 #mudslinger {
     width: 100%;
     max-width: 100%;

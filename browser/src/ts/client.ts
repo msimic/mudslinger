@@ -113,7 +113,7 @@ export class Client {
         this.socket = new Socket(this.outputManager, this.mxp, this.profileManager.activeConfig);
         this.connectWin = new ConnectWin(this.socket);
 
-        this.menuBar = new MenuBar(this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin, this.profilesWin, this.profileManager.activeConfig);
+        this.menuBar = new MenuBar(this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin, this.profilesWin, this.profileManager.activeConfig, this.windowManager);
 
         // MenuBar events
         this.menuBar.EvtChangeDefaultColor.handle((data: [string, string]) => {
@@ -241,7 +241,7 @@ export class Client {
             }
         });
 
-        EvtScriptEmitError.handle((data: {stack: any}) => {
+        EvtScriptEmitError.handle((data: {owner:string, err: any}) => {
             this.outputWin.handleScriptError(data)
         });
 

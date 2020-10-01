@@ -8,6 +8,7 @@ import { JsScriptWin } from "./jsScriptWin";
 import { AboutWin } from "./aboutWin";
 import { Mudslinger } from "./client";
 import { ProfilesWindow } from "./profilesWindow";
+import { WindowManager } from "./windowManager";
 
 export class MenuBar {
     public EvtChangeDefaultColor = new EventHook<[string, string]>();
@@ -128,7 +129,8 @@ export class MenuBar {
         private jsScriptWin: JsScriptWin,
         private aboutWin: AboutWin,
         private profileWin: ProfilesWindow,
-        private config: UserConfig
+        private config: UserConfig,
+        private windowManager:WindowManager
         ) 
     {
         <JQuery>((<any>$("#menuBar")).jqxMenu());
@@ -137,6 +139,22 @@ export class MenuBar {
         this.attachMenu();
         this.handleNewConfig();
         }, 0);
+        windowManager.EvtEmitWindowsChanged.handle((v) => this.windowsChanged(v));
+    }
+    windowsChanged(windows: string[]) {
+        $("#windowList").empty();
+        if (windows.length == 0) {
+            $("#windowList").append("<li>&lt;nessuna&gt;</li>");
+            return;
+        }
+        for (const iterator of windows) {
+            let li = $("<li class='jqx-item jqx-menu-item jqx-rc-all' role='menuitem'>" + iterator + "</li>");
+            let self = this;
+            li.on("click", () => {
+                self.windowManager.show(iterator);
+            });
+            $("#windowList").append(li);
+        }
     }
 
     public setConfig(newConfig:UserConfig) {

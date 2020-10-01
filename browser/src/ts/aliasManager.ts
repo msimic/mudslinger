@@ -97,6 +97,10 @@ export class AliasManager {
     public checkAlias(cmd: string): boolean | string {
         if (this.config.getDef("aliasesEnabled", true) !== true) return null;
 
+        if (cmd.match(/\.[neswud0-9]+$/i)) {
+            return this.createPath(cmd);
+        }
+
         for (let i = 0; i < this.allAliases.length; i++) {
             let alias = this.allAliases[i];
             if (!alias.enabled || (alias.class && !this.classManager.isEnabled(alias.class))) continue;
@@ -141,5 +145,26 @@ export class AliasManager {
             }
         }
         return null;
-    };
+    }
+    
+    createPath(cmd: string): string {
+        if (cmd[0]!=".") return '';
+
+        let number:string = '';
+        let ret = [];
+
+        for (let i = 1; i < cmd.length; i++) {
+            const c = cmd[i];
+            if (c >= '0' && c <= '9') {
+                number += c;
+            } else {
+                for (let n = 0; n < (number ? parseInt(number) : 1); n++) {
+                    ret.push(c);
+                }
+                number = '';
+            }
+        }
+
+        return ret.join("\n");
+    }
 }

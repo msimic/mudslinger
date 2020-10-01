@@ -3,6 +3,7 @@ import { EventHook } from "./event";
 import { UserConfig } from "./userConfig";
 import { messagebox } from "./messagebox";
 import { AppInfo } from "./appInfo";
+import { WindowData } from "./windowManager";
 
 export class Profile {
     public name:string;
@@ -11,6 +12,7 @@ export class Profile {
     public autologin: boolean;
     public char:string;
     public pass:string;
+    public windows:WindowData[];
 }
 
 export class ProfileManager {
@@ -29,6 +31,14 @@ export class ProfileManager {
         const ac = this.getCurrentConfig();
         ac.copy(v);
         return v;
+    }
+
+    public saveWindows(windows:WindowData[]) {
+        if (!this._current) return;
+
+        var p = this.getProfile(this.getCurrent());
+        p.windows = windows;
+        this.saveProfiles();
     }
 
     public get activeConfig():UserConfig {

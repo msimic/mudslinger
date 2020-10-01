@@ -7,7 +7,7 @@ import { TriggerManager } from "./triggerManager";
 
 export let EvtScriptEmitCmd = new EventHook<{owner:string, message:string}>();
 export let EvtScriptEmitPrint = new EventHook<{owner:string, message:string, window?:string}>();
-export let EvtScriptEmitError = new EventHook<any>();
+export let EvtScriptEmitError = new EventHook<{owner:string, err:any}>();
 export let EvtScriptEmitEvalError = new EventHook<any>();
 export let EvtScriptEmitToggleAlias = new EventHook<{owner:string, id:string, state:boolean}>();
 export let EvtScriptEmitToggleTrigger = new EventHook<{owner:string, id:string, state:boolean}>();
@@ -181,7 +181,7 @@ export class JsScript {
             try {
                 scr(...args);
             } catch (err) {
-                EvtScriptEmitError.fire(err);
+                EvtScriptEmitError.fire({owner:owner, err: err});
             }
         };
         } catch (err2) {
