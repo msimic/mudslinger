@@ -64,7 +64,11 @@ export class OutWinBase {
         });
     }
 
-
+    public cls() {
+        this.lineCount == 0;
+        this.$rootElem.empty();
+    }
+    
     public setMaxLines(count: number) {
         this.maxLines = count;
     }

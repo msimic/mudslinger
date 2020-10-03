@@ -20,6 +20,11 @@ a:link, a:visited {
       font-style: normal;
   }
   
+.fill-width {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .vera {
 font-family: 'Bitstream-Vera-Sans-Mono' !important;  
 }

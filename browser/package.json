@@ -1,10 +1,16 @@
 {
   "name": "mudslinger-browser",
   "version": "0.3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/msimic/mudslinger"
+  },
+  "description": "TS2 Web Client",
+  "license": "MIT",
   "scripts": {
     "postinstall": "node tools/postinstall.js",
     "compile": "tsc -p tsconfig.json",
-    "build": "node tools/genAppInfo.js \"git rev-parse HEAD\" && tsc -p tsconfig.json && webpack",
+    "build": "node tools/genAppInfo.js \"git rev-parse HEAD\" && tsc --sourceMap false -p tsconfig.json && webpack && node tools/build.js",
     "build-dev": "node tools/genAppInfo.js \"git rev-parse HEAD\" && tsc -p tsconfig.json && webpack --mode=development --config webpack.config.dev.js",
     "start": "tsc -p tsconfig.json && webpack-dev-server --config ./webpack.config.dev.js --inline --hot",
     "build-test": "tsc -p tsconfig.test.json && webpack --config webpack.config.test.js",
@@ -21,8 +27,7 @@
     "aes-js": "^3.1.2",
     "axios": "^0.19.2",
     "codemirror": "^5.57.0",
-    "fs-extra": "^2.0.0",
-    "html-webpack-plugin": "^4.4.1",
+    "del": "^6.0.0",
     "jquery": "^3.5.1",
     "jqwidgets-framework": "^9.1.6",
     "moxios": "^0.4.0",
@@ -31,13 +36,20 @@
     "socket.io-client": "^2.3.0",
     "strip-ansi": "^6.0.0",
     "ts-loader": "^8.0.3",
-    "ts-md5": "^1.2.7",
+    "ts-md5": "^1.2.7"
+  },
+  "devDependencies": {
+    "@node-minify/clean-css": "^6.1.0",
+    "@node-minify/core": "^6.1.0",
+    "@node-minify/html-minifier": "^6.1.0",
+    "@node-minify/no-compress": "^6.1.0",
+    "@node-minify/terser": "^6.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "fs-extra": "^2.1.2",
+    "html-webpack-plugin": "^4.4.1",
     "typescript": "^3.9.7",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"
-  },
-  "devDependencies": {
-    "clean-webpack-plugin": "^3.0.0"
   }
 }

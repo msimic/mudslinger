@@ -7,7 +7,7 @@ import * as aesjs from "aes-js";
 import { AliasEditor } from "./aliasEditor";
 import { AliasManager } from "./aliasManager";
 import { CommandInput } from "./commandInput";
-import { JsScript, EvtScriptEmitCmd, EvtScriptEmitPrint, EvtScriptEmitEvalError, EvtScriptEmitError } from "./jsScript";
+import { JsScript, EvtScriptEmitCmd, EvtScriptEmitPrint, EvtScriptEmitEvalError, EvtScriptEmitError, EvtScriptEmitCls, EvtScriptEvent, ScripEventTypes } from "./jsScript";
 import { JsScriptWin } from "./jsScriptWin";
 import { MenuBar } from "./menuBar";
 import { ClassManager } from "./classManager";
@@ -28,6 +28,9 @@ import { ProfileManager } from "./profileManager";
 import { ProfileWindow } from "./profileWindow";
 import { Acknowledge } from "./util";
 import { WindowManager } from "./windowManager";
+import { VariablesEditor } from "./variablesEditor";
+import { ClassEditor } from "./classEditor";
+import { EventsEditor } from "./eventsEditor";
 
 
 interface ConnectionTarget {
@@ -58,6 +61,9 @@ export class Client {
 
     private _connected = false;
     windowManager: WindowManager;
+    variableEditor: VariablesEditor;
+    classEditor: ClassEditor;
+    eventsEditor: EventsEditor;
     public get connected():boolean {
         return this._connected;
     }
@@ -85,9 +91,10 @@ export class Client {
 
     constructor(private connectionTarget: ConnectionTarget, private baseConfig:UserConfig, private profileManager:ProfileManager) {
         this.aboutWin = new AboutWin();
-        this.jsScript = new JsScript();
+        this.jsScript = new JsScript(this.profileManager.activeConfig);
         this.contactWin = new ContactWin();
         this.profileWin = new ProfileWindow(this.profileManager);
+        this.variableEditor = new VariablesEditor(this.jsScript);
         this.profilesWin = new ProfilesWindow(this.profileManager, this.profileWin, this);
         this.classManager = new ClassManager(this.profileManager.activeConfig);
         this.jsScriptWin = new JsScriptWin(this.jsScript);
@@ -103,7 +110,9 @@ export class Client {
 
         this.outputWin = new OutputWin(this.profileManager.activeConfig, this.triggerManager);
 
+        this.classEditor = new ClassEditor(this.classManager);
         this.aliasEditor = new AliasEditor(this.aliasManager);
+        this.eventsEditor = new EventsEditor(this.jsScript);
         this.triggerEditor = new TriggerEditor(this.triggerManager);
         this.windowManager = new WindowManager(this.profileManager);
         this.outputManager = new OutputManager(this.outputWin, this.profileManager.activeConfig, this.windowManager);
@@ -113,7 +122,8 @@ export class Client {
         this.socket = new Socket(this.outputManager, this.mxp, this.profileManager.activeConfig);
         this.connectWin = new ConnectWin(this.socket);
 
-        this.menuBar = new MenuBar(this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin, this.profilesWin, this.profileManager.activeConfig, this.windowManager);
+        this.menuBar = new MenuBar(this.aliasEditor, this.triggerEditor, this.jsScriptWin, this.aboutWin, this.profilesWin, this.profileManager.activeConfig, this.windowManager, this.variableEditor, this.classEditor, this.eventsEditor);
+        this.windowManager.triggerChanged();
 
         // MenuBar events
         this.menuBar.EvtChangeDefaultColor.handle((data: [string, string]) => {
@@ -147,12 +157,16 @@ export class Client {
         });
 
         var preventNavigate = (e:any) => {
+            this.jsScript.save();
             e.preventDefault();
             e.returnValue = "";
             return "";
         };
 
         this.socket.EvtTelnetConnect.handle((val: [string, number]) => {
+            this.jsScript.load();
+            EvtScriptEvent.fire({event: ScripEventTypes.ConnectionState, condition: 'telnet', value: true});
+            this.windowManager.profileConnected();
             // Prevent navigating away accidentally
             this.connected = true;
             window.addEventListener("beforeunload", preventNavigate);
@@ -166,6 +180,10 @@ export class Client {
         });
 
         this.socket.EvtTelnetDisconnect.handle(() => {
+            EvtScriptEvent.fire({event: ScripEventTypes.ConnectionState, condition: 'telnet', value: false});
+            this.windowManager.save();
+            this.windowManager.profileDisconnected();
+            this.jsScript.save();
             // allow navigating away
             this.connected = false;
             window.removeEventListener("beforeunload", preventNavigate);
@@ -184,11 +202,13 @@ export class Client {
         });
 
         this.socket.EvtWsConnect.handle((val: {sid: string}) => {
+            EvtScriptEvent.fire({event: ScripEventTypes.ConnectionState, condition: 'websocket', value: true});
             apiUtil.clientInfo.sid = val.sid;
             this.outputWin.handleWsConnect();
         });
 
         this.socket.EvtWsDisconnect.handle(() => {
+            EvtScriptEvent.fire({event: ScripEventTypes.ConnectionState, condition: 'websocket', value: false});
             apiUtil.clientInfo.sid = null;
             this.menuBar.handleTelnetDisconnect();
             this.outputWin.handleWsDisconnect();
@@ -238,6 +258,14 @@ export class Client {
                 this.outputManager.sendToWindow(data.window, data.message, data.message, true);
             } else {
                 this.outputWin.handleScriptPrint(data.owner, data.message);
+            }
+        });
+
+        EvtScriptEmitCls.handle((data:{owner:string, window?:string}) => {
+            if (data.window) {
+                this.outputManager.clearWindow(data.window);
+            } else {
+                this.outputWin.clearWindow(data.owner);
             }
         });
 
@@ -295,7 +323,7 @@ export class Client {
                     this.connectionTarget.port);
 
             } else {
-                this.connectWin.show();
+                this.profilesWin.show();
             }
         });
     }
@@ -414,8 +442,7 @@ export namespace Mudslinger {
             }
         }
         profileManager.setTitle();
-        console.log(connectionTarget);
-        client = new Client(connectionTarget, baseConfig, profileManager);
+        client = new Client(null, baseConfig, profileManager);
         onPreloaded();
     }
 

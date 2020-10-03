@@ -20,7 +20,7 @@ export interface WindowDefinition {
 
 export class WindowManager {
 
-    private windows: Map<string, WindowDefinition> = new Map<string, WindowDefinition>();
+    public windows: Map<string, WindowDefinition> = new Map<string, WindowDefinition>();
     public EvtEmitWindowsChanged = new EventHook<string[]>();
 
     constructor(private profileManager:ProfileManager) {
@@ -47,6 +47,28 @@ export class WindowManager {
                 output: null,
                 data: iterator
             });
+        }
+        this.triggerChanged();
+    }
+
+    public triggerChanged() {
+        this.EvtEmitWindowsChanged.fire([...this.windows.keys()]);
+    }
+
+    profileDisconnected() {
+        for (const w of this.windows) {
+            if (w[1].window) {
+                w[1].window.hide();
+            }
+        }
+    }
+
+    profileConnected() {
+        for (const w of this.windows) {
+            if (w[1].data.visible) {
+                let wnd = this.createWindow(w[1].data.name);
+                wnd.window.show();
+            }
         }
     }
 
@@ -159,7 +181,7 @@ export class WindowManager {
             this.show(name);
         }
 
-        if (defaults.data.collapsed) {
+        if (defaults && defaults.data.collapsed) {
             (<any>$win).jqxWindow('collapse');
         }
         
@@ -184,6 +206,9 @@ export class WindowManager {
 
     public show(window:string) {
         var w = this.windows.get(window);
+        if (!w.output) {
+            w = this.createWindow(window);
+        }
         (<any>w.window).jqxWindow("open");
         (<any>w.window).jqxWindow('bringToFront');
     }

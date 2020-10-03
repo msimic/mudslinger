@@ -98,6 +98,11 @@ export class OutputManager {
         }
     }
 
+    public clearWindow(window:string) {
+        let wd = this.windowManager.createWindow(window);
+        wd.output.cls();
+    }
+
     // propagate MXP elements to target
     public pushMxpElem(elem: JQuery) {
         this.target.pushElem(elem);

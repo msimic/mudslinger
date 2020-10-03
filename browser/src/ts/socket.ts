@@ -74,7 +74,7 @@ export class Socket {
             this.EvtWsConnect.fire({sid: this.ioConn.id});
         });
 
-        this.ioConn.on("disconnect", () => {
+        this.ioConn.on("disconnect", (rsn:any) => {
             this.EvtWsDisconnect.fire(null);
         });
 

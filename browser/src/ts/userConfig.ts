@@ -79,7 +79,22 @@ export class UserConfig {
     }
 
     public saveConfig():string {
-        return this.saveFunc(JSON.stringify(this.cfgVals));
+        let val:string;
+        let to_convert:string[] = [];
+        for (const key in this.cfgVals) {
+            if (Object.prototype.hasOwnProperty.call(this.cfgVals, key)) {
+                const element = this.cfgVals[key];
+                if (element instanceof Map) {
+                    to_convert.push(key);
+                    this.cfgVals[key] = [...this.cfgVals[key]];
+                }
+            }
+        }
+        val = JSON.stringify(this.cfgVals);
+        for (const iterator of to_convert) {
+            this.cfgVals[iterator] = new Map<string,any>(this.cfgVals[iterator]);
+        }
+        return this.saveFunc(val);
     }
 
     public exportToFile() {

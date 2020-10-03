@@ -1,11 +1,11 @@
 import { EventHook } from "./event";
 import { TrigAlItem } from "./trigAlEditBase";
-import { EvtScriptEmitPrint, EvtScriptEmitToggleClass } from "./jsScript";
+import { EvtScriptEmitPrint, EvtScriptEmitToggleClass, EvtScriptEvent, ScripEventTypes } from "./jsScript";
 
 export interface ConfigIf {
-    set(key: string, val: TrigAlItem[]): void;
+    set(key: string, val: Map<string, Class>): void;
     getDef(key: string, def: boolean): boolean;
-    get(key: string): TrigAlItem[];
+    get(key: string): Map<string, Class>;
     evtConfigImport: EventHook<{[k: string]: any}>;
 }
 
@@ -21,6 +21,7 @@ export class ClassManager {
 
     constructor(private config: ConfigIf) {
         EvtScriptEmitToggleClass.handle(this.onToggle, this);
+        this.loadClasses();
     }
 
     private onToggle(data: {owner: string, id:string, state:boolean}) {
@@ -29,15 +30,20 @@ export class ClassManager {
         if (this.config.getDef("debugScripts", false)) EvtScriptEmitPrint.fire({owner:"ClassManager", message: msg});
     }
 
+    public Delete(id:string) {
+        this.classes.delete(id);
+    }
     public Create(id:string, val:boolean) {
         this.classes.set(id, {
             name: id,
             enabled: val
         });
+        this.saveClasses();
     }
     public Toggle(id: string, val:boolean):void {
         if (!this.classes.has(id)) {
             this.Create(id, val == undefined ? true : val);
+            this.saveClasses();
             return;
         }
         const cls = this.classes.get(id);
@@ -45,6 +51,7 @@ export class ClassManager {
             val = !cls.enabled;
         }
         cls.enabled = val;
+        EvtScriptEvent.fire({event: ScripEventTypes.ClassChanged, condition: id, value: cls.enabled});
     }
 
     public isEnabled(id: string):boolean {
@@ -54,5 +61,12 @@ export class ClassManager {
         return true;
     }
 
+    public saveClasses() {
+        this.config.set("classes", this.classes);
+    }
+
+    private loadClasses() {
+        this.classes = this.config.get("classes") ? new Map<string, Class>(this.config.get("classes")) : new Map<string, Class>();
+    }
 }
 

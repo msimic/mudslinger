@@ -132,3 +132,90 @@ export function utf8decode(array: Uint8Array): { result: string; partial: Uint8A
 
     return { result: out, partial: null };
 }
+
+declare let CodeMirror: any;
+
+export function addIntellisense(editor:any) {
+    $.ajax("./modules/ecmascript.json").done(function(code:any) {
+        let server = new CodeMirror.TernServer({defs: [code]});
+        editor.setOption("extraKeys", {
+            "Ctrl-Space": function(cm:any) { /*server.complete(cm);*/ cm.showHint({hint: server.getHint, completeSingle:false}); },
+            "Ctrl-I": function(cm:any) { server.showType(cm); },
+            "Ctrl-O": function(cm:any) { server.showDocs(cm); },
+            "Alt-.": function(cm:any) { server.jumpToDef(cm); },
+            "Alt-,": function(cm:any) { server.jumpBack(cm); },
+            "F2": function(cm:any) { server.rename(cm); },
+            "Ctrl-.": function(cm:any) { server.selectName(cm); }
+        })
+        editor.on("cursorActivity", function(cm:any) { server.updateArgHints(cm); });
+        var ExcludedIntelliSenseTriggerKeys:{[k: string]: string} =
+        {
+            "8": "backspace",
+            "9": "tab",
+            "13": "enter",
+            "16": "shift",
+            "17": "ctrl",
+            "18": "alt",
+            "19": "pause",
+            "20": "capslock",
+            "27": "escape",
+            "32": "space",
+            "33": "pageup",
+            "34": "pagedown",
+            "35": "end",
+            "36": "home",
+            "37": "left",
+            "38": "up",
+            "39": "right",
+            "40": "down",
+            "45": "insert",
+            "46": "delete",
+            "50": "quote",
+            "91": "left window key",
+            "92": "right window key",
+            "93": "select",
+            "107": "add",
+            "109": "subtract",
+            "110": "decimal point",
+            "111": "divide",
+            "112": "f1",
+            "113": "f2",
+            "114": "f3",
+            "115": "f4",
+            "116": "f5",
+            "117": "f6",
+            "118": "f7",
+            "119": "f8",
+            "120": "f9",
+            "121": "f10",
+            "122": "f11",
+            "123": "f12",
+            "144": "numlock",
+            "145": "scrolllock",
+            "186": "semicolon",
+            "187": "equalsign",
+            "188": "comma",
+            "189": "dash",
+            /*"190": "period",*/
+            "191": "slash",
+            "192": "graveaccent",
+            "220": "backslash",
+            "222": "quote"
+        }
+
+        editor.on("keyup", function(editor:any, event:any)
+        {
+            var __Cursor = editor.getDoc().getCursor();
+            var __Token = editor.getTokenAt(__Cursor);
+
+            let prevent = ['[',']','-','+','=','>','<','!','(',')','{','}'];
+
+            if (!editor.state.completionActive && !(event.ctrlKey||event.altKey||event.shiftKey) &&
+                !ExcludedIntelliSenseTriggerKeys[<string>(event.keyCode || event.which).toString()] && !(prevent.indexOf(__Token.string)!=-1)
+                /*(__Token.type == "tag" || __Token.string == " " || __Token.string == "<" || __Token.string == "/")*/)
+            {
+                editor.showHint({hint: server.getHint, completeSingle:false});
+            }
+        });
+    });
+}

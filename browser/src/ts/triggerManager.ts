@@ -1,7 +1,7 @@
 import { EventHook } from "./event";
 import { TrigAlItem } from "./trigAlEditBase";
 import { ClassManager } from "./classManager";
-import { EvtScriptEmitPrint, EvtScriptEmitToggleTrigger } from "./jsScript";
+import { EvtScriptEmitPrint, EvtScriptEmitToggleTrigger, EvtScriptEvent, ScripEventTypes } from "./jsScript";
 import { ProfileManager } from "./profileManager";
 import { Mudslinger } from "./client";
 import { stripHtml } from "./util";
@@ -130,6 +130,7 @@ export class TriggerManager {
     }
 
     public runTrigger(trig:TrigAlItem, line:string) {
+        let fired:boolean = false;
         if (trig.regex) {
             let match = line.match(trig.pattern);
             if (!match) {
@@ -140,6 +141,7 @@ export class TriggerManager {
                 if (!trig.script) trig.script = this.jsScript.makeScript(trig.id || trig.pattern, trig.value, "match, line");
                 if (trig.script) {
                     trig.script(match, line); 
+                    fired = true;
                 } else {
                     throw `Trigger '${trig.pattern}' is script but the script cannot be initialized`;
                 }
@@ -152,6 +154,7 @@ export class TriggerManager {
 
                 let cmds = value.replace("\r", "").split("\n");
                 this.EvtEmitTriggerCmds.fire({orig: trig.id || trig.pattern, cmds: cmds});
+                fired = true;
             }
         } else {
             if (line.includes(trig.pattern)) {
@@ -159,14 +162,19 @@ export class TriggerManager {
                     if (!trig.script) trig.script = this.jsScript.makeScript(trig.id || trig.pattern, trig.value, "line");
                     if (trig.script) {
                         trig.script(line); 
+                        fired = true;
                     } else {
                         throw `Trigger '${trig.pattern}' is script but the script cannot be initialized`;
                     }
                 } else {
                     let cmds = trig.value.replace("\r", "").split("\n");
                     this.EvtEmitTriggerCmds.fire({orig: trig.id || trig.pattern, cmds: cmds});
+                    fired = true;
                 }
             }
+        }
+        if (fired) {
+            EvtScriptEvent.fire({event: ScripEventTypes.TriggerFired, condition: trig.id || trig.pattern, value: line});
         }
     }
 

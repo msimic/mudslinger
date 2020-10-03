@@ -9,6 +9,9 @@ import { AboutWin } from "./aboutWin";
 import { Mudslinger } from "./client";
 import { ProfilesWindow } from "./profilesWindow";
 import { WindowManager } from "./windowManager";
+import { VariablesEditor } from "./variablesEditor";
+import { ClassEditor } from "./classEditor";
+import { EventsEditor } from "./eventsEditor";
 
 export class MenuBar {
     public EvtChangeDefaultColor = new EventHook<[string, string]>();
@@ -21,7 +24,9 @@ export class MenuBar {
         ["connect", ""],
         ["use-profile", ""],
         ["aliases", ""],
+        ["variables", ""],
         ["triggers", ""],
+        ["classes", ""],
         ["script", ""],
         ["config", ""],
         ["text-color", ""],
@@ -130,7 +135,10 @@ export class MenuBar {
         private aboutWin: AboutWin,
         private profileWin: ProfilesWindow,
         private config: UserConfig,
-        private windowManager:WindowManager
+        private windowManager:WindowManager,
+        private variableEditor:VariablesEditor,
+        private classEditor: ClassEditor,
+        private eventEditor: EventsEditor
         ) 
     {
         <JQuery>((<any>$("#menuBar")).jqxMenu());
@@ -351,6 +359,21 @@ export class MenuBar {
                 this.EvtChangeDefaultColor.fire(["black", "low"]);
                 this.EvtChangeDefaultBgColor.fire(["white", "low"]);
             }
+        };
+
+        this.clickFuncs["variables"] = (val) => {
+            
+            this.variableEditor.show();
+        };
+
+        this.clickFuncs["classes"] = (val) => {
+            
+            this.classEditor.show();
+        };
+
+        this.clickFuncs["events"] = (val) => {
+            
+            this.eventEditor.show();
         };
 
         this.clickFuncs["black-on-white"] = (val) => {

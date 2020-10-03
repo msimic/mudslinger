@@ -3,6 +3,14 @@ import { TriggerManager } from "./triggerManager";
 import * as Util from "./util";
 
 export class OutputWin extends OutWinBase {
+    clearWindow(owner: string) {
+        this.cls();
+        if (!this.debugScripts) this.append(
+            "<span style=\"color:orange\">CLS:" /*+ owner + ": "*/
+            + Util.rawToHtml(owner)
+            + "<br>"
+            + "</span>", true);
+    }
     constructor(config: ConfigIf, private triggerManager:TriggerManager) {
         super($("#winOutput"), config);
 

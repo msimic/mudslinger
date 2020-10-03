@@ -1,4 +1,5 @@
 import {JsScript} from "./jsScript";
+import { addIntellisense } from "./util";
 
 declare let CodeMirror: any;
 
@@ -48,6 +49,8 @@ export class JsScriptWin {
                 lineNumbers: true
             }
         );
+
+        addIntellisense(this.codeMirror);
 
         this.$runButton.click(this.handleRunButtonClick.bind(this));
     }
